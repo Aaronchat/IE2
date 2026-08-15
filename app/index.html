@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Infinite Engine 2.0 — Prompt Builder</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Infinite Engine 2.0</p>
+        <h1>Prompt Builder</h1>
+        <p class="subtitle">Choose manually, use Random where supported, or use None where the engine allows it.</p>
+      </div>
+      <div class="toolbar">
+        <input id="control-search" type="search" placeholder="Search controls or options…" aria-label="Search controls or options">
+        <button id="expand-all" type="button">Expand all</button>
+        <button id="collapse-all" type="button">Collapse all</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel" id="engine-controls" aria-label="Infinite Engine controls"></section>
+      <aside class="panel result-panel">
+        <div class="result-actions">
+          <button id="generate-prompt" class="generate-button" type="button">Generate</button>
+          <button id="copy-prompt" type="button" disabled>Copy Prompt</button>
+        </div>
+        <section class="generation-result" aria-live="polite">
+          <h2>Generated Prompt</h2>
+          <p id="seed-output" class="seed-output"></p>
+          <p id="generation-error" class="generation-error" hidden></p>
+          <div id="prompt-output" class="prompt-output"></div>
+        </section>
+        <details class="debug-state">
+          <summary>Current UI state (debug)</summary>
+          <div class="state-header">
+            <span>Raw state</span>
+            <button id="copy-state" type="button">Copy state</button>
+          </div>
+          <pre id="state-output"></pre>
+        </details>
+      </aside>
+    </div>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

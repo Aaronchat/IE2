@@ -1,0 +1,26 @@
+export const BODY_SIDES = Object.freeze(["left", "right", "both"]);
+
+export const BODY_REGIONS = Object.freeze([
+  { id: "head-scalp", name: "Head / Scalp", supportsSide: true },
+  { id: "face", name: "Face", supportsSide: true },
+  { id: "neck", name: "Neck", supportsSide: true },
+  { id: "shoulder", name: "Shoulder", supportsSide: true },
+  { id: "upper-chest", name: "Upper Chest", supportsSide: true },
+  { id: "chest", name: "Chest", supportsSide: true },
+  { id: "upper-abdomen", name: "Upper Abdomen", supportsSide: true },
+  { id: "lower-abdomen", name: "Lower Abdomen", supportsSide: true },
+  { id: "side-torso-ribs", name: "Side Torso / Ribs", supportsSide: true },
+  { id: "groin", name: "Groin", supportsSide: false },
+  { id: "upper-back", name: "Upper Back", supportsSide: true },
+  { id: "lower-back", name: "Lower Back", supportsSide: true },
+  { id: "outer-hip", name: "Outer Hip", supportsSide: true },
+  { id: "buttocks", name: "Buttocks", supportsSide: true },
+  { id: "upper-arm", name: "Upper Arm", supportsSide: true },
+  { id: "lower-arm", name: "Lower Arm", supportsSide: true },
+  { id: "wrist", name: "Wrist", supportsSide: true },
+  { id: "hand", name: "Hand", supportsSide: true },
+  { id: "upper-leg", name: "Upper Leg", supportsSide: true },
+  { id: "lower-leg", name: "Lower Leg", supportsSide: true },
+  { id: "ankle", name: "Ankle", supportsSide: true },
+  { id: "foot", name: "Foot", supportsSide: true },
+]);

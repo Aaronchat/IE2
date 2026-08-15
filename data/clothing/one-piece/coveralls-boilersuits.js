@@ -1,0 +1,117 @@
+const coverallBaseCoverage = Object.freeze({
+  covered: Object.freeze([
+    { region: "upper-chest", side: "both" },
+    { region: "chest", side: "both" },
+    { region: "upper-abdomen", side: "both" },
+    { region: "lower-abdomen", side: "both" },
+    { region: "side-torso-ribs", side: "both" },
+    { region: "upper-back", side: "both" },
+    { region: "lower-back", side: "both" },
+    { region: "shoulder", side: "both" },
+    { region: "outer-hip", side: "both" },
+    { region: "buttocks", side: "both" },
+    { region: "groin" },
+    { region: "upper-leg", side: "both" },
+    { region: "lower-leg", side: "both" },
+    { region: "upper-arm", side: "both" },
+  ]),
+  partiallyCovered: Object.freeze([]),
+});
+
+const coverallFullArmCoverage = Object.freeze({
+  covered: Object.freeze([
+    { region: "upper-chest", side: "both" },
+    { region: "chest", side: "both" },
+    { region: "upper-abdomen", side: "both" },
+    { region: "lower-abdomen", side: "both" },
+    { region: "side-torso-ribs", side: "both" },
+    { region: "upper-back", side: "both" },
+    { region: "lower-back", side: "both" },
+    { region: "shoulder", side: "both" },
+    { region: "outer-hip", side: "both" },
+    { region: "buttocks", side: "both" },
+    { region: "groin" },
+    { region: "upper-leg", side: "both" },
+    { region: "lower-leg", side: "both" },
+    { region: "upper-arm", side: "both" },
+    { region: "lower-arm", side: "both" },
+  ]),
+  partiallyCovered: Object.freeze([]),
+});
+
+export const COVERALLS_BOILERSUITS = Object.freeze({
+  id: "coveralls-boilersuits",
+  name: "Coveralls & Boilersuits",
+  defaults: Object.freeze({
+    category: "one-piece",
+    slot: "one-piece",
+    layer: "primary",
+    enabled: true,
+    selectionWeight: 1,
+    coverage: coverallBaseCoverage,
+    temperature: Object.freeze(["very-hot", "warm", "moderate", "cool", "cold"]),
+    season: Object.freeze(["spring", "summer", "autumn", "winter"]),
+    formality: "casual",
+  }),
+  items: Object.freeze([
+    {
+      id: "fitted-zip-front-coveralls",
+      name: "Fitted Zip-Front Coveralls",
+      prompt: "fitted zip-front coveralls",
+      coverage: coverallFullArmCoverage,
+    },
+    {
+      id: "partially-unzipped-coveralls",
+      name: "Partially Unzipped Coveralls",
+      prompt: "partially unzipped coveralls",
+      coverage: coverallFullArmCoverage,
+    },
+    {
+      id: "belted-coveralls",
+      name: "Belted Coveralls",
+      prompt: "belted coveralls",
+      coverage: coverallFullArmCoverage,
+    },
+    {
+      id: "short-sleeve-coveralls",
+      name: "Short-Sleeve Coveralls",
+      prompt: "short-sleeve coveralls",
+    },
+    {
+      id: "long-sleeve-coveralls",
+      name: "Long-Sleeve Coveralls",
+      prompt: "long-sleeve coveralls",
+      coverage: coverallFullArmCoverage,
+    },
+    {
+      id: "mechanic-coveralls",
+      name: "Mechanic Coveralls",
+      prompt: "mechanic coveralls",
+      coverage: coverallFullArmCoverage,
+    },
+    {
+      id: "utility-coveralls",
+      name: "Utility Coveralls",
+      prompt: "utility coveralls",
+      coverage: coverallFullArmCoverage,
+    },
+    {
+      id: "flight-suit",
+      name: "Flight Suit",
+      prompt: "flight suit",
+      coverage: coverallFullArmCoverage,
+    },
+    {
+      id: "fitted-boilersuit",
+      name: "Fitted Boilersuit",
+      prompt: "fitted boilersuit",
+      coverage: coverallFullArmCoverage,
+    },
+    {
+      id: "workwear-jumpsuit",
+      name: "Workwear Jumpsuit",
+      prompt: "workwear jumpsuit",
+      coverage: coverallFullArmCoverage,
+    },
+  ]),
+});

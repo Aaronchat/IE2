@@ -1,0 +1,43 @@
+const conservativeOnePieceSwimsuitCoverage = Object.freeze({
+  covered: Object.freeze([
+    { region: "shoulder", side: "both" },
+    { region: "upper-chest", side: "both" },
+    { region: "chest", side: "both" },
+    { region: "upper-abdomen", side: "both" },
+    { region: "lower-abdomen", side: "both" },
+    { region: "side-torso-ribs", side: "both" },
+    { region: "groin" },
+    { region: "upper-back", side: "both" },
+    { region: "lower-back", side: "both" },
+    { region: "outer-hip", side: "both" },
+    { region: "buttocks", side: "both" },
+  ]),
+  partiallyCovered: Object.freeze([]),
+});
+export const ONE_PIECE_SWIMSUITS = Object.freeze({
+  id: "one-piece-swimsuits",
+  name: "One-Piece Swimsuits",
+  defaults: Object.freeze({
+    category: "swimwear",
+    slot: "one-piece",
+    layer: "primary",
+    enabled: true,
+    selectionWeight: 1,
+    coverage: conservativeOnePieceSwimsuitCoverage,
+    temperature: Object.freeze(["very-hot", "warm"]),
+    season: Object.freeze(["spring", "summer"]),
+    formality: "very-casual",
+  }),
+  items: Object.freeze([
+    { id: "plunging-one-piece-swimsuit", name: "Plunging One-Piece Swimsuit", prompt: "plunging one-piece swimsuit" },
+    { id: "deep-v-one-piece-swimsuit", name: "Deep-V One-Piece Swimsuit", prompt: "deep-V one-piece swimsuit" },
+    { id: "underwire-one-piece-swimsuit", name: "Underwire One-Piece Swimsuit", prompt: "underwire one-piece swimsuit" },
+    { id: "balconette-one-piece-swimsuit", name: "Balconette One-Piece Swimsuit", prompt: "balconette one-piece swimsuit" },
+    { id: "sweetheart-one-piece-swimsuit", name: "Sweetheart One-Piece Swimsuit", prompt: "sweetheart one-piece swimsuit" },
+    { id: "halter-one-piece-swimsuit", name: "Halter One-Piece Swimsuit", prompt: "halter one-piece swimsuit" },
+    { id: "cutout-one-piece-swimsuit", name: "Cutout One-Piece Swimsuit", prompt: "cutout one-piece swimsuit" },
+    { id: "monokini", name: "Monokini", prompt: "monokini" },
+    { id: "wrap-front-one-piece-swimsuit", name: "Wrap-Front One-Piece Swimsuit", prompt: "wrap-front one-piece swimsuit" },
+    { id: "keyhole-one-piece-swimsuit", name: "Keyhole One-Piece Swimsuit", prompt: "keyhole one-piece swimsuit" },
+  ]),
+});

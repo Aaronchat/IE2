@@ -1,0 +1,73 @@
+export const CLEAR_ATMOSPHERE = Object.freeze({
+  id: "clear",
+  name: "Clear",
+  defaults: Object.freeze({
+    enabled: true,
+    selectionWeight: 1,
+  }),
+  items: Object.freeze([
+    Object.freeze({
+      id: "clear-skies",
+      name: "Clear Skies",
+      prompt: "clear skies",
+      group: "standalone",
+      families: Object.freeze(["clear"]),
+    }),
+    Object.freeze({
+      id: "sunny",
+      name: "Sunny",
+      prompt: "sunny",
+      group: "standalone",
+      families: Object.freeze(["clear"]),
+    }),
+    Object.freeze({
+      id: "partly-cloudy",
+      name: "Partly Cloudy",
+      prompt: "partly cloudy",
+      group: "clouds",
+      families: Object.freeze(["clear"]),
+    }),
+    Object.freeze({
+      id: "scattered-clouds",
+      name: "Scattered Clouds",
+      prompt: "scattered clouds",
+      group: "clouds",
+      families: Object.freeze(["clear"]),
+    }),
+    Object.freeze({
+      id: "sunshower",
+      name: "Sunshower",
+      prompt: "sunshower",
+      group: "rain",
+      families: Object.freeze(["clear"]),
+    }),
+    Object.freeze({
+      id: "desert-heat",
+      name: "Desert Heat",
+      prompt: "desert heat",
+      group: "heat",
+      families: Object.freeze(["clear"]),
+    }),
+    Object.freeze({
+      id: "heat-haze",
+      name: "Heat Haze",
+      prompt: "heat haze",
+      group: "heat",
+      families: Object.freeze(["clear"]),
+    }),
+    Object.freeze({
+      id: "shimmering-heat",
+      name: "Shimmering Heat",
+      prompt: "shimmering heat",
+      group: "heat",
+      families: Object.freeze(["clear"]),
+    }),
+    Object.freeze({
+      id: "frost",
+      name: "Frost",
+      prompt: "frost",
+      group: "ice",
+      families: Object.freeze(["clear", "non-clear"]),
+    }),
+  ]),
+});
