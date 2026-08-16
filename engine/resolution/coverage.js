@@ -15,7 +15,10 @@ function clothingRecords(clothing) {
   if (primary?.path === "package") records.push({ type: "package", record: primary.package });
   if (primary?.path === "built-outfit") {
     const built = primary.builtOutfit;
-    if (built.structure === "top-bottom") records.push({ type: "clothing", record: built.outfit.top }, { type: "clothing", record: built.outfit.bottom });
+    if (built.structure === "top-bottom") {
+      if (built.outfit.top) records.push({ type: "clothing", record: built.outfit.top });
+      if (built.outfit.bottom) records.push({ type: "clothing", record: built.outfit.bottom });
+    }
     else if (built.structure === "swimwear") for (const record of built.outfit) records.push({ type: "clothing", record });
     else records.push({ type: "clothing", record: built.outfit });
   }
