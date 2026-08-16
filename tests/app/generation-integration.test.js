@@ -81,23 +81,23 @@ test("multi-select converts correctly for Character Features and Accessories", (
 
 test("grouped Clothing Top + Bottom becomes one Built Outfit", () => {
   const ui = baseUi();
-  ui.clothing["clothing.tops.selection"] = manual("fitted-tank-top", "tank-tops");
-  ui.clothing["clothing.bottoms.selection"] = manual("skinny-jeans", "jeans");
+  ui.clothing["clothing.tops.tank-tops.selection"] = manual("fitted-tank-top", "tank-tops");
+  ui.clothing["clothing.bottoms.jeans.selection"] = manual("skinny-jeans", "jeans");
   const controls = uiStateToGenerationControls(ui);
   assert.deepEqual(controls.clothing.primary, {
     mode: "manual", path: "built-outfit", structure: "top-bottom",
     outfit: {
-      top: { id: "fitted-tank-top", groupId: "tank-tops" },
-      bottom: { id: "skinny-jeans", groupId: "jeans" },
+      top: { mode: "manual", id: "fitted-tank-top", groupId: "tank-tops" },
+      bottom: { mode: "manual", id: "skinny-jeans", groupId: "jeans" },
     },
   });
 });
 
 test("Package selection converts to the existing package path", () => {
   const ui = baseUi();
-  ui.clothing["clothing.packages.selection"] = manual("space-suit", "sci-fi");
+  ui.clothing["clothing.packages.sci-fi.selection"] = manual("space-suit", "sci-fi");
   assert.deepEqual(uiStateToGenerationControls(ui).clothing.primary, {
-    mode: "manual", path: "package", id: "space-suit", groupId: "sci-fi",
+    mode: "manual", path: "package", selection: { mode: "manual", id: "space-suit", groupId: "sci-fi" },
   });
 });
 
@@ -168,8 +168,8 @@ test("failed UI generation does not receive an extra completion call", () => {
 
 test("invalid conflicting UI selection errors instead of silently inventing a choice", () => {
   const ui = baseUi();
-  ui.clothing["clothing.dresses.selection"] = manual("spaghetti-strap-sundress", "sundresses");
-  ui.clothing["clothing.packages.selection"] = manual("space-suit", "sci-fi");
+  ui.clothing["clothing.dresses.sundresses.selection"] = manual("spaghetti-strap-sundress", "sundresses");
+  ui.clothing["clothing.packages.sci-fi.selection"] = manual("space-suit", "sci-fi");
   assert.throws(() => uiStateToGenerationControls(ui), /only one primary clothing structure or Package/);
 });
 
@@ -189,4 +189,34 @@ test("non-Random generations do not create a seed but still reuse Random state",
   assert.equal(seedCalls, 0);
   assert.equal(generation.seed, null);
   assert.equal(generation.result.randomState, state);
+});
+
+test("Clothing None omits one top-bottom slot while preserving the other", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.tops.selection"] = { mode: "none", value: null };
+  ui.clothing["clothing.bottoms.jeans.selection"] = manual("skinny-jeans", "jeans");
+  const controls = uiStateToGenerationControls(ui);
+  assert.deepEqual(controls.clothing.primary, {
+    mode: "manual", path: "built-outfit", structure: "top-bottom",
+    outfit: {
+      top: { mode: "none" },
+      bottom: { mode: "manual", id: "skinny-jeans", groupId: "jeans" },
+    },
+  });
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.ok(generation.prompt.includes("skinny jeans"));
+  assert.equal(generation.result.prompt.sections.clothing.some((fragment) => fragment.includes("tank top")), false);
+  assert.ok(generation.result.prompt.omissions.some((entry) => entry.section === "clothing" && entry.control === "tops" && entry.state === "user-none"));
+});
+
+test("Clothing section Random works at the parent level without garment-family Random", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.tops.selection"] = { mode: "random", value: null };
+  ui.clothing["clothing.bottoms.selection"] = { mode: "none", value: null };
+  const controls = uiStateToGenerationControls(ui);
+  assert.equal(controls.clothing.primary.outfit.top.mode, "random");
+  assert.equal(controls.clothing.primary.outfit.bottom.mode, "none");
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState(), createSeed: () => 31415 });
+  assert.equal(generation.result.selection.selections.clothing.primary.value.builtOutfit.slotModes.top, "random");
+  assert.equal(generation.result.selection.selections.clothing.primary.value.builtOutfit.slotModes.bottom, "none");
 });

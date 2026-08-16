@@ -51,3 +51,18 @@ test("None remains available only where established in configured domains", () =
   assert.equal(byId.get("atmosphere.selection").none, true);
   for (const entry of controls.filter((item) => /^atmosphere\..+\.selection$/.test(item.id))) assert.equal(entry.none, false);
 });
+
+test("Clothing parent sections expose Random/None while garment-family menus stay manual-only", () => {
+  for (const id of [
+    "clothing.tops.selection", "clothing.bottoms.selection", "clothing.dresses.selection",
+    "clothing.one-piece.selection", "clothing.swimwear.selection", "clothing.sleepwear.selection",
+    "clothing.outerwear.selection", "clothing.hosiery.selection", "clothing.packages.selection",
+  ]) {
+    assert.equal(byId.get(id).random, true);
+    assert.equal(byId.get(id).none, true);
+  }
+  assert.equal(byId.get("clothing.lingerie.selection").random, false);
+  assert.equal(byId.get("clothing.lingerie.selection").none, true);
+  assert.equal(byId.get("clothing.tops.tank-tops.selection").random, false);
+  assert.equal(byId.get("clothing.tops.tank-tops.selection").none, false);
+});

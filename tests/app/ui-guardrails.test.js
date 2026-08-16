@@ -11,45 +11,62 @@ import {
 
 const manual = (...values) => ({ mode: "manual", values });
 const random = () => ({ mode: "random", values: [] });
+const none = () => ({ mode: "none", values: [] });
 const unselected = () => ({ mode: "unselected", values: [] });
 
-test("Primary Outfit Random clears manual primary clothing selections", () => {
+test("Primary Outfit Random clears primary clothing section actions and family selections", () => {
   const state = new Map([
     ["clothing.primary-random", random()],
-    ["clothing.tops.selection", manual({ value: "top" })],
-    ["clothing.bottoms.selection", manual({ value: "bottom" })],
+    ["clothing.tops.selection", none()],
+    ["clothing.tops.tank-tops.selection", manual({ value: "top" })],
+    ["clothing.bottoms.jeans.selection", manual({ value: "bottom" })],
   ]);
   applyModeGuardrails(state, "clothing.primary-random", "random");
   assert.deepEqual(state.get("clothing.tops.selection"), unselected());
-  assert.deepEqual(state.get("clothing.bottoms.selection"), unselected());
+  assert.deepEqual(state.get("clothing.tops.tank-tops.selection"), unselected());
+  assert.deepEqual(state.get("clothing.bottoms.jeans.selection"), unselected());
 });
 
-test("manual Top/Bottom clears standalone primary clothing but preserves its pair", () => {
+test("manual Top/Bottom family choice clears standalone primary clothing but preserves its pair", () => {
   const state = new Map([
     ["clothing.primary-random", random()],
-    ["clothing.tops.selection", unselected()],
-    ["clothing.bottoms.selection", manual({ value: "bottom" })],
-    ["clothing.dresses.selection", manual({ value: "dress" })],
-    ["clothing.packages.selection", manual({ value: "package" })],
+    ["clothing.tops.selection", none()],
+    ["clothing.tops.tank-tops.selection", unselected()],
+    ["clothing.bottoms.jeans.selection", manual({ value: "bottom" })],
+    ["clothing.dresses.sundresses.selection", manual({ value: "dress" })],
+    ["clothing.packages.sci-fi.selection", manual({ value: "package" })],
   ]);
-  applyManualGuardrails(state, "clothing.tops.selection", { value: "top" });
+  applyManualGuardrails(state, "clothing.tops.tank-tops.selection", { value: "top" });
   assert.deepEqual(state.get("clothing.primary-random"), unselected());
-  assert.equal(state.get("clothing.bottoms.selection").mode, "manual");
-  assert.deepEqual(state.get("clothing.dresses.selection"), unselected());
-  assert.deepEqual(state.get("clothing.packages.selection"), unselected());
+  assert.deepEqual(state.get("clothing.tops.selection"), unselected());
+  assert.equal(state.get("clothing.bottoms.jeans.selection").mode, "manual");
+  assert.deepEqual(state.get("clothing.dresses.sundresses.selection"), unselected());
+  assert.deepEqual(state.get("clothing.packages.sci-fi.selection"), unselected());
 });
 
 test("manual standalone primary clothing clears Top/Bottom and other standalone structures", () => {
   const state = new Map([
-    ["clothing.tops.selection", manual({ value: "top" })],
-    ["clothing.bottoms.selection", manual({ value: "bottom" })],
-    ["clothing.dresses.selection", manual({ value: "dress" })],
-    ["clothing.packages.selection", unselected()],
+    ["clothing.tops.tank-tops.selection", manual({ value: "top" })],
+    ["clothing.bottoms.jeans.selection", manual({ value: "bottom" })],
+    ["clothing.dresses.sundresses.selection", manual({ value: "dress" })],
+    ["clothing.packages.sci-fi.selection", unselected()],
   ]);
-  applyManualGuardrails(state, "clothing.packages.selection", { value: "package" });
-  assert.deepEqual(state.get("clothing.tops.selection"), unselected());
-  assert.deepEqual(state.get("clothing.bottoms.selection"), unselected());
-  assert.deepEqual(state.get("clothing.dresses.selection"), unselected());
+  applyManualGuardrails(state, "clothing.packages.sci-fi.selection", { value: "package" });
+  assert.deepEqual(state.get("clothing.tops.tank-tops.selection"), unselected());
+  assert.deepEqual(state.get("clothing.bottoms.jeans.selection"), unselected());
+  assert.deepEqual(state.get("clothing.dresses.sundresses.selection"), unselected());
+});
+
+test("Clothing section Random/None clears manual choices inside only that section", () => {
+  const state = new Map([
+    ["clothing.tops.selection", unselected()],
+    ["clothing.tops.tank-tops.selection", manual({ value: "top" })],
+    ["clothing.bottoms.jeans.selection", manual({ value: "bottom" })],
+  ]);
+  state.get("clothing.tops.selection").mode = "none";
+  applyModeGuardrails(state, "clothing.tops.selection", "none");
+  assert.deepEqual(state.get("clothing.tops.tank-tops.selection"), unselected());
+  assert.equal(state.get("clothing.bottoms.jeans.selection").mode, "manual");
 });
 
 test("split-domain Random/None clears manual selections and manual selection clears the action", () => {
