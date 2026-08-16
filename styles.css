@@ -83,4 +83,9 @@ pre { margin: 0; max-height: calc(100vh - 140px); overflow: auto; padding: 15px;
 .category-indicator { margin-left: 10px; }
 .subcategory > summary { display: flex; align-items: center; gap: 8px; }
 .control-actions.mode-only { grid-template-columns: repeat(2, max-content); justify-content: start; }
-.section-action { padding-bottom: 12px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.section-action { padding: 2px 2px 12px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.section-action .control-heading { margin-bottom: 6px; }
+.section-action .control-actions.mode-only { grid-template-columns: repeat(2, minmax(110px, max-content)); }
+@media (max-width: 620px) {
+  .section-action .control-actions.mode-only { grid-template-columns: 1fr 1fr; }
+}

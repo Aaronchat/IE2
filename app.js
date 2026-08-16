@@ -114,24 +114,28 @@ function addChip(chips, label, onRemove) {
   chips.append(chip);
 }
 
-function renderControl(control) {
+function renderControl(control, { compact = false } = {}) {
   const wrapper = document.createElement("div");
-  wrapper.className = "control-row";
+  wrapper.className = compact ? "control-row compact-control" : "control-row";
   wrapper.dataset.controlId = control.id;
   wrapper.dataset.search = `${control.label} ${flattenedOptions(control).map((entry) => entry.label).join(" ")}`.toLowerCase();
 
-  const heading = document.createElement("div");
-  heading.className = "control-heading";
-  const label = document.createElement("label");
-  label.textContent = control.label;
-  heading.append(label);
-  if (control.note) {
-    const note = document.createElement("span");
-    note.className = "control-note";
-    note.textContent = control.note;
-    heading.append(note);
+  if (!compact || control.note) {
+    const heading = document.createElement("div");
+    heading.className = "control-heading";
+    if (!compact) {
+      const label = document.createElement("label");
+      label.textContent = control.label;
+      heading.append(label);
+    }
+    if (control.note) {
+      const note = document.createElement("span");
+      note.className = "control-note";
+      note.textContent = control.note;
+      heading.append(note);
+    }
+    wrapper.append(heading);
   }
-  wrapper.append(heading);
 
   const actionRow = document.createElement("div");
   actionRow.className = "control-actions";
@@ -284,7 +288,7 @@ function renderSection(section) {
   const body = document.createElement("div");
   body.className = "subcategory-body";
   if (section.action) {
-    const action = renderControl(section.action);
+    const action = renderControl(section.action, { compact: true });
     action.classList.add("section-action");
     body.append(action);
   }
