@@ -196,3 +196,13 @@ test("Prompt Building does not invoke Selection, Resolution, Random completion, 
   const source = fs.readFileSync(new URL("../../engine/prompt-building/index.js", import.meta.url), "utf8");
   assert.equal(/selectGeneration|resolveGeneration|completeGeneration\s*\(/u.test(source), false);
 });
+
+test("Clothing None omits only that top-bottom slot from the prompt", () => {
+  const state = resolve({ clothing: { primary: {
+    mode: "manual", path: "built-outfit", structure: "top-bottom",
+    outfit: { top: { mode: "none" }, bottom: { mode: "manual", id: "skinny-jeans", groupId: "jeans" } },
+  } } });
+  const result = buildPrompt(state);
+  assert.deepEqual(result.sections.clothing, ["skinny jeans"]);
+  assert.ok(result.omissions.some((entry) => entry.section === "clothing" && entry.control === "tops" && entry.state === "user-none"));
+});
