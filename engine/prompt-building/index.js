@@ -48,7 +48,8 @@ function clothingFragments(clothing) {
     const built = primary.builtOutfit;
     if (!built || typeof built !== "object") throw new Error("Built Outfit structure is required.");
     if (built.structure === "top-bottom") {
-      fragments.push(promptOf(built.outfit?.top, "Clothing top"), promptOf(built.outfit?.bottom, "Clothing bottom"));
+      if (built.outfit?.top) fragments.push(promptOf(built.outfit.top, "Clothing top"));
+      if (built.outfit?.bottom) fragments.push(promptOf(built.outfit.bottom, "Clothing bottom"));
     } else if (built.structure === "swimwear") {
       for (const record of sortRecords(built.outfit ?? [], CATALOGS.clothing)) fragments.push(promptOf(record, "Swimwear"));
     } else if (["dress", "one-piece", "sleepwear"].includes(built.structure)) {
@@ -98,6 +99,15 @@ function omissionStates(selections) {
   else if (selections.atmosphere?.mode === "none") note("atmosphere", "atmosphere", "user-none");
 
   if (selections.timeOfDay?.mode === "none") note("timeOfDay", "timeOfDay", "user-none");
+
+  const built = selections.clothing?.primary?.value?.builtOutfit;
+  if (built?.structure === "top-bottom") {
+    if (built.slotModes?.top === "none") note("clothing", "tops", "user-none");
+    if (built.slotModes?.bottom === "none") note("clothing", "bottoms", "user-none");
+  }
+  for (const key of ["outerwear", "hosiery", "lingerie"]) {
+    if (selections.clothing?.[key]?.mode === "none") note("clothing", key, "user-none");
+  }
 
   for (const [controlId, controlConfig] of Object.entries(CAMERA_CONFIG.controls)) {
     const result = selections.camera?.[controlId];
