@@ -1,18 +1,15 @@
 import { CHARACTER_NAMES } from "../data/character/names.js";
 
 const PRIMARY_RANDOM_ID = "clothing.primary-random";
-const PRIMARY_PAIR_IDS = Object.freeze([
-  "clothing.tops.selection",
-  "clothing.bottoms.selection",
+const PRIMARY_PAIR_SECTIONS = Object.freeze(["clothing.tops", "clothing.bottoms"]);
+const PRIMARY_STANDALONE_SECTIONS = Object.freeze([
+  "clothing.dresses",
+  "clothing.one-piece",
+  "clothing.swimwear",
+  "clothing.sleepwear",
+  "clothing.packages",
 ]);
-const PRIMARY_STANDALONE_IDS = Object.freeze([
-  "clothing.dresses.selection",
-  "clothing.one-piece.selection",
-  "clothing.swimwear.selection",
-  "clothing.sleepwear.selection",
-  "clothing.packages.selection",
-]);
-const PRIMARY_IDS = Object.freeze([...PRIMARY_PAIR_IDS, ...PRIMARY_STANDALONE_IDS]);
+const PRIMARY_SECTIONS = Object.freeze([...PRIMARY_PAIR_SECTIONS, ...PRIMARY_STANDALONE_SECTIONS]);
 
 const SPLIT_DOMAIN_ACTIONS = Object.freeze({
   footwear: "footwear.selection",
@@ -39,6 +36,45 @@ function clearEntry(state, id) {
   return changed;
 }
 
+function clearPrefix(state, prefix, { except = [] } = {}) {
+  const keep = new Set(except);
+  for (const id of state.keys()) if (id.startsWith(`${prefix}.`) && !keep.has(id)) clearEntry(state, id);
+}
+
+function clothingSectionFor(controlId) {
+  return [
+    ...PRIMARY_SECTIONS,
+    "clothing.outerwear",
+    "clothing.hosiery",
+    "clothing.lingerie",
+  ].find((prefix) => controlId === `${prefix}.selection` || controlId.startsWith(`${prefix}.`)) ?? null;
+}
+
+function clothingActionId(sectionId) {
+  return `${sectionId}.selection`;
+}
+
+function clearClothingSection(state, sectionId, { preserveAction = false } = {}) {
+  const actionId = clothingActionId(sectionId);
+  clearPrefix(state, sectionId, { except: preserveAction ? [actionId] : [] });
+  if (!preserveAction) clearEntry(state, actionId);
+}
+
+function clearPrimarySelections(state) {
+  for (const sectionId of PRIMARY_SECTIONS) clearClothingSection(state, sectionId);
+}
+
+function clearConflictingPrimarySections(state, sectionId) {
+  clearEntry(state, PRIMARY_RANDOM_ID);
+  if (PRIMARY_PAIR_SECTIONS.includes(sectionId)) {
+    for (const other of PRIMARY_STANDALONE_SECTIONS) clearClothingSection(state, other);
+    return;
+  }
+  if (PRIMARY_STANDALONE_SECTIONS.includes(sectionId)) {
+    for (const other of PRIMARY_SECTIONS) if (other !== sectionId) clearClothingSection(state, other);
+  }
+}
+
 function selectedCount(state, prefix, excludeId = null) {
   let count = 0;
   for (const [id, current] of state) {
@@ -59,21 +95,6 @@ function clearSplitDomainAction(state, domain) {
   clearEntry(state, SPLIT_DOMAIN_ACTIONS[domain]);
 }
 
-function clearPrimaryManualSelections(state) {
-  for (const id of PRIMARY_IDS) clearEntry(state, id);
-}
-
-function clearConflictingPrimarySelections(state, controlId) {
-  clearEntry(state, PRIMARY_RANDOM_ID);
-  if (PRIMARY_PAIR_IDS.includes(controlId)) {
-    for (const id of PRIMARY_STANDALONE_IDS) clearEntry(state, id);
-    return;
-  }
-  if (PRIMARY_STANDALONE_IDS.includes(controlId)) {
-    for (const id of PRIMARY_IDS) if (id !== controlId) clearEntry(state, id);
-  }
-}
-
 function clearManualNameIfNeeded(state, ethnicityMode, ethnicityValue) {
   const name = stateEntry(state, "character.name");
   if (!name || name.mode !== "manual" || !name.values.length) return;
@@ -88,7 +109,13 @@ function clearManualNameIfNeeded(state, ethnicityMode, ethnicityValue) {
 }
 
 export function applyModeGuardrails(state, controlId, mode) {
-  if (controlId === PRIMARY_RANDOM_ID && mode === "random") clearPrimaryManualSelections(state);
+  if (controlId === PRIMARY_RANDOM_ID && mode === "random") clearPrimarySelections(state);
+
+  const clothingSection = clothingSectionFor(controlId);
+  if (clothingSection && controlId === clothingActionId(clothingSection)) {
+    clearClothingSection(state, clothingSection, { preserveAction: true });
+    if (mode === "random" && PRIMARY_SECTIONS.includes(clothingSection)) clearConflictingPrimarySections(state, clothingSection);
+  }
 
   for (const [domain, actionId] of Object.entries(SPLIT_DOMAIN_ACTIONS)) {
     if (controlId !== actionId) continue;
@@ -99,7 +126,12 @@ export function applyModeGuardrails(state, controlId, mode) {
 }
 
 export function applyManualGuardrails(state, controlId, selectedValue) {
-  if (PRIMARY_IDS.includes(controlId)) clearConflictingPrimarySelections(state, controlId);
+  const clothingSection = clothingSectionFor(controlId);
+  if (clothingSection && controlId !== clothingActionId(clothingSection)) {
+    clearEntry(state, clothingActionId(clothingSection));
+    clearPrefix(state, clothingSection, { except: [controlId, clothingActionId(clothingSection)] });
+    if (PRIMARY_SECTIONS.includes(clothingSection)) clearConflictingPrimarySections(state, clothingSection);
+  }
 
   for (const [domain, actionId] of Object.entries(SPLIT_DOMAIN_ACTIONS)) {
     if (controlId !== actionId && controlId.startsWith(`${domain}.`)) clearSplitDomainAction(state, domain);

@@ -52,60 +52,73 @@ function adaptCharacter(ui) {
   return out;
 }
 
+function clothingSectionState(source, sectionId, label) {
+  const actionId = `${sectionId}.selection`;
+  const action = entry(source, actionId);
+  const manual = Object.entries(source).filter(([id, control]) => (
+    id !== actionId && id.startsWith(`${sectionId}.`) && control?.mode === "manual" && selectedValues(control).length
+  ));
+  if ((action?.mode === "random" || action?.mode === "none") && manual.length) {
+    throw new Error(`${label} ${action.mode === "random" ? "Random" : "None"} cannot be combined with a manual ${label} selection.`);
+  }
+  if (manual.length > 1) throw new Error(`Choose only one ${label} selection at a time.`);
+  if (manual.length === 1) return { mode: "manual", ...manualRef(manual[0][1], label) };
+  if (action?.mode === "random" || action?.mode === "none") return { mode: action.mode };
+  return { mode: "unselected" };
+}
+
 function adaptClothing(ui) {
   const source = ui.clothing ?? {};
   const out = {};
   const primaryRandom = entry(source, "clothing.primary-random")?.mode === "random";
-  const primaryIds = [
-    "clothing.tops.selection", "clothing.bottoms.selection", "clothing.dresses.selection",
-    "clothing.one-piece.selection", "clothing.swimwear.selection", "clothing.sleepwear.selection",
-    "clothing.packages.selection",
-  ];
-  const manual = primaryIds.filter((id) => entry(source, id)?.mode === "manual" && selectedValues(entry(source, id)).length);
-  if (primaryRandom && manual.length) throw new Error("Primary Outfit Random cannot be combined with a manual primary clothing selection.");
+  const slots = {
+    top: clothingSectionState(source, "clothing.tops", "Tops"),
+    bottom: clothingSectionState(source, "clothing.bottoms", "Bottoms"),
+  };
+  const standalone = [
+    ["clothing.dresses", "dress", "Dresses"],
+    ["clothing.one-piece", "one-piece", "One-Piece"],
+    ["clothing.swimwear", "swimwear", "Swimwear"],
+    ["clothing.sleepwear", "sleepwear", "Sleepwear"],
+    ["clothing.packages", "package", "Packages"],
+  ].map(([sectionId, structure, label]) => ({ structure, state: clothingSectionState(source, sectionId, label) }));
+
+  const activePair = Object.values(slots).some((slot) => slot.mode === "manual" || slot.mode === "random");
+  const activeStandalone = standalone.filter(({ state }) => state.mode === "manual" || state.mode === "random");
+  if (primaryRandom && (activePair || activeStandalone.length)) {
+    throw new Error("Primary Outfit Random cannot be combined with another active primary clothing selection.");
+  }
+  if (activePair && activeStandalone.length) throw new Error("Choose only one primary clothing structure or Package at a time.");
+  if (activeStandalone.length > 1) throw new Error("Choose only one primary clothing structure or Package at a time.");
 
   if (primaryRandom) {
     out.primary = { mode: "random" };
-  } else if (manual.length) {
-    const top = entry(source, "clothing.tops.selection");
-    const bottom = entry(source, "clothing.bottoms.selection");
-    const hasTop = top?.mode === "manual" && selectedValues(top).length;
-    const hasBottom = bottom?.mode === "manual" && selectedValues(bottom).length;
-    const standalone = [
-      ["clothing.dresses.selection", "dress"],
-      ["clothing.one-piece.selection", "one-piece"],
-      ["clothing.swimwear.selection", "swimwear"],
-      ["clothing.sleepwear.selection", "sleepwear"],
-      ["clothing.packages.selection", "package"],
-    ].filter(([id]) => entry(source, id)?.mode === "manual" && selectedValues(entry(source, id)).length);
-
-    if (hasTop !== hasBottom) throw new Error("A Built Outfit using Tops/Bottoms requires both a Top and a Bottom.");
-    const structures = (hasTop && hasBottom ? 1 : 0) + standalone.length;
-    if (structures !== 1) throw new Error("Choose only one primary clothing structure or Package at a time.");
-
-    if (hasTop && hasBottom) {
-      out.primary = {
-        mode: "manual", path: "built-outfit", structure: "top-bottom",
-        outfit: { top: manualRef(top, "Top"), bottom: manualRef(bottom, "Bottom") },
-      };
+  } else if (activePair) {
+    out.primary = {
+      mode: "manual",
+      path: "built-outfit",
+      structure: "top-bottom",
+      outfit: { top: slots.top, bottom: slots.bottom },
+    };
+  } else if (activeStandalone.length === 1) {
+    const { structure, state } = activeStandalone[0];
+    if (structure === "package") {
+      out.primary = state.mode === "random"
+        ? { mode: "manual", path: "package", selection: { mode: "random" } }
+        : { mode: "manual", path: "package", selection: state };
     } else {
-      const [id, structure] = standalone[0];
-      const ref = manualRef(entry(source, id), structure);
-      if (structure === "package") out.primary = { mode: "manual", path: "package", ...ref };
-      else out.primary = { mode: "manual", path: "built-outfit", structure, outfit: structure === "swimwear" ? [ref] : ref };
+      out.primary = { mode: "manual", path: "built-outfit", structure, outfit: state };
     }
   }
 
-  for (const [uiId, engineId] of [
-    ["clothing.outerwear.selection", "outerwear"],
-    ["clothing.hosiery.selection", "hosiery"],
-    ["clothing.lingerie.selection", "lingerie"],
+  for (const [sectionId, engineId, label] of [
+    ["clothing.outerwear", "outerwear", "Outerwear"],
+    ["clothing.hosiery", "hosiery", "Hosiery"],
+    ["clothing.lingerie", "lingerie", "Lingerie"],
   ]) {
-    const control = entry(source, uiId);
-    if (!control || control.mode === "unselected") continue;
-    if (control.mode === "random") out[engineId] = { mode: "random" };
-    else if (control.mode === "manual") out[engineId] = { mode: "manual", ...manualRef(control, engineId) };
-    else throw new Error(`${engineId} does not support UI mode ${control.mode}.`);
+    const selected = clothingSectionState(source, sectionId, label);
+    if (selected.mode === "unselected") continue;
+    out[engineId] = selected;
   }
   return out;
 }

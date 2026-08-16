@@ -7,6 +7,7 @@ const root = document.querySelector("#engine-controls");
 const search = document.querySelector("#control-search");
 const expandAll = document.querySelector("#expand-all");
 const collapseAll = document.querySelector("#collapse-all");
+const clearAll = document.querySelector("#clear-all");
 const stateOutput = document.querySelector("#state-output");
 const copyState = document.querySelector("#copy-state");
 const generateButton = document.querySelector("#generate-prompt");
@@ -18,6 +19,8 @@ const generationError = document.querySelector("#generation-error");
 const state = new Map();
 const randomState = new RandomRuntimeState();
 const controlViews = new Map();
+const sectionIndicators = [];
+const categoryIndicators = [];
 
 function flattenedOptions(control) {
   return control.options.length ? control.options : control.groupedOptions.flatMap((group) => group.options);
@@ -43,6 +46,10 @@ function serializeUiState() {
       categoryState[category.action.id] = { mode: current.mode, value: current.values[0] ?? null, values: category.action.maxSelections > 1 ? current.values : undefined };
     }
     for (const section of category.sections) {
+      if (section.action) {
+        const current = stateFor(section.action);
+        categoryState[section.action.id] = { mode: current.mode, value: current.values[0] ?? null, values: section.action.maxSelections > 1 ? current.values : undefined };
+      }
       for (const control of section.controls) {
         const current = stateFor(control);
         categoryState[control.id] = {
@@ -107,30 +114,40 @@ function addChip(chips, label, onRemove) {
   chips.append(chip);
 }
 
-function renderControl(control) {
+function renderControl(control, { compact = false } = {}) {
   const wrapper = document.createElement("div");
-  wrapper.className = "control-row";
+  wrapper.className = compact ? "control-row compact-control" : "control-row";
+  wrapper.dataset.controlId = control.id;
   wrapper.dataset.search = `${control.label} ${flattenedOptions(control).map((entry) => entry.label).join(" ")}`.toLowerCase();
 
-  const heading = document.createElement("div");
-  heading.className = "control-heading";
-  const label = document.createElement("label");
-  label.textContent = control.label;
-  heading.append(label);
-  if (control.note) {
-    const note = document.createElement("span");
-    note.className = "control-note";
-    note.textContent = control.note;
-    heading.append(note);
+  if (!compact || control.note) {
+    const heading = document.createElement("div");
+    heading.className = "control-heading";
+    if (!compact) {
+      const label = document.createElement("label");
+      label.textContent = control.label;
+      heading.append(label);
+    }
+    if (control.note) {
+      const note = document.createElement("span");
+      note.className = "control-note";
+      note.textContent = control.note;
+      heading.append(note);
+    }
+    wrapper.append(heading);
   }
-  wrapper.append(heading);
 
   const actionRow = document.createElement("div");
   actionRow.className = "control-actions";
-  const select = document.createElement("select");
-  select.setAttribute("aria-label", control.label);
-  renderOptions(select, control);
-  actionRow.append(select);
+  const hasOptions = control.options.length > 0 || control.groupedOptions.length > 0;
+  const select = hasOptions ? document.createElement("select") : null;
+  if (select) {
+    select.setAttribute("aria-label", control.label);
+    renderOptions(select, control);
+    actionRow.append(select);
+  } else {
+    actionRow.classList.add("mode-only");
+  }
 
   if (control.random) {
     const randomButton = document.createElement("button");
@@ -156,6 +173,7 @@ function renderControl(control) {
   wrapper.append(chips);
 
   function refreshOptions() {
+    if (!select) return;
     renderOptions(select, control);
     if (control.id === "character.name") {
       const hasManualChoices = select.options.length > 1;
@@ -186,28 +204,30 @@ function renderControl(control) {
     setButtonState(wrapper, current.mode);
   }
 
+  if (select) {
   select.addEventListener("change", () => {
-    if (!select.value) return;
-    const selectedOption = select.selectedOptions[0];
-    const current = stateFor(control);
-    const selected = { value: selectedOption.dataset.value ?? selectedOption.value, groupId: selectedOption.dataset.groupId || null };
-    const permission = canAddManualSelection(state, control.id, selected);
-    if (!permission.allowed) {
-      generationError.textContent = permission.message;
-      generationError.hidden = false;
+      if (!select.value) return;
+      const selectedOption = select.selectedOptions[0];
+      const current = stateFor(control);
+      const selected = { value: selectedOption.dataset.value ?? selectedOption.value, groupId: selectedOption.dataset.groupId || null };
+      const permission = canAddManualSelection(state, control.id, selected);
+      if (!permission.allowed) {
+        generationError.textContent = permission.message;
+        generationError.hidden = false;
+        select.value = "";
+        return;
+      }
+      generationError.hidden = true;
+      generationError.textContent = "";
+      applyManualGuardrails(state, control.id, selected);
+      if (control.maxSelections === 1) current.values = [selected];
+      else if (!current.values.some((entry) => (entry.value ?? entry) === selected.value)) current.values = [...current.values, selected];
+      current.mode = "manual";
       select.value = "";
-      return;
-    }
-    generationError.hidden = true;
-    generationError.textContent = "";
-    applyManualGuardrails(state, control.id, selected);
-    if (control.maxSelections === 1) current.values = [selected];
-    else if (!current.values.some((entry) => (entry.value ?? entry) === selected.value)) current.values = [...current.values, selected];
-    current.mode = "manual";
-    select.value = "";
-    redrawAllAffected(control.id);
-    updateOutput();
-  });
+      redrawAllAffected(control.id);
+      updateOutput();
+    });
+  }
 
   wrapper.querySelectorAll("button[data-mode]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -228,19 +248,50 @@ function renderControl(control) {
   return wrapper;
 }
 
+function isSpecificState(current) {
+  return current?.mode === "manual" && current.values.length > 0;
+}
+
+function updateSelectionIndicators() {
+  for (const { section, marker } of sectionIndicators) {
+    const ids = [...(section.action ? [section.action.id] : []), ...section.controls.map((control) => control.id)];
+    marker.hidden = !ids.some((id) => isSpecificState(state.get(id)));
+  }
+  for (const { category, marker } of categoryIndicators) {
+    const ids = [
+      ...(category.action ? [category.action.id] : []),
+      ...category.sections.flatMap((section) => [...(section.action ? [section.action.id] : []), ...section.controls.map((control) => control.id)]),
+    ];
+    marker.hidden = !ids.some((id) => isSpecificState(state.get(id)));
+  }
+}
+
 function redrawAllAffected(controlId) {
   for (const view of controlViews.values()) view.redraw();
   if (controlId === "character.ethnicity") controlViews.get("character.name")?.refreshOptions();
+  updateSelectionIndicators();
 }
 
 function renderSection(section) {
   const details = document.createElement("details");
   details.className = "subcategory";
   const summary = document.createElement("summary");
-  summary.textContent = section.label;
+  const title = document.createElement("span");
+  title.textContent = section.label;
+  const marker = document.createElement("span");
+  marker.className = "selection-indicator";
+  marker.textContent = "✓";
+  marker.hidden = true;
+  summary.append(title, marker);
+  sectionIndicators.push({ section, marker });
   details.append(summary);
   const body = document.createElement("div");
   body.className = "subcategory-body";
+  if (section.action) {
+    const action = renderControl(section.action, { compact: true });
+    action.classList.add("section-action");
+    body.append(action);
+  }
   section.controls.forEach((control) => body.append(renderControl(control)));
   details.append(body);
   return details;
@@ -254,10 +305,15 @@ function renderCategory(category, index) {
   const summary = document.createElement("summary");
   const title = document.createElement("span");
   title.textContent = category.label;
+  const marker = document.createElement("span");
+  marker.className = "selection-indicator category-indicator";
+  marker.textContent = "✓";
+  marker.hidden = true;
+  categoryIndicators.push({ category, marker });
   const count = document.createElement("span");
   count.className = "summary-count";
   count.textContent = `${category.sections.length}`;
-  summary.append(title, count);
+  summary.append(title, marker, count);
   details.append(summary);
   const body = document.createElement("div");
   body.className = "category-body";
@@ -272,6 +328,7 @@ function renderCategory(category, index) {
 }
 
 UI_CATEGORIES.forEach((category, index) => root.append(renderCategory(category, index)));
+updateSelectionIndicators();
 updateOutput();
 
 search.addEventListener("input", () => {
@@ -294,6 +351,24 @@ search.addEventListener("input", () => {
 
 expandAll.addEventListener("click", () => document.querySelectorAll("details").forEach((details) => { details.open = true; }));
 collapseAll.addEventListener("click", () => document.querySelectorAll("details").forEach((details) => { details.open = false; }));
+clearAll.addEventListener("click", () => {
+  state.clear();
+  for (const category of UI_CATEGORIES) {
+    if (category.action) stateFor(category.action);
+    for (const section of category.sections) {
+      if (section.action) stateFor(section.action);
+      for (const control of section.controls) stateFor(control);
+    }
+  }
+  for (const view of controlViews.values()) {
+    view.refreshOptions();
+    view.redraw();
+  }
+  generationError.hidden = true;
+  generationError.textContent = "";
+  updateSelectionIndicators();
+  updateOutput();
+});
 copyState.addEventListener("click", async () => {
   await navigator.clipboard.writeText(stateOutput.textContent);
   copyState.textContent = "Copied";

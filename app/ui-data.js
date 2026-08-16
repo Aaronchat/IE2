@@ -27,7 +27,7 @@ const stringOptions = (values) => Object.freeze(values.map((value) => option(val
 const recordOptions = (groups) => Object.freeze(groups.flatMap((group) => group.items.map((item) => option(item.id, item.name, group.id))));
 const groupedRecordOptions = (groups) => Object.freeze(groups.map((group) => Object.freeze({ label: group.name, options: Object.freeze(group.items.map((item) => option(item.id, item.name, group.id))) })));
 const control = ({ id, label, options = [], groupedOptions = [], random = false, none = false, defaultValue = null, maxSelections = 1, note = "" }) => Object.freeze({ id, label, options, groupedOptions, random, none, defaultValue, maxSelections, note });
-const section = (id, label, controls) => Object.freeze({ id, label, controls: Object.freeze(controls) });
+const section = (id, label, controls, action = null) => Object.freeze({ id, label, controls: Object.freeze(controls), action });
 const category = (id, label, sections, action = null) => Object.freeze({ id, label, sections: Object.freeze(sections), action });
 
 const hairColorGroups = Object.freeze(Object.entries(CHARACTER_HAIR.colors).map(([key, values]) => Object.freeze({ label: key === "natural" ? "Natural" : "Fantasy", options: stringOptions(values) })));
@@ -68,17 +68,27 @@ function catalogSection(id, label, groups, { random = false, none = false, maxSe
   return section(id, label, [control({ id: `${id}.selection`, label, groupedOptions: groupedRecordOptions(groups), random, none, maxSelections, note })]);
 }
 
+function clothingSection(id, label, groups, { random = true, none = true, note = "" } = {}) {
+  const controls = groups.map((group) => control({
+    id: `${id}.${group.id}.selection`,
+    label: group.name,
+    groupedOptions: groupedRecordOptions([group]),
+  }));
+  const action = control({ id: `${id}.selection`, label, random, none, note });
+  return section(id, label, controls, action);
+}
+
 const clothingSections = [
-  catalogSection("clothing.tops", "Tops", TOP_RANDOM_BUCKETS),
-  catalogSection("clothing.bottoms", "Bottoms", BOTTOM_RANDOM_BUCKETS),
-  catalogSection("clothing.dresses", "Dresses", DRESS_RANDOM_BUCKETS),
-  catalogSection("clothing.one-piece", "One-Piece", ONE_PIECE_RANDOM_BUCKETS),
-  catalogSection("clothing.swimwear", "Swimwear", SWIMWEAR_CATALOG_GROUPS, { note: "Swimwear assembly remains owned by the existing resolver." }),
-  catalogSection("clothing.sleepwear", "Sleepwear", SLEEPWEAR_RANDOM_BUCKETS),
-  catalogSection("clothing.outerwear", "Outerwear", OUTERWEAR_RANDOM_BUCKETS, { random: true }),
-  catalogSection("clothing.hosiery", "Hosiery", HOSIERY_CATALOG_GROUPS, { random: true, note: "Random eligibility depends on the resolved outfit." }),
-  catalogSection("clothing.lingerie", "Lingerie", CATALOGS.clothing.filter((group) => group.id === "underwear-lingerie"), { random: false, note: "Manual only." }),
-  catalogSection("clothing.packages", "Packages", CATALOGS.packages),
+  clothingSection("clothing.tops", "Tops", TOP_RANDOM_BUCKETS),
+  clothingSection("clothing.bottoms", "Bottoms", BOTTOM_RANDOM_BUCKETS),
+  clothingSection("clothing.dresses", "Dresses", DRESS_RANDOM_BUCKETS),
+  clothingSection("clothing.one-piece", "One-Piece", ONE_PIECE_RANDOM_BUCKETS),
+  clothingSection("clothing.swimwear", "Swimwear", SWIMWEAR_CATALOG_GROUPS, { note: "Swimwear assembly remains owned by the existing resolver." }),
+  clothingSection("clothing.sleepwear", "Sleepwear", SLEEPWEAR_RANDOM_BUCKETS),
+  clothingSection("clothing.outerwear", "Outerwear", OUTERWEAR_RANDOM_BUCKETS),
+  clothingSection("clothing.hosiery", "Hosiery", HOSIERY_CATALOG_GROUPS, { note: "Random eligibility depends on the resolved outfit." }),
+  clothingSection("clothing.lingerie", "Lingerie", CATALOGS.clothing.filter((group) => group.id === "underwear-lingerie"), { random: false, note: "Manual only." }),
+  clothingSection("clothing.packages", "Packages", CATALOGS.packages),
 ];
 
 const footwearSections = CATALOGS.footwear.map((group) => catalogSection(`footwear.${group.id}`, group.name, [group]));
@@ -126,5 +136,5 @@ export const UI_CATEGORIES = Object.freeze([
 ]);
 
 export function allUiControls() {
-  return UI_CATEGORIES.flatMap((entry) => [...(entry.action ? [entry.action] : []), ...entry.sections.flatMap((subsection) => subsection.controls)]);
+  return UI_CATEGORIES.flatMap((entry) => [...(entry.action ? [entry.action] : []), ...entry.sections.flatMap((subsection) => [...(subsection.action ? [subsection.action] : []), ...subsection.controls])]);
 }
