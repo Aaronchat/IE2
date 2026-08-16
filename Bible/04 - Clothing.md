@@ -159,3 +159,17 @@ Approved resolver behavior:
 - Random Swimwear first selects from the approved Swimwear catalog. A `one-piece` selection is complete. A `top` selection is completed with one Random Swimwear `bottom`; a `bottom` selection is completed with one Random Swimwear `top`. Specialty Swimwear follows each record's approved slot.
 - Random Hosiery is eligible only with Dresses, Skirts, and Skorts. It is not Random-added to pants/jeans, shorts, One-Piece outfits, Swimwear, Sleepwear, or Packages. Manual Hosiery remains an explicit user selection.
 - These compatibility decisions are Clothing-owned helpers that Random Selection may call; Random weighting, decay, RNG, and lifetime behavior remain owned by the Random subsystem.
+
+## UI Selection and Omission
+
+Clothing UI sections expose garment families as separate manual-selection menus under their parent Clothing section. For example, `Tops` contains separate menus for Tank Tops, Short Sleeve Tops, Blouses, and the other approved Top families instead of one combined scrolling selector.
+
+At the Clothing-section level:
+
+- `Random` selects from the full approved catalog for that Clothing section. Random is not duplicated on each garment-family menu.
+- `None` means **leave that Clothing section unspecified in the positive prompt**. It does not mean nudity, removal of clothing, or a negative instruction.
+- A manual selection within a garment family clears the parent section's Random/None mode and remains the explicit selection for that section.
+- Tops and Bottoms may be specified independently. Either slot may be intentionally omitted with None while the other is selected or Random. Coverage is calculated only from garments that Infinite Engine actually selected or specified; omitted clothing is not assumed for tattoo-visibility calculations.
+- Lingerie remains Manual-or-None and has no Random control.
+
+The UI also provides one reset action that clears user selections/modes and restores established defaults. Collapsed parent sections display an indicator when a specific manual choice exists below them.
