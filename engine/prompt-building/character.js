@@ -23,6 +23,7 @@ export function buildCharacterFragments(character = {}) {
 
   push(fragments, clean(selectionValue(character, "name")));
   push(fragments, clean(selectionValue(character, "ethnicity")));
+  push(fragments, clean(selectionValue(character, "age")));
 
   const hairLength = selectionValue(character, "hair-length");
   const isBald = lower(hairLength) === "bald";

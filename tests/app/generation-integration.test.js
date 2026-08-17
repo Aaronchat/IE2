@@ -49,6 +49,24 @@ test("default UI state preserves defaults instead of turning them manual", () =>
   assert.deepEqual(controls.effects["film-age"], { mode: "default" });
 });
 
+test("Age range and exact age selections produce explicit prompt language", () => {
+  const rangeUi = baseUi();
+  rangeUi.character["character.age"] = manual("age-range-30-39");
+  assert.ok(runUiGeneration({ uiState: rangeUi, randomState: new RandomRuntimeState() }).prompt.includes("in her thirties"));
+
+  const exactUi = baseUi();
+  exactUi.character["character.age"] = manual("age-27");
+  assert.ok(runUiGeneration({ uiState: exactUi, randomState: new RandomRuntimeState() }).prompt.includes("27 years old"));
+});
+
+test("Buxom resolves as a Character default", () => {
+  const ui = baseUi();
+  ui.character["character.chest-description"] = { mode: "default", value: "Buxom" };
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.ok(generation.prompt.includes("buxom"));
+  assert.equal(generation.result.selection.selections.character["chest-description"].mode, "default");
+});
+
 test("None converts correctly", () => {
   const ui = baseUi();
   ui["time-of-day"]["time-of-day.selection"] = { mode: "none", value: null };
@@ -117,6 +135,43 @@ test("Top Advanced details cannot silently apply without a top", () => {
   const ui = baseUi();
   ui.clothing["clothing.tops.advanced.color"] = manual("red");
   assert.throws(() => uiStateToGenerationControls(ui), /require a selected or Random top/);
+});
+
+test("Condition attaches independently to bottoms, outerwear, hosiery, and lingerie", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.bottoms.mini-skirts.selection"] = manual("pleated-mini-skirt", "mini-skirts");
+  ui.clothing["clothing.bottoms.advanced.condition"] = manual("ripped");
+  ui.clothing["clothing.outerwear.jackets.selection"] = manual("fitted-leather-jacket", "jackets");
+  ui.clothing["clothing.outerwear.advanced.condition"] = manual("weathered");
+  ui.clothing["clothing.hosiery.stockings.selection"] = manual("patterned-stockings", "stockings");
+  ui.clothing["clothing.hosiery.advanced.condition"] = manual("oil-stained");
+  ui.clothing["clothing.lingerie.underwear-lingerie.selection"] = manual("matching-lingerie-set", "underwear-lingerie");
+  ui.clothing["clothing.lingerie.advanced.condition"] = manual("blood-stained");
+  const prompt = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt;
+  for (const fragment of ["ripped pleated mini skirt", "weathered fitted leather jacket", "oil-stained patterned stockings", "blood-stained matching lingerie set"]) {
+    assert.ok(prompt.includes(fragment), fragment);
+  }
+});
+
+test("Condition works for each standalone primary garment structure", () => {
+  const cases = [
+    ["dresses", "sundresses", "spaghetti-strap-sundress", "blood-stained spaghetti-strap sundress"],
+    ["one-piece", "coveralls-boilersuits", "workwear-jumpsuit", "blood-stained workwear jumpsuit"],
+    ["sleepwear", "pajama-sets", "silk-button-front-pajama-set", "blood-stained silk button-front pajama set"],
+  ];
+  for (const [section, groupId, garment, expected] of cases) {
+    const ui = baseUi();
+    ui.clothing[`clothing.${section}.${groupId}.selection`] = manual(garment, groupId);
+    ui.clothing[`clothing.${section}.advanced.condition`] = manual("blood-stained");
+    assert.ok(runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt.includes(expected), section);
+  }
+});
+
+test("Condition applies to a selected Swimwear garment", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.swimwear.bikini-tops.selection"] = manual("underwire-bikini-top", "bikini-tops");
+  ui.clothing["clothing.swimwear.advanced.condition"] = manual("ripped");
+  assert.ok(runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt.includes("ripped underwire bikini top"));
 });
 
 test("Package selection converts to the existing package path", () => {

@@ -14,34 +14,52 @@ import {
 } from "./random/clothing.js";
 import { selectRandomPackage } from "./random/packages.js";
 import { chooseItem } from "./random/core.js";
-import { TOP_DETAIL_CONFIG } from "../../data/clothing/top-details.js";
+import { CLOTHING_CONDITION, TOP_DETAIL_CONFIG } from "../../data/clothing/top-details.js";
 
 function garment(ref, label) {
   if (!ref || typeof ref !== "object") throw new Error(`${label} record reference is required.`);
   return findEnabledRecord(CATALOGS.clothing, ref.id, label, ref.groupId);
 }
 
-function topDetails(controls = {}, context) {
-  const out = {};
-  for (const [id, control] of Object.entries(controls)) {
-    const config = TOP_DETAIL_CONFIG[id];
-    if (!config) throw new Error(`Unknown Top Advanced detail ${id}.`);
-    assertMode(control, ["manual", "random", "none"], `Top ${config.label}`);
-    if (control.mode === "none") continue;
-    if (control.mode === "random") {
-      out[id] = chooseItem({
-        items: config.options,
-        rng: context.rng,
-        state: context.state,
-        namespace: `clothing:tops:advanced:${id}`,
-      });
-      continue;
+const DETAIL_CONFIG = Object.freeze({
+  tops: TOP_DETAIL_CONFIG,
+  bottoms: Object.freeze({ condition: CLOTHING_CONDITION }),
+  dresses: Object.freeze({ condition: CLOTHING_CONDITION }),
+  "one-piece": Object.freeze({ condition: CLOTHING_CONDITION }),
+  swimwear: Object.freeze({ condition: CLOTHING_CONDITION }),
+  sleepwear: Object.freeze({ condition: CLOTHING_CONDITION }),
+  outerwear: Object.freeze({ condition: CLOTHING_CONDITION }),
+  hosiery: Object.freeze({ condition: CLOTHING_CONDITION }),
+  lingerie: Object.freeze({ condition: CLOTHING_CONDITION }),
+});
+
+function garmentDetails(controls = {}, context) {
+  const selectedSections = {};
+  for (const [section, sectionControls] of Object.entries(controls)) {
+    const configForSection = DETAIL_CONFIG[section];
+    if (!configForSection) throw new Error(`Unknown Clothing Advanced section ${section}.`);
+    const out = {};
+    for (const [id, control] of Object.entries(sectionControls)) {
+      const config = configForSection[id];
+      if (!config) throw new Error(`Unknown ${section} Advanced detail ${id}.`);
+      assertMode(control, ["manual", "random", "none"], `${section} ${config.label}`);
+      if (control.mode === "none") continue;
+      if (control.mode === "random") {
+        out[id] = chooseItem({
+          items: config.options,
+          rng: context.rng,
+          state: context.state,
+          namespace: `clothing:${section}:advanced:${id}`,
+        });
+        continue;
+      }
+      const selected = config.options.find((entry) => entry.id === control.id);
+      if (!selected) throw new Error(`Unknown ${section} ${config.label} id ${control.id}.`);
+      out[id] = selected;
     }
-    const selected = config.options.find((entry) => entry.id === control.id);
-    if (!selected) throw new Error(`Unknown Top ${config.label} id ${control.id}.`);
-    out[id] = selected;
+    if (Object.keys(out).length) selectedSections[section] = Object.freeze(out);
   }
-  return Object.freeze(out);
+  return Object.freeze(selectedSections);
 }
 
 function slotSelection(control, { groups, label, bucketNamespace, context }) {
@@ -84,7 +102,6 @@ function manualBuiltOutfit(control, context) {
         structure,
         outfit: Object.freeze({ top: top.record, bottom: bottom.record }),
         slotModes: Object.freeze({ top: top.mode, bottom: bottom.mode }),
-        topDetails: topDetails(control.details?.top, context),
       });
     }
     case "dress":
@@ -145,5 +162,7 @@ export function selectClothing(controls = {}, context) {
     assertMode(controls.lingerie, ["manual", "none"], "Lingerie");
     out.lingerie = controls.lingerie.mode === "none" ? result("none", null) : result("manual", garment(controls.lingerie, "Lingerie"));
   }
+  const detailControls = controls.details ?? (controls.primary?.details?.top ? { tops: controls.primary.details.top } : null);
+  if (detailControls) out.details = garmentDetails(detailControls, context);
   return Object.freeze(out);
 }

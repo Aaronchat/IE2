@@ -67,10 +67,22 @@ function clothingSectionState(source, sectionId, label) {
   return { mode: "unselected" };
 }
 
-function topDetailStates(source) {
+const CLOTHING_DETAIL_IDS = Object.freeze({
+  tops: ["color", "fabric", "condition", "graphic"],
+  bottoms: ["condition"],
+  dresses: ["condition"],
+  "one-piece": ["condition"],
+  swimwear: ["condition"],
+  sleepwear: ["condition"],
+  outerwear: ["condition"],
+  hosiery: ["condition"],
+  lingerie: ["condition"],
+});
+
+function clothingDetailStates(source, section, ids) {
   const details = {};
-  for (const id of ["color", "fabric", "condition", "graphic"]) {
-    const control = entry(source, `clothing.tops.advanced.${id}`);
+  for (const id of ids) {
+    const control = entry(source, `clothing.${section}.advanced.${id}`);
     if (!control || control.mode === "unselected" || control.mode === "none") continue;
     if (control.mode === "random") {
       details[id] = { mode: "random" };
@@ -80,9 +92,13 @@ function topDetailStates(source) {
       details[id] = { mode: "manual", id: selectedValues(control)[0]?.value ?? selectedValues(control)[0] };
       continue;
     }
-    throw new Error(`Top ${id} does not support UI mode ${control.mode}.`);
+    throw new Error(`${section} ${id} does not support UI mode ${control.mode}.`);
   }
   return details;
+}
+
+function isActiveClothingState(state) {
+  return state?.mode === "manual" || state?.mode === "random";
 }
 
 function adaptClothing(ui) {
@@ -93,19 +109,30 @@ function adaptClothing(ui) {
     top: clothingSectionState(source, "clothing.tops", "Tops"),
     bottom: clothingSectionState(source, "clothing.bottoms", "Bottoms"),
   };
-  const topDetails = topDetailStates(source);
+  const details = Object.fromEntries(Object.entries(CLOTHING_DETAIL_IDS)
+    .map(([section, ids]) => [section, clothingDetailStates(source, section, ids)])
+    .filter(([, values]) => Object.keys(values).length));
   const standalone = [
-    ["clothing.dresses", "dress", "Dresses"],
-    ["clothing.one-piece", "one-piece", "One-Piece"],
-    ["clothing.swimwear", "swimwear", "Swimwear"],
-    ["clothing.sleepwear", "sleepwear", "Sleepwear"],
-    ["clothing.packages", "package", "Packages"],
-  ].map(([sectionId, structure, label]) => ({ structure, state: clothingSectionState(source, sectionId, label) }));
+    ["clothing.dresses", "dresses", "dress", "Dresses"],
+    ["clothing.one-piece", "one-piece", "one-piece", "One-Piece"],
+    ["clothing.swimwear", "swimwear", "swimwear", "Swimwear"],
+    ["clothing.sleepwear", "sleepwear", "sleepwear", "Sleepwear"],
+    ["clothing.packages", "packages", "package", "Packages"],
+  ].map(([sectionId, detailKey, structure, label]) => ({ detailKey, structure, state: clothingSectionState(source, sectionId, label) }));
 
-  const activePair = Object.values(slots).some((slot) => slot.mode === "manual" || slot.mode === "random");
-  const activeStandalone = standalone.filter(({ state }) => state.mode === "manual" || state.mode === "random");
-  if (Object.keys(topDetails).length && (primaryRandom || !activePair || (slots.top.mode !== "manual" && slots.top.mode !== "random"))) {
-    throw new Error("Top Advanced details require a selected or Random top.");
+  const extras = Object.fromEntries([
+    ["outerwear", "Outerwear"],
+    ["hosiery", "Hosiery"],
+    ["lingerie", "Lingerie"],
+  ].map(([key, label]) => [key, clothingSectionState(source, `clothing.${key}`, label)]));
+
+  const activePair = Object.values(slots).some(isActiveClothingState);
+  const activeStandalone = standalone.filter(({ state }) => isActiveClothingState(state));
+  const stateByDetailKey = { tops: slots.top, bottoms: slots.bottom, ...Object.fromEntries(standalone.map(({ detailKey, state }) => [detailKey, state])), ...extras };
+  for (const section of Object.keys(details)) {
+    if (primaryRandom || !isActiveClothingState(stateByDetailKey[section])) {
+      throw new Error(`${section} Advanced details require a selected or Random ${section} garment.`);
+    }
   }
   if (primaryRandom && (activePair || activeStandalone.length)) {
     throw new Error("Primary Outfit Random cannot be combined with another active primary clothing selection.");
@@ -121,7 +148,6 @@ function adaptClothing(ui) {
       path: "built-outfit",
       structure: "top-bottom",
       outfit: { top: slots.top, bottom: slots.bottom },
-      ...(Object.keys(topDetails).length ? { details: { top: topDetails } } : {}),
     };
   } else if (activeStandalone.length === 1) {
     const { structure, state } = activeStandalone[0];
@@ -134,15 +160,11 @@ function adaptClothing(ui) {
     }
   }
 
-  for (const [sectionId, engineId, label] of [
-    ["clothing.outerwear", "outerwear", "Outerwear"],
-    ["clothing.hosiery", "hosiery", "Hosiery"],
-    ["clothing.lingerie", "lingerie", "Lingerie"],
-  ]) {
-    const selected = clothingSectionState(source, sectionId, label);
+  for (const [engineId, selected] of Object.entries(extras)) {
     if (selected.mode === "unselected") continue;
     out[engineId] = selected;
   }
+  if (Object.keys(details).length) out.details = details;
   return out;
 }
 

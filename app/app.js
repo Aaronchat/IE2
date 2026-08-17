@@ -330,12 +330,13 @@ function renderCategory(category, index) {
   const count = document.createElement("span");
   count.className = "summary-count";
   count.textContent = `${category.sections.length}`;
-  summary.append(title, marker, count);
+  summary.append(title, marker);
+  if (category.sections.length) summary.append(count);
   details.append(summary);
   const body = document.createElement("div");
   body.className = "category-body";
   if (category.action) {
-    const action = renderControl(category.action);
+    const action = renderControl(category.action, { compact: category.sections.length === 0 });
     action.classList.add("category-action");
     body.append(action);
   }
@@ -354,15 +355,17 @@ search.addEventListener("input", () => {
     const match = !query || row.dataset.search.includes(query);
     row.hidden = !match;
     if (match && query) {
-      row.closest("details.subcategory").open = true;
-      row.closest("details.category").open = true;
+      const subsection = row.closest("details.subcategory");
+      if (subsection) subsection.open = true;
+      const parentCategory = row.closest("details.category");
+      if (parentCategory) parentCategory.open = true;
     }
   });
   document.querySelectorAll("details.subcategory").forEach((section) => {
     section.hidden = [...section.querySelectorAll(".control-row")].every((row) => row.hidden);
   });
   document.querySelectorAll("details.category").forEach((category) => {
-    category.hidden = [...category.querySelectorAll("details.subcategory")].every((section) => section.hidden);
+    category.hidden = [...category.querySelectorAll(".control-row")].every((row) => row.hidden);
   });
 });
 

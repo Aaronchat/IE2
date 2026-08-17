@@ -38,19 +38,20 @@ function sortRecords(records, groups) {
   return [...records].sort((a, b) => (ranks.get(a) ?? Number.MAX_SAFE_INTEGER) - (ranks.get(b) ?? Number.MAX_SAFE_INTEGER));
 }
 
-function detailedTopPrompt(record, details = {}) {
+function detailedGarmentPrompt(record, details = {}, label = "Clothing") {
   const parts = [];
   for (const id of ["condition", "color", "fabric"]) {
-    if (details[id]) parts.push(promptOf(details[id], `Top ${id}`));
+    if (details[id]) parts.push(promptOf(details[id], `${label} ${id}`));
   }
-  parts.push(promptOf(record, "Clothing top"));
-  if (details.graphic) parts.push(promptOf(details.graphic, "Top graphic"));
+  parts.push(promptOf(record, label));
+  if (details.graphic) parts.push(promptOf(details.graphic, `${label} graphic`));
   return normalizeFragment(parts.join(" "));
 }
 
 function clothingFragments(clothing) {
   if (!clothing) return Object.freeze([]);
   const fragments = [];
+  const details = clothing.details ?? {};
   const primary = clothing.primary?.value;
   if (primary?.path === "package") {
     fragments.push(promptOf(primary.package, "Package"));
@@ -58,12 +59,13 @@ function clothingFragments(clothing) {
     const built = primary.builtOutfit;
     if (!built || typeof built !== "object") throw new Error("Built Outfit structure is required.");
     if (built.structure === "top-bottom") {
-      if (built.outfit?.top) fragments.push(detailedTopPrompt(built.outfit.top, built.topDetails));
-      if (built.outfit?.bottom) fragments.push(promptOf(built.outfit.bottom, "Clothing bottom"));
+      if (built.outfit?.top) fragments.push(detailedGarmentPrompt(built.outfit.top, details.tops, "Clothing top"));
+      if (built.outfit?.bottom) fragments.push(detailedGarmentPrompt(built.outfit.bottom, details.bottoms, "Clothing bottom"));
     } else if (built.structure === "swimwear") {
-      for (const record of sortRecords(built.outfit ?? [], CATALOGS.clothing)) fragments.push(promptOf(record, "Swimwear"));
+      for (const record of sortRecords(built.outfit ?? [], CATALOGS.clothing)) fragments.push(detailedGarmentPrompt(record, details.swimwear, "Swimwear"));
     } else if (["dress", "one-piece", "sleepwear"].includes(built.structure)) {
-      fragments.push(promptOf(built.outfit, `Clothing ${built.structure}`));
+      const detailKey = built.structure === "dress" ? "dresses" : built.structure;
+      fragments.push(detailedGarmentPrompt(built.outfit, details[detailKey], `Clothing ${built.structure}`));
     } else {
       throw new Error(`Unknown resolved Built Outfit structure ${built.structure}.`);
     }
@@ -73,7 +75,7 @@ function clothingFragments(clothing) {
 
   for (const [key, label] of [["outerwear", "Outerwear"], ["hosiery", "Hosiery"], ["lingerie", "Lingerie"]]) {
     const record = clothing[key]?.value;
-    if (record) fragments.push(promptOf(record, label));
+    if (record) fragments.push(detailedGarmentPrompt(record, details[key], label));
   }
   return Object.freeze(fragments);
 }

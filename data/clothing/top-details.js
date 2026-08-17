@@ -1,5 +1,15 @@
 const detail = (id, prompt) => Object.freeze({ id, name: prompt, prompt });
 
+export const CLOTHING_CONDITION = Object.freeze({
+  label: "Condition",
+  options: Object.freeze([
+    detail("ripped", "ripped"),
+    detail("blood-stained", "blood-stained"),
+    detail("oil-stained", "oil-stained"),
+    detail("weathered", "weathered"),
+  ]),
+});
+
 export const TOP_DETAIL_CONFIG = Object.freeze({
   color: Object.freeze({
     label: "Color",
@@ -19,15 +29,7 @@ export const TOP_DETAIL_CONFIG = Object.freeze({
       detail("leather", "leather"),
     ]),
   }),
-  condition: Object.freeze({
-    label: "Condition",
-    options: Object.freeze([
-      detail("ripped", "ripped"),
-      detail("blood-stained", "blood-stained"),
-      detail("oil-stained", "oil-stained"),
-      detail("weathered", "weathered"),
-    ]),
-  }),
+  condition: CLOTHING_CONDITION,
   graphic: Object.freeze({
     label: "Graphic",
     options: Object.freeze([

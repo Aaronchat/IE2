@@ -22,6 +22,7 @@ test("approved defaults are preserved", () => {
   assert.equal(byId.get("camera.subject-view").defaultValue, "straight-on-view");
   assert.equal(byId.get("camera.viewer-pov").defaultValue, "direct-portrait-view");
   assert.equal(byId.get("camera.spatial-safe-framing").defaultValue, null);
+  assert.equal(byId.get("character.chest-description").defaultValue, "Buxom");
   assert.equal(byId.get("effects.effects-imperfections").defaultValue, null);
   assert.equal(byId.get("effects.film-age").defaultValue, null);
 });
@@ -74,5 +75,30 @@ test("Tops exposes four Advanced detail controls with None defaults", () => {
     assert.equal(entry.random, true);
     assert.equal(entry.none, true);
     assert.equal(entry.defaultMode, "none");
+  }
+});
+
+test("Age exposes grouped ranges and exact adult ages", () => {
+  const age = byId.get("character.age");
+  assert.deepEqual(age.groupedOptions.map((entry) => entry.label), ["19–29", "30–39", "40–49", "50–59", "60–74", "75+"]);
+  assert.ok(age.groupedOptions[0].options.some((entry) => entry.value === "age-range-19-29"));
+  assert.ok(age.groupedOptions[0].options.some((entry) => entry.value === "age-19"));
+  assert.ok(age.groupedOptions.at(-1).options.some((entry) => entry.value === "age-99"));
+});
+
+test("Time of Day is a direct category control without a duplicate subsection", () => {
+  const time = UI_CATEGORIES.find((entry) => entry.id === "time-of-day");
+  assert.equal(time.sections.length, 0);
+  assert.equal(time.action.id, "time-of-day.selection");
+  assert.ok(time.action.groupedOptions.length > 0);
+});
+
+test("remaining garment categories expose Condition under Advanced", () => {
+  for (const section of ["bottoms", "dresses", "one-piece", "swimwear", "sleepwear", "outerwear", "hosiery", "lingerie"]) {
+    const entry = byId.get(`clothing.${section}.advanced.condition`);
+    assert.ok(entry, section);
+    assert.equal(entry.defaultMode, "none");
+    assert.equal(entry.random, true);
+    assert.equal(entry.none, true);
   }
 });

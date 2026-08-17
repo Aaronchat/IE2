@@ -6,6 +6,7 @@ import { CHARACTER_EXPRESSION } from "../../data/character/expression.js";
 import { CHARACTER_MAKEUP } from "../../data/character/makeup.js";
 import { CHARACTER_PHYSICAL_APPEARANCE } from "../../data/character/physical-appearance.js";
 import { CHARACTER_FEATURES } from "../../data/character/character-features.js";
+import { CHARACTER_AGE_OPTIONS } from "../../data/character/age.js";
 import * as random from "./random/character.js";
 import { assertMode, enforceMax, result } from "./controls.js";
 
@@ -35,6 +36,7 @@ const RANDOM = Object.freeze({
   freckles: random.selectRandomFreckles, "hair-texture": random.selectRandomHairTexture,
   expression: random.selectRandomExpression, gaze: random.selectRandomGaze,
 });
+const DEFAULTS = Object.freeze({ "chest-description": "Buxom" });
 
 function manualValue(control, values, label) {
   if (!values.includes(control.value)) throw new Error(`Unknown Character ${label} value ${control.value}.`);
@@ -64,11 +66,19 @@ export function selectCharacter(controls = {}, context) {
     out.name = result(controls.name.mode, value);
   }
 
+  if (controls.age) {
+    assertMode(controls.age, ["manual"], "Character age");
+    const age = CHARACTER_AGE_OPTIONS.find((entry) => entry.id === controls.age.value);
+    if (!age) throw new Error(`Unknown Character age value ${controls.age.value}.`);
+    out.age = result("manual", age.prompt);
+  }
+
   for (const [key, values] of Object.entries(VALUES)) {
     const control = controls[key];
     if (!control) continue;
-    assertMode(control, ["manual", "random"], `Character ${key}`);
+    assertMode(control, ["manual", "random", ...(Object.hasOwn(DEFAULTS, key) ? ["default"] : [])], `Character ${key}`);
     if (control.mode === "manual") out[key] = manualValue(control, values, key);
+    else if (control.mode === "default") out[key] = result("default", DEFAULTS[key]);
     else if (key === "chest-adjective") out[key] = result("random", random.selectRandomChestAdjective({ ...context, weights: context.chestAdjectiveWeights }));
     else out[key] = result("random", RANDOM[key](context));
   }
