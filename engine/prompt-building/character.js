@@ -21,19 +21,23 @@ export function buildCharacterFragments(character = {}) {
 
   const fragments = [];
 
+  push(fragments, clean(selectionValue(character, "name")));
   push(fragments, clean(selectionValue(character, "ethnicity")));
 
   const hairLength = selectionValue(character, "hair-length");
+  const isBald = lower(hairLength) === "bald";
   if (hairLength) push(fragments, `${lower(hairLength)} hair`);
 
-  const hairColor = selectionValue(character, "hair-color");
-  if (hairColor) push(fragments, `${lower(hairColor)} hair`);
+  if (!isBald) {
+    const hairColor = selectionValue(character, "hair-color");
+    if (hairColor) push(fragments, `${lower(hairColor)} hair`);
 
-  const hairTexture = selectionValue(character, "hair-texture");
-  if (hairTexture) push(fragments, `${lower(hairTexture)} hair texture`);
+    const hairTexture = selectionValue(character, "hair-texture");
+    if (hairTexture) push(fragments, `${lower(hairTexture)} hair texture`);
 
-  const hairStyle = selectionValue(character, "hair-style");
-  if (hairStyle) push(fragments, `${lower(hairStyle).replace(/ \(generic\)$/u, "")} hairstyle`);
+    const hairStyle = selectionValue(character, "hair-style");
+    if (hairStyle) push(fragments, `${lower(hairStyle).replace(/ \(generic\)$/u, "")} hairstyle`);
+  }
 
   const eyeColor = selectionValue(character, "eye-color");
   if (eyeColor) push(fragments, `${lower(eyeColor)} eyes`);
