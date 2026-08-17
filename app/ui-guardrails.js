@@ -16,11 +16,19 @@ const SPLIT_DOMAIN_ACTIONS = Object.freeze({
   accessories: "accessories.selection",
   location: "location.selection",
   atmosphere: "atmosphere.selection",
+  themes: "themes.selection",
 });
 
 const GLOBAL_LIMITS = Object.freeze({
   accessories: 2,
   atmosphere: 2,
+  themes: 3,
+});
+
+const DOMAIN_LABELS = Object.freeze({
+  accessories: "Accessories",
+  atmosphere: "Atmosphere",
+  themes: "Themes",
 });
 
 function stateEntry(state, id) {
@@ -153,7 +161,7 @@ export function canAddManualSelection(state, controlId, selectedValue) {
     const alreadySelected = current?.values.some((entry) => (entry?.value ?? entry) === value);
     if (alreadySelected) return { allowed: true, message: "" };
     if (selectedCount(state, domain) >= max) {
-      return { allowed: false, message: `${domain === "accessories" ? "Accessories" : "Atmosphere"} allows a maximum of ${max} selections.` };
+      return { allowed: false, message: `${DOMAIN_LABELS[domain]} allows a maximum of ${max} selections.` };
     }
   }
   return { allowed: true, message: "" };

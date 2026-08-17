@@ -52,6 +52,21 @@ test("Built Outfit and Package structures survive Resolution distinctly", () => 
   assert.equal(status(pkg, "groin"), "covered");
 });
 
+test("Themes pass through Resolution unchanged and do not alter other domains", () => {
+  const selection = selectGeneration({ controls: {
+    themes: { mode: "manual", selections: [{ id: "christmas" }, { id: "halloween" }] },
+    location: location("beach"),
+    clothing: { primary: { mode: "manual", path: "built-outfit", structure: "top-bottom", outfit: {
+      top: { id: "fitted-tank-top", groupId: "tank-tops" },
+      bottom: { id: "skinny-jeans", groupId: "jeans" },
+    } } },
+  } });
+  const resolved = resolveGeneration(selection);
+  assert.equal(resolved.selections.themes, selection.selections.themes);
+  assert.equal(resolved.selections.location.value.id, "beach");
+  assert.equal(resolved.selections.clothing.primary.value.builtOutfit.outfit.top.id, "fitted-tank-top");
+});
+
 test("Coverage merges Clothing, Footwear, Accessories conservatively and drives tattoo visibility", () => {
   const r = resolve({
     clothing: { primary: { mode: "manual", path: "built-outfit", structure: "top-bottom", outfit: { top: { id: "fitted-tank-top", groupId: "tank-tops" }, bottom: { id: "skinny-jeans", groupId: "jeans" } } } },

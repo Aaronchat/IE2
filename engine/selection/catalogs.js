@@ -21,6 +21,9 @@ import { VIEWER_POV } from "../../data/camera/viewer-pov.js";
 import { SPATIAL_SAFE_FRAMING } from "../../data/camera/spatial-safe-framing.js";
 import { EFFECTS_IMPERFECTIONS } from "../../data/effects/imperfections.js";
 import { FILM_AGE } from "../../data/effects/film-age.js";
+import { THEME_COLORS } from "../../data/themes/colors.js";
+import { THEME_HOLIDAYS_EVENTS } from "../../data/themes/holidays-events.js";
+import { THEME_GENRES_AESTHETICS } from "../../data/themes/genres-aesthetics.js";
 
 export const CATALOGS = Object.freeze({
   footwear: FOOTWEAR_RANDOM_BUCKETS,
@@ -41,4 +44,5 @@ export const CATALOGS = Object.freeze({
     "spatial-safe-framing": SPATIAL_SAFE_FRAMING,
   }),
   effects: Object.freeze({ "effects-imperfections": EFFECTS_IMPERFECTIONS, "film-age": FILM_AGE }),
+  themes: Object.freeze([THEME_COLORS, THEME_HOLIDAYS_EVENTS, THEME_GENRES_AESTHETICS]),
 });

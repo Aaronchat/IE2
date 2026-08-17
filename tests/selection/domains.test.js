@@ -43,3 +43,54 @@ test("Effects explicit stacking honors the configured maximum", () => {
   assert.equal(one.value.length, 1);
   assert.throws(() => selectGeneration({ controls: { effects: { "effects-imperfections": { mode: "manual", ids: ["grain", "light-leak", "dust"] } } } }), /at most 2/);
 });
+
+test("Themes Manual permits same-category and mixed stacks but rejects duplicates and a fourth", () => {
+  const sameCategory = selectGeneration({ controls: { themes: { mode: "manual", selections: [
+    { id: "red", groupId: "colors" },
+    { id: "white", groupId: "colors" },
+    { id: "pink", groupId: "colors" },
+  ] } } }).selections.themes;
+  assert.equal(sameCategory.mode, "manual");
+  assert.deepEqual(sameCategory.value.map((record) => record.id), ["red", "white", "pink"]);
+
+  assert.doesNotThrow(() => selectGeneration({ controls: { themes: { mode: "manual", selections: [
+    { id: "red" }, { id: "christmas" }, { id: "gothic" },
+  ] } } }));
+  assert.throws(() => selectGeneration({ controls: { themes: { mode: "manual", selections: [
+    { id: "red" }, { id: "red" },
+  ] } } }), /cannot contain duplicates/);
+  assert.throws(() => selectGeneration({ controls: { themes: { mode: "manual", selections: [
+    { id: "red" }, { id: "white" }, { id: "christmas" }, { id: "gothic" },
+  ] } } }), /at most 3/);
+});
+
+test("Themes None preserves silent provenance", () => {
+  const themes = selectGeneration({ controls: { themes: { mode: "none" } } }).selections.themes;
+  assert.equal(themes.mode, "none");
+  assert.deepEqual(themes.value, []);
+});
+
+test("Theme Random follows 50/40/10 stack-size thresholds and allows same-category stacks", () => {
+  const withFirst = (first) => {
+    let initial = true;
+    return () => {
+      if (initial) { initial = false; return first; }
+      return 0;
+    };
+  };
+  const single = selectGeneration({ controls: { themes: { mode: "random" } }, random: { rng: withFirst(0.49) } }).selections.themes.value;
+  const double = selectGeneration({ controls: { themes: { mode: "random" } }, random: { rng: withFirst(0.5) } }).selections.themes.value;
+  const triple = selectGeneration({ controls: { themes: { mode: "random" } }, random: { rng: withFirst(0.9) } }).selections.themes.value;
+  assert.equal(single.length, 1);
+  assert.deepEqual(double.map((record) => record.id), ["red", "white"]);
+  assert.deepEqual(triple.map((record) => record.id), ["red", "white", "pink"]);
+  assert.equal(new Set(triple.map((record) => record.id)).size, triple.length);
+});
+
+test("Theme Random is reproducible with a seed", () => {
+  const input = { controls: { themes: { mode: "random" } }, random: { seed: "themes" } };
+  const first = selectGeneration(input).selections.themes.value.map((record) => record.id);
+  const second = selectGeneration(input).selections.themes.value.map((record) => record.id);
+  assert.deepEqual(first, second);
+  assert.ok(first.length >= 1 && first.length <= 3);
+});

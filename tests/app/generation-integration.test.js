@@ -26,11 +26,10 @@ function baseUi() {
       "camera.subject-view": { mode: "default", value: "straight-on-view" },
       "camera.viewer-pov": { mode: "default", value: "direct-portrait-view" },
       "camera.spatial-safe-framing": { mode: "default", value: null },
-    },
-    effects: {
       "effects.effects-imperfections": { mode: "default", values: [] },
       "effects.film-age": { mode: "default", value: null },
     },
+    themes: { "themes.selection": { mode: "none", value: null } },
   };
 }
 
@@ -70,7 +69,7 @@ test("Buxom resolves as a Character default", () => {
 test("None converts correctly", () => {
   const ui = baseUi();
   ui["time-of-day"]["time-of-day.selection"] = { mode: "none", value: null };
-  ui.effects["effects.film-age"] = { mode: "none", value: null };
+  ui.camera["effects.film-age"] = { mode: "none", value: null };
   const controls = uiStateToGenerationControls(ui);
   assert.deepEqual(controls.timeOfDay, { mode: "none" });
   assert.deepEqual(controls.effects["film-age"], { mode: "none" });
@@ -184,10 +183,47 @@ test("Package selection converts to the existing package path", () => {
 
 test("Camera defaults and Effects selections convert correctly", () => {
   const ui = baseUi();
-  ui.effects["effects.effects-imperfections"] = multi({ value: "grain", groupId: "effects-imperfections" }, { value: "dust", groupId: "effects-imperfections" });
+  ui.camera["effects.effects-imperfections"] = multi({ value: "grain", groupId: "effects-imperfections" }, { value: "dust", groupId: "effects-imperfections" });
   const controls = uiStateToGenerationControls(ui);
   assert.deepEqual(controls.camera.framing, { mode: "default" });
   assert.deepEqual(controls.effects["effects-imperfections"], { mode: "manual", ids: ["grain", "dust"] });
+});
+
+test("Themes UI adapts None, Manual stacks, and Random without merging other domains", () => {
+  const noneControls = uiStateToGenerationControls(baseUi());
+  assert.deepEqual(noneControls.themes, { mode: "none" });
+
+  const manualUi = baseUi();
+  manualUi.themes["themes.selection"] = unset();
+  manualUi.themes["themes.colors.selection"] = multi(
+    { value: "red", groupId: "colors" },
+    { value: "white", groupId: "colors" },
+  );
+  manualUi.themes["themes.holidays-events.selection"] = multi({ value: "christmas", groupId: "holidays-events" });
+  const generation = runUiGeneration({ uiState: manualUi, randomState: new RandomRuntimeState() });
+  assert.deepEqual(generation.controls.themes, { mode: "manual", selections: [
+    { id: "red", groupId: "colors" },
+    { id: "white", groupId: "colors" },
+    { id: "christmas", groupId: "holidays-events" },
+  ] });
+  assert.ok(generation.prompt.endsWith("Theme: red white Christmas"));
+
+  const randomUi = baseUi();
+  randomUi.themes["themes.selection"] = { mode: "random", value: null };
+  assert.deepEqual(uiStateToGenerationControls(randomUi).themes, { mode: "random" });
+  assert.equal(hasRandomControl(uiStateToGenerationControls(randomUi)), true);
+});
+
+test("Themes UI rejects a fourth manual selection", () => {
+  const ui = baseUi();
+  ui.themes["themes.selection"] = unset();
+  ui.themes["themes.colors.selection"] = multi(
+    { value: "red", groupId: "colors" },
+    { value: "white", groupId: "colors" },
+    { value: "pink", groupId: "colors" },
+  );
+  ui.themes["themes.holidays-events.selection"] = multi({ value: "christmas", groupId: "holidays-events" });
+  assert.throws(() => uiStateToGenerationControls(ui), /maximum of 3/);
 });
 
 test("adapted controls pass through prepareGeneration and return the final prompt", () => {

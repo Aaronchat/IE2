@@ -8,6 +8,8 @@ There is no requirement for every selectable domain to support Random.
 
 Camera and Effects do not support Random. Their existing defaults and explicit controls remain authoritative.
 
+Themes support Random under the approved Theme-specific policy below.
+
 ## Runtime State
 
 Random catalog records remain static.
@@ -375,6 +377,20 @@ The existing Package groups remain organizational and are not Random buckets.
 
 All eligible Packages begin equally weighted. Selected Packages use standard 25 / +5 decay and lifetime counters.
 
+## Themes
+
+Theme Random uses one flat pool across all Theme categories. Categories remain organizational and are not Random buckets.
+
+Stack-size odds:
+
+- 1 Theme: 50%
+- 2 Themes: 40%
+- 3 Themes: 10%
+
+Only unique enabled Themes may appear in a generated stack. After each Theme is chosen, that exact record is removed from the remaining pool for the current generation. Multiple Themes from the same category remain eligible.
+
+Individual Themes use effective catalog weights, standard 25 / +5 item decay, lifetime counters, and the shared seeded RNG. Theme Random adds no cross-domain compatibility or interpretation.
+
 ## Unsupported and Reserved Domains
 
 Camera has no Random system.
@@ -385,7 +401,7 @@ Character Features have no Random system.
 
 Lingerie is excluded from Random.
 
-Themes and Story Elements remain Reserved and have no Random architecture.
+Story Elements remain Reserved and have no Random architecture.
 
 ## Completion Boundary
 
@@ -414,6 +430,7 @@ Random-specific tests verify:
 - Footwear category-first selection
 - Accessory 0/1/2 odds structure and two-category exclusion
 - Packages use a flat pool
+- Themes use approved 50/40/10 stack-size odds and a flat unique-record pool
 - Camera and Effects receive no Random selector
 - catalog files do not acquire runtime counter or decay fields
 

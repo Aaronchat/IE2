@@ -22,7 +22,7 @@ test("same resolved state produces the same structured result and final prompt",
 });
 
 test("canonical section ordering is fixed", () => {
-  assert.deepEqual(PROMPT_SECTION_ORDER, ["character", "clothing", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects"]);
+  assert.deepEqual(PROMPT_SECTION_ORDER, ["character", "clothing", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects", "themes"]);
 });
 
 test("Character uses approved deterministic formatting and includes Name first", () => {
@@ -140,6 +140,37 @@ test("Effects default None states are silent and preserved as default-none omiss
   assert.deepEqual(result.sections.effects, []);
   assert.ok(result.omissions.some((x) => x.section === "effects" && x.control === "effects-imperfections" && x.state === "default-none"));
   assert.ok(result.omissions.some((x) => x.section === "effects" && x.control === "film-age" && x.state === "default-none"));
+});
+
+test("Themes emit one compact final fragment after Effects", () => {
+  const result = buildPrompt(resolve({
+    effects: { "film-age": { mode: "manual", id: "damaged-archive" } },
+    themes: { mode: "manual", selections: [
+      { id: "halloween" },
+      { id: "christmas" },
+    ] },
+  }));
+  assert.deepEqual(result.sections.effects, ["damaged archival image"]);
+  assert.deepEqual(result.sections.themes, ["Theme: Christmas and Halloween"]);
+  assert.ok(result.prompt.indexOf("damaged archival image") < result.prompt.indexOf("Theme: Christmas and Halloween"));
+  assert.ok(result.prompt.endsWith("Theme: Christmas and Halloween"));
+});
+
+test("Theme stacks use compact catalog order without dominance semantics", () => {
+  const colors = buildPrompt(resolve({ themes: { mode: "manual", selections: [{ id: "white" }, { id: "red" }] } }));
+  assert.deepEqual(colors.sections.themes, ["Theme: red and white"]);
+
+  const aesthetics = buildPrompt(resolve({ themes: { mode: "manual", selections: [
+    { id: "noir" }, { id: "gothic" }, { id: "western" },
+  ] } }));
+  assert.deepEqual(aesthetics.sections.themes, ["Theme: Gothic Western Noir"]);
+});
+
+test("Theme None emits nothing and remains distinguishable", () => {
+  const result = buildPrompt(resolve({ themes: { mode: "none" } }));
+  assert.deepEqual(result.sections.themes, []);
+  assert.equal(result.prompt.includes("Theme:"), false);
+  assert.ok(result.omissions.some((entry) => entry.section === "themes" && entry.state === "user-none"));
 });
 
 test("Built Outfit emits its authoritative garment prompts in structure order", () => {

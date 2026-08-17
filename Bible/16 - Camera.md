@@ -6,6 +6,8 @@ Camera controls how the generated image is notionally captured, framed, and view
 
 Camera is separate from Character Gaze, Location, Atmosphere / Weather, Time of Day, Themes, Pose, and Accessories.
 
+In the UI, Effects sections are displayed beneath Camera to keep related image-capture controls together. This is presentation only: Effects remains a separate domain with separate data and prompt semantics.
+
 ## Controls
 
 Camera v1 contains nine independent controls:

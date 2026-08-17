@@ -72,7 +72,7 @@ Folders are created when their first approved content is ready. The number of da
 | Random-selection behavior | `Bible/07 - Randomness.md` |
 | Cross-engine rules | `Bible/08 - Rules.md` |
 | Official body regions | `data/vocabulary/body-regions.js` |
-| Official temperatures, seasons, formalities, styles, moods, and theme affinities | `data/vocabulary/` |
+| Official temperatures, seasons, and formalities | `data/vocabulary/` |
 | Tank Top records and coverage | `data/clothing/tops/tank-tops.js` |
 | Footwear records and coverage | `data/footwear/` |
 | Accessories records and coverage | `data/accessories/` |
@@ -81,6 +81,7 @@ Folders are created when their first approved content is ready. The number of da
 | Time of Day records and selection configuration | `data/time-of-day/` |
 | Camera records and selection configuration | `data/camera/` |
 | Effects records and selection configuration | `data/effects/` |
+| Theme records and selection configuration | `data/themes/` |
 | Complete outfits, uniforms, and costumes | `data/packages/` |
 | Coverage resolution | `engine/resolution/` |
 | Prompt assembly | `engine/prompt-building/` |
@@ -121,7 +122,7 @@ Selection results preserve selection provenance (`manual`, `default`, `none`, or
 
 ## Resolution Engine
 
-`engine/resolution/` consumes a completed Selection result and produces the coherent structured generation state used by later Prompt Building. Resolution preserves Selection provenance, enforces approved cross-domain compatibility, applies Location consequences such as indoor Atmosphere suppression, preserves Built Outfit and Package structure, and calculates final body coverage and tattoo eligibility. Resolution does not perform ordinary re-selection, assemble final prompt prose, or call `completeGeneration()`.
+`engine/resolution/` consumes a completed Selection result and produces the coherent structured generation state used by later Prompt Building. Resolution preserves Selection provenance, enforces approved cross-domain compatibility, applies Location consequences such as indoor Atmosphere suppression, preserves Built Outfit and Package structure, and calculates final body coverage and tattoo eligibility. Resolution does not perform ordinary re-selection, assemble final prompt prose, or call `completeGeneration()`. Themes pass through Resolution unchanged and create no cross-domain compatibility or mapping behavior.
 
 Clothing compatibility helpers owned by Resolution may be called by Random Selection when an approved compatibility decision is required during assembly. Those helpers do not own Random weighting, decay, RNG, or lifetime behavior.
 
@@ -140,9 +141,10 @@ Canonical section order is:
 7. Time of Day
 8. Camera
 9. Effects
+10. Themes
 
 Catalog-owned `prompt` fields are authoritative wherever they exist. Package prompts are authoritative for Packages; Package-local components are not emitted. Character currently has no catalog prompt fields, so Prompt Building applies fixed deterministic formatting to active Character values while omitting Character Name as engine metadata. Character Features emit only their selected feature wording; placement-sensitive tattoo prompting remains deferred until active tattoo records exist and must use Resolution's `tattooVisibility` rather than recalculating coverage.
 
-Multiple Accessories and Atmosphere selections are emitted in established catalog order. Camera controls and Effects controls are emitted in their established configuration order, with multi-select values emitted in catalog order. The first eight approved Camera defaults are positive generation instructions and therefore emit their authoritative prompts. Camera Spatial-Safe None, Effects None/default-empty states, user-selected None, and Resolution-suppressed Atmosphere states emit no positive prompt text.
+Multiple Accessories, Atmosphere selections, and Theme selections are emitted in established catalog order. Camera controls and Effects controls are emitted in their established configuration order, with multi-select values emitted in catalog order. Active Themes are combined into one compact final `Theme:` fragment. The first eight approved Camera defaults are positive generation instructions and therefore emit their authoritative prompts. Camera Spatial-Safe None, Effects None/default-empty states, Theme None, other user-selected None states, and Resolution-suppressed Atmosphere states emit no positive prompt text.
 
 Prompt fragments are whitespace-normalized, trailing separator punctuation is removed, and non-empty fragments are joined with `, `. Prompt Building does not deduplicate fragments or rewrite authoritative catalog wording. Its structured result preserves silent-state distinctions through omission metadata for user None, default None, and Resolution suppression.

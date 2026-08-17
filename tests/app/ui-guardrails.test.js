@@ -120,6 +120,24 @@ test("Accessories and Atmosphere reject a third manual selection across categori
   assert.equal(canAddManualSelection(atmosphere, "atmosphere.non-clear.selection", { value: "c" }).allowed, false);
 });
 
+test("Themes clears parent Random/None and rejects a fourth unique manual selection", () => {
+  const state = new Map([
+    ["themes.selection", random()],
+    ["themes.colors.selection", manual({ value: "red" }, { value: "white" })],
+    ["themes.holidays-events.selection", manual({ value: "christmas" })],
+    ["themes.genres-aesthetics.selection", unselected()],
+  ]);
+
+  applyManualGuardrails(state, "themes.genres-aesthetics.selection", { value: "gothic" });
+  assert.deepEqual(state.get("themes.selection"), unselected());
+  assert.equal(canAddManualSelection(state, "themes.genres-aesthetics.selection", { value: "gothic" }).allowed, false);
+
+  state.set("themes.selection", none());
+  applyModeGuardrails(state, "themes.selection", "none");
+  assert.deepEqual(state.get("themes.colors.selection"), unselected());
+  assert.deepEqual(state.get("themes.holidays-events.selection"), unselected());
+});
+
 test("changing Ethnicity clears an incompatible manual Name", () => {
   const caucasian = CHARACTER_NAMES.ethnicities.find((entry) => entry.name === "Caucasian");
   const other = CHARACTER_NAMES.ethnicities.find((entry) => entry.name !== "Caucasian");

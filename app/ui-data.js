@@ -150,6 +150,16 @@ const effectsSections = Object.entries(CATALOGS.effects).map(([id, group]) => {
   })]);
 });
 
+const themeSections = CATALOGS.themes.map((group) => catalogSection(`themes.${group.id}`, group.name, [group], { maxSelections: 3 }));
+const themeAction = control({
+  id: "themes.selection",
+  label: "Theme Stack",
+  random: true,
+  none: true,
+  defaultMode: "none",
+  note: "Random stack size: 50% single, 40% double, 10% triple. Maximum three unique Themes.",
+});
+
 export const UI_CATEGORIES = Object.freeze([
   category("character", "Character", characterSections),
   category("clothing", "Clothing", clothingSections, control({ id: "clothing.primary-random", label: "Primary Outfit", random: true, note: "Uses the existing Built Outfit / Package Random path." })),
@@ -158,8 +168,8 @@ export const UI_CATEGORIES = Object.freeze([
   category("location", "Location", locationSections, control({ id: "location.selection", label: "Location", random: true })),
   category("atmosphere", "Atmosphere", atmosphereSections, control({ id: "atmosphere.selection", label: "Atmosphere", random: true, none: true, maxSelections: ATMOSPHERE_CONFIG.maxSelections })),
   category("time-of-day", "Time of Day", [], timeAction),
-  category("camera", "Camera", cameraSections),
-  category("effects", "Effects", effectsSections),
+  category("camera", "Camera", [...cameraSections, ...effectsSections]),
+  category("themes", "Themes", themeSections, themeAction),
 ]);
 
 export function allUiControls() {

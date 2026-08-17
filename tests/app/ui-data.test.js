@@ -7,7 +7,7 @@ const byId = new Map(controls.map((entry) => [entry.id, entry]));
 
 test("UI exposes all active top-level domains", () => {
   assert.deepEqual(UI_CATEGORIES.map((entry) => entry.id), [
-    "character", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "effects",
+    "character", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes",
   ]);
 });
 
@@ -91,6 +91,27 @@ test("Time of Day is a direct category control without a duplicate subsection", 
   assert.equal(time.sections.length, 0);
   assert.equal(time.action.id, "time-of-day.selection");
   assert.ok(time.action.groupedOptions.length > 0);
+});
+
+test("Effects is visually nested beneath Camera without changing Effects control ids", () => {
+  const camera = UI_CATEGORIES.find((entry) => entry.id === "camera");
+  assert.deepEqual(camera.sections.slice(-2).map((entry) => entry.id), [
+    "effects.effects-imperfections",
+    "effects.film-age",
+  ]);
+  assert.equal(UI_CATEGORIES.some((entry) => entry.id === "effects"), false);
+});
+
+test("Themes is final and exposes three organizational categories with parent Random/None", () => {
+  const themes = UI_CATEGORIES.at(-1);
+  assert.equal(themes.id, "themes");
+  assert.deepEqual(themes.sections.map((entry) => entry.label), ["Colors", "Holidays & Events", "Genres & Aesthetics"]);
+  assert.equal(themes.action.id, "themes.selection");
+  assert.equal(themes.action.label, "Theme Stack");
+  assert.equal(themes.action.random, true);
+  assert.equal(themes.action.none, true);
+  assert.equal(themes.action.defaultMode, "none");
+  for (const section of themes.sections) assert.equal(section.controls[0].maxSelections, 3);
 });
 
 test("remaining garment categories expose Condition under Advanced", () => {

@@ -3,12 +3,14 @@ import { CAMERA_CONFIG } from "../../data/camera/config.js";
 import { EFFECTS_CONFIG } from "../../data/effects/config.js";
 import { ATMOSPHERE_CONFIG } from "../../data/weather/config.js";
 import { TIME_OF_DAY_CONFIG } from "../../data/time-of-day/config.js";
+import { THEMES_CONFIG } from "../../data/themes/config.js";
 import { assertMode, enforceMax, findEnabledRecord, result } from "./controls.js";
 import { selectRandomFootwear } from "./random/footwear.js";
 import { selectRandomAccessories } from "./random/accessories.js";
 import { selectRandomLocation } from "./random/locations.js";
 import { selectRandomAtmosphere } from "./random/atmosphere.js";
 import { selectRandomTimeOfDay } from "./random/time-of-day.js";
+import { selectRandomThemes } from "./random/themes.js";
 
 export function selectSingleRecord(control, groups, label, randomSelector, context, { none = false } = {}) {
   assertMode(control, ["manual", ...(none ? ["none"] : []), ...(randomSelector ? ["random"] : [])], label);
@@ -56,6 +58,20 @@ export function selectTimeOfDay(control, context) {
   if (!control) return undefined;
   if (TIME_OF_DAY_CONFIG.maxSelections !== 1) throw new Error("Unsupported Time of Day configuration.");
   return selectSingleRecord(control, CATALOGS.timeOfDay, "Time of Day", selectRandomTimeOfDay, context, { none: true });
+}
+
+export function selectThemes(control, context) {
+  if (!control) return undefined;
+  assertMode(control, ["manual", "none", "random"], "Themes");
+  if (control.mode === "none") return result("none", Object.freeze([]));
+  if (control.mode === "random") return result("random", selectRandomThemes(context));
+
+  const selections = control.selections;
+  enforceMax(selections?.map((selection) => selection.id), THEMES_CONFIG.maxSelections, "Themes");
+  if (selections.length === 0) throw new Error("Themes Manual requires at least one selection.");
+  return result("manual", Object.freeze(selections.map(({ id, groupId }) =>
+    findEnabledRecord(CATALOGS.themes, id, "Theme", groupId),
+  )));
 }
 
 function selectConfiguredControls(controls, groupsByControl, config, domain) {

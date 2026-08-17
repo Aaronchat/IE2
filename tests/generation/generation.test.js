@@ -93,6 +93,14 @@ test("Camera and Effects remain non-Random and reject Random modes", () => {
   assert.throws(() => prepareGeneration({ controls: { effects: { "film-age": { mode: "random" } } }, random: { seed: 1 } }), /does not support selection mode random/);
 });
 
+test("Theme Random runs through the complete pipeline and emits the final section", () => {
+  const result = prepareGeneration({ controls: { themes: { mode: "random" } }, random: { seed: "theme-pipeline" } });
+  assert.equal(result.selection.selections.themes.mode, "random");
+  assert.equal(result.resolved.selections.themes, result.selection.selections.themes);
+  assert.equal(result.prompt.sections.themes.length, 1);
+  assert.ok(result.prompt.prompt.endsWith(result.prompt.sections.themes[0]));
+});
+
 test("orchestrator coordinates public APIs and completes only after Prompt Building", () => {
   const source = fs.readFileSync(new URL("../../engine/generation/index.js", import.meta.url), "utf8");
   const selectionIndex = source.indexOf("selectGeneration(");

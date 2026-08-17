@@ -13,6 +13,7 @@ export const PROMPT_SECTION_ORDER = Object.freeze([
   "timeOfDay",
   "camera",
   "effects",
+  "themes",
 ]);
 
 function normalizeFragment(fragment) {
@@ -103,6 +104,13 @@ function configuredFragments(selection, groupsByControl, config, label) {
   return Object.freeze(fragments);
 }
 
+function themeFragments(selection) {
+  if (!selection?.value?.length) return Object.freeze([]);
+  const prompts = sortRecords(selection.value, CATALOGS.themes).map((record) => promptOf(record, "Theme"));
+  const stack = prompts.length === 2 ? `${prompts[0]} and ${prompts[1]}` : prompts.join(" ");
+  return Object.freeze([`Theme: ${stack}`]);
+}
+
 function omissionStates(selections) {
   const omissions = [];
   const note = (section, control, state) => omissions.push(Object.freeze({ section, control, state }));
@@ -133,6 +141,8 @@ function omissionStates(selections) {
     else if (result?.mode === "default" && (result.value == null || (Array.isArray(result.value) && result.value.length === 0))) note("effects", controlId, "default-none");
   }
 
+  if (selections.themes?.mode === "none") note("themes", "themes", "user-none");
+
   return Object.freeze(omissions);
 }
 
@@ -154,6 +164,7 @@ export function buildPrompt(resolvedState) {
     timeOfDay: Object.freeze(selections.timeOfDay?.value ? [promptOf(selections.timeOfDay.value, "Time of Day")] : []),
     camera: configuredFragments(selections.camera, CATALOGS.camera, CAMERA_CONFIG, "Camera"),
     effects: configuredFragments(selections.effects, CATALOGS.effects, EFFECTS_CONFIG, "Effects"),
+    themes: themeFragments(selections.themes),
   });
 
   const fragments = Object.freeze(PROMPT_SECTION_ORDER.flatMap((section) => sections[section]));

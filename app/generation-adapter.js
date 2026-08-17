@@ -214,6 +214,7 @@ function adaptTimeOfDay(source = {}) {
 function adaptConfigured(source = {}, prefix) {
   const out = {};
   for (const [fullId, control] of Object.entries(source)) {
+    if (!fullId.startsWith(`${prefix}.`)) continue;
     if (!control || control.mode === "unselected") continue;
     const id = fullId.replace(new RegExp(`^${prefix}\\.`), "");
     if (control.mode === "default" || control.mode === "none") {
@@ -228,6 +229,18 @@ function adaptConfigured(source = {}, prefix) {
   return out;
 }
 
+function adaptThemes(source = {}) {
+  const action = entry(source, "themes.selection");
+  const manual = activeManualEntries(source, { exclude: ["themes.selection"] });
+  const selections = manual.flatMap(([, control]) => selectedValues(control).map(refOf));
+  if ((action?.mode === "random" || action?.mode === "none") && selections.length) {
+    throw new Error("Themes Random/None cannot be combined with manual Themes.");
+  }
+  if (action?.mode === "random" || action?.mode === "none") return { mode: action.mode };
+  if (selections.length > 3) throw new Error("Themes allows a maximum of 3 selections.");
+  return selections.length ? { mode: "manual", selections } : undefined;
+}
+
 export function uiStateToGenerationControls(ui = {}) {
   const controls = {};
   const character = adaptCharacter(ui); if (Object.keys(character).length) controls.character = character;
@@ -238,7 +251,8 @@ export function uiStateToGenerationControls(ui = {}) {
   const atmosphere = adaptAtmosphere(ui.atmosphere); if (atmosphere) controls.atmosphere = atmosphere;
   const timeOfDay = adaptTimeOfDay(ui["time-of-day"]); if (timeOfDay) controls.timeOfDay = timeOfDay;
   const camera = adaptConfigured(ui.camera, "camera"); if (Object.keys(camera).length) controls.camera = camera;
-  const effects = adaptConfigured(ui.effects, "effects"); if (Object.keys(effects).length) controls.effects = effects;
+  const effects = adaptConfigured({ ...(ui.effects ?? {}), ...(ui.camera ?? {}) }, "effects"); if (Object.keys(effects).length) controls.effects = effects;
+  const themes = adaptThemes(ui.themes); if (themes) controls.themes = themes;
   return controls;
 }
 

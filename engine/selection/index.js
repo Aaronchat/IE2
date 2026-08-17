@@ -3,7 +3,7 @@ import { createSeededRng } from "./random/rng.js";
 import { RandomRuntimeState } from "./random/state.js";
 import { selectCharacter } from "./character.js";
 import { selectClothing } from "./clothing.js";
-import { selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects } from "./domains.js";
+import { selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects, selectThemes } from "./domains.js";
 
 function randomContext(random = {}) {
   const rng = random.rng ?? (Object.hasOwn(random, "seed") ? createSeededRng(random.seed) : null);
@@ -28,6 +28,7 @@ export function selectGeneration({ controls = {}, random = {} } = {}) {
   const timeOfDay = selectTimeOfDay(controls.timeOfDay, context); if (timeOfDay) result.timeOfDay = timeOfDay;
   result.camera = selectCamera(controls.camera);
   result.effects = selectEffects(controls.effects);
+  const themes = selectThemes(controls.themes, context); if (themes) result.themes = themes;
   return Object.freeze({ selections: Object.freeze(result), randomState: context.state });
 }
 

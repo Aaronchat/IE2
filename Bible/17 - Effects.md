@@ -6,6 +6,8 @@ Effects is a separate visual-treatment domain. It describes image treatments and
 
 Effects is separate from Camera.
 
+Effects controls are displayed beneath Camera in the UI. This visual nesting does not merge the underlying Camera and Effects catalogs, Selection results, or prompt sections.
+
 ## Controls
 
 Effects v1 contains two controls:

@@ -118,8 +118,8 @@ Mood is deferred. No Mood definition, structure, or values are currently approve
 
 Theme affinity is deferred. No Theme Affinity definition, structure, or values are currently approved.
 
-- Theme architecture remains reserved and unapproved.
-- Theme Affinity must not be implemented by inventing or assuming Theme architecture.
+- The global Themes domain is active, but Theme Affinity remains deferred and unapproved.
+- Clothing records do not map to, weight, require, or interpret Themes.
 
 ## Coverage
 
