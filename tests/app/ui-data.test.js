@@ -66,3 +66,13 @@ test("Clothing parent sections expose Random/None while garment-family menus sta
   assert.equal(byId.get("clothing.tops.tank-tops.selection").random, false);
   assert.equal(byId.get("clothing.tops.tank-tops.selection").none, false);
 });
+
+test("Tops exposes four Advanced detail controls with None defaults", () => {
+  for (const id of ["color", "fabric", "condition", "graphic"]) {
+    const entry = byId.get(`clothing.tops.advanced.${id}`);
+    assert.ok(entry);
+    assert.equal(entry.random, true);
+    assert.equal(entry.none, true);
+    assert.equal(entry.defaultMode, "none");
+  }
+});

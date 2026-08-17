@@ -28,8 +28,13 @@ function flattenedOptions(control) {
 
 function initialState(control) {
   if (control.defaultValue != null) return { mode: "default", values: [control.defaultValue] };
+  if (control.defaultMode === "none") return { mode: "none", values: [] };
   if (control.none && (control.id.startsWith("effects.") || control.id === "camera.spatial-safe-framing")) return { mode: "default", values: [] };
   return { mode: "unselected", values: [] };
+}
+
+function sectionControls(section) {
+  return [...section.controls, ...(section.advancedControls ?? [])];
 }
 
 function stateFor(control) {
@@ -50,7 +55,7 @@ function serializeUiState() {
         const current = stateFor(section.action);
         categoryState[section.action.id] = { mode: current.mode, value: current.values[0] ?? null, values: section.action.maxSelections > 1 ? current.values : undefined };
       }
-      for (const control of section.controls) {
+      for (const control of sectionControls(section)) {
         const current = stateFor(control);
         categoryState[control.id] = {
           mode: current.mode,
@@ -254,13 +259,13 @@ function isSpecificState(current) {
 
 function updateSelectionIndicators() {
   for (const { section, marker } of sectionIndicators) {
-    const ids = [...(section.action ? [section.action.id] : []), ...section.controls.map((control) => control.id)];
+    const ids = [...(section.action ? [section.action.id] : []), ...sectionControls(section).map((control) => control.id)];
     marker.hidden = !ids.some((id) => isSpecificState(state.get(id)));
   }
   for (const { category, marker } of categoryIndicators) {
     const ids = [
       ...(category.action ? [category.action.id] : []),
-      ...category.sections.flatMap((section) => [...(section.action ? [section.action.id] : []), ...section.controls.map((control) => control.id)]),
+      ...category.sections.flatMap((section) => [...(section.action ? [section.action.id] : []), ...sectionControls(section).map((control) => control.id)]),
     ];
     marker.hidden = !ids.some((id) => isSpecificState(state.get(id)));
   }
@@ -293,6 +298,18 @@ function renderSection(section) {
     body.append(action);
   }
   section.controls.forEach((control) => body.append(renderControl(control)));
+  if (section.advancedControls?.length) {
+    const advanced = document.createElement("details");
+    advanced.className = "advanced-controls";
+    const advancedSummary = document.createElement("summary");
+    advancedSummary.textContent = "Advanced";
+    advanced.append(advancedSummary);
+    const advancedBody = document.createElement("div");
+    advancedBody.className = "advanced-controls-body";
+    section.advancedControls.forEach((control) => advancedBody.append(renderControl(control)));
+    advanced.append(advancedBody);
+    body.append(advanced);
+  }
   details.append(body);
   return details;
 }
@@ -357,7 +374,7 @@ clearAll.addEventListener("click", () => {
     if (category.action) stateFor(category.action);
     for (const section of category.sections) {
       if (section.action) stateFor(section.action);
-      for (const control of section.controls) stateFor(control);
+      for (const control of sectionControls(section)) stateFor(control);
     }
   }
   for (const view of controlViews.values()) {

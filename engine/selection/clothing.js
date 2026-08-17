@@ -13,10 +13,35 @@ import {
   selectRandomSwimwear,
 } from "./random/clothing.js";
 import { selectRandomPackage } from "./random/packages.js";
+import { chooseItem } from "./random/core.js";
+import { TOP_DETAIL_CONFIG } from "../../data/clothing/top-details.js";
 
 function garment(ref, label) {
   if (!ref || typeof ref !== "object") throw new Error(`${label} record reference is required.`);
   return findEnabledRecord(CATALOGS.clothing, ref.id, label, ref.groupId);
+}
+
+function topDetails(controls = {}, context) {
+  const out = {};
+  for (const [id, control] of Object.entries(controls)) {
+    const config = TOP_DETAIL_CONFIG[id];
+    if (!config) throw new Error(`Unknown Top Advanced detail ${id}.`);
+    assertMode(control, ["manual", "random", "none"], `Top ${config.label}`);
+    if (control.mode === "none") continue;
+    if (control.mode === "random") {
+      out[id] = chooseItem({
+        items: config.options,
+        rng: context.rng,
+        state: context.state,
+        namespace: `clothing:tops:advanced:${id}`,
+      });
+      continue;
+    }
+    const selected = config.options.find((entry) => entry.id === control.id);
+    if (!selected) throw new Error(`Unknown Top ${config.label} id ${control.id}.`);
+    out[id] = selected;
+  }
+  return Object.freeze(out);
 }
 
 function slotSelection(control, { groups, label, bucketNamespace, context }) {
@@ -59,6 +84,7 @@ function manualBuiltOutfit(control, context) {
         structure,
         outfit: Object.freeze({ top: top.record, bottom: bottom.record }),
         slotModes: Object.freeze({ top: top.mode, bottom: bottom.mode }),
+        topDetails: topDetails(control.details?.top, context),
       });
     }
     case "dress":

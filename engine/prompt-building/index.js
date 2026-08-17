@@ -38,6 +38,16 @@ function sortRecords(records, groups) {
   return [...records].sort((a, b) => (ranks.get(a) ?? Number.MAX_SAFE_INTEGER) - (ranks.get(b) ?? Number.MAX_SAFE_INTEGER));
 }
 
+function detailedTopPrompt(record, details = {}) {
+  const parts = [];
+  for (const id of ["condition", "color", "fabric"]) {
+    if (details[id]) parts.push(promptOf(details[id], `Top ${id}`));
+  }
+  parts.push(promptOf(record, "Clothing top"));
+  if (details.graphic) parts.push(promptOf(details.graphic, "Top graphic"));
+  return normalizeFragment(parts.join(" "));
+}
+
 function clothingFragments(clothing) {
   if (!clothing) return Object.freeze([]);
   const fragments = [];
@@ -48,7 +58,7 @@ function clothingFragments(clothing) {
     const built = primary.builtOutfit;
     if (!built || typeof built !== "object") throw new Error("Built Outfit structure is required.");
     if (built.structure === "top-bottom") {
-      if (built.outfit?.top) fragments.push(promptOf(built.outfit.top, "Clothing top"));
+      if (built.outfit?.top) fragments.push(detailedTopPrompt(built.outfit.top, built.topDetails));
       if (built.outfit?.bottom) fragments.push(promptOf(built.outfit.bottom, "Clothing bottom"));
     } else if (built.structure === "swimwear") {
       for (const record of sortRecords(built.outfit ?? [], CATALOGS.clothing)) fragments.push(promptOf(record, "Swimwear"));

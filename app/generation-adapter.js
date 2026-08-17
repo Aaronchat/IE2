@@ -56,7 +56,7 @@ function clothingSectionState(source, sectionId, label) {
   const actionId = `${sectionId}.selection`;
   const action = entry(source, actionId);
   const manual = Object.entries(source).filter(([id, control]) => (
-    id !== actionId && id.startsWith(`${sectionId}.`) && control?.mode === "manual" && selectedValues(control).length
+    id !== actionId && id.startsWith(`${sectionId}.`) && !id.startsWith(`${sectionId}.advanced.`) && control?.mode === "manual" && selectedValues(control).length
   ));
   if ((action?.mode === "random" || action?.mode === "none") && manual.length) {
     throw new Error(`${label} ${action.mode === "random" ? "Random" : "None"} cannot be combined with a manual ${label} selection.`);
@@ -67,6 +67,24 @@ function clothingSectionState(source, sectionId, label) {
   return { mode: "unselected" };
 }
 
+function topDetailStates(source) {
+  const details = {};
+  for (const id of ["color", "fabric", "condition", "graphic"]) {
+    const control = entry(source, `clothing.tops.advanced.${id}`);
+    if (!control || control.mode === "unselected" || control.mode === "none") continue;
+    if (control.mode === "random") {
+      details[id] = { mode: "random" };
+      continue;
+    }
+    if (control.mode === "manual") {
+      details[id] = { mode: "manual", id: selectedValues(control)[0]?.value ?? selectedValues(control)[0] };
+      continue;
+    }
+    throw new Error(`Top ${id} does not support UI mode ${control.mode}.`);
+  }
+  return details;
+}
+
 function adaptClothing(ui) {
   const source = ui.clothing ?? {};
   const out = {};
@@ -75,6 +93,7 @@ function adaptClothing(ui) {
     top: clothingSectionState(source, "clothing.tops", "Tops"),
     bottom: clothingSectionState(source, "clothing.bottoms", "Bottoms"),
   };
+  const topDetails = topDetailStates(source);
   const standalone = [
     ["clothing.dresses", "dress", "Dresses"],
     ["clothing.one-piece", "one-piece", "One-Piece"],
@@ -85,6 +104,9 @@ function adaptClothing(ui) {
 
   const activePair = Object.values(slots).some((slot) => slot.mode === "manual" || slot.mode === "random");
   const activeStandalone = standalone.filter(({ state }) => state.mode === "manual" || state.mode === "random");
+  if (Object.keys(topDetails).length && (primaryRandom || !activePair || (slots.top.mode !== "manual" && slots.top.mode !== "random"))) {
+    throw new Error("Top Advanced details require a selected or Random top.");
+  }
   if (primaryRandom && (activePair || activeStandalone.length)) {
     throw new Error("Primary Outfit Random cannot be combined with another active primary clothing selection.");
   }
@@ -99,6 +121,7 @@ function adaptClothing(ui) {
       path: "built-outfit",
       structure: "top-bottom",
       outfit: { top: slots.top, bottom: slots.bottom },
+      ...(Object.keys(topDetails).length ? { details: { top: topDetails } } : {}),
     };
   } else if (activeStandalone.length === 1) {
     const { structure, state } = activeStandalone[0];

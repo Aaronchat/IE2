@@ -25,7 +25,7 @@ test("canonical section ordering is fixed", () => {
   assert.deepEqual(PROMPT_SECTION_ORDER, ["character", "clothing", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects"]);
 });
 
-test("Character uses approved deterministic formatting and omits Name metadata", () => {
+test("Character uses approved deterministic formatting and includes Name first", () => {
   const state = resolve({ character: withCharacter({
     name: { mode: "manual", value: "Emily" },
     "hair-length": { mode: "manual", value: "Long" },
@@ -40,8 +40,8 @@ test("Character uses approved deterministic formatting and omits Name metadata",
     "hip-width": { mode: "manual", value: "Wide" },
     waist: { mode: "manual", value: "Well Defined" },
   }) });
-  assert.deepEqual(buildPrompt(state).sections.character, ["Caucasian", "long hair", "blonde hair", "blue eyes", "pin-up makeup", "fair skin", "natural build", "very busty", "wide hips", "well defined waist"]);
-  assert.equal(buildPrompt(state).prompt.includes("Emily"), false);
+  assert.deepEqual(buildPrompt(state).sections.character, ["Emily", "Caucasian", "long hair", "blonde hair", "blue eyes", "pin-up makeup", "fair skin", "natural build", "very busty", "wide hips", "well defined waist"]);
+  assert.equal(buildPrompt(state).prompt.startsWith("Emily, Caucasian"), true);
 });
 
 test("Character chest without an adjective emits the description alone and Freckles Off stays silent", () => {
@@ -148,6 +148,20 @@ test("Built Outfit emits its authoritative garment prompts in structure order", 
     outfit: { top: { id: "fitted-tank-top", groupId: "tank-tops" }, bottom: { id: "skinny-jeans", groupId: "jeans" } },
   } } });
   assert.deepEqual(buildPrompt(state).sections.clothing.slice(0, 2), ["fitted tank top", "skinny jeans"]);
+});
+
+test("Top Advanced details wrap the garment in stable prompt order", () => {
+  const state = resolve({ clothing: { primary: {
+    mode: "manual", path: "built-outfit", structure: "top-bottom",
+    outfit: { top: { id: "fitted-tank-top", groupId: "tank-tops" }, bottom: { mode: "none" } },
+    details: { top: {
+      color: { mode: "manual", id: "burnt-orange" },
+      fabric: { mode: "manual", id: "cotton" },
+      condition: { mode: "manual", id: "blood-stained" },
+      graphic: { mode: "manual", id: "longhorn-emblem" },
+    } },
+  } } });
+  assert.deepEqual(buildPrompt(state).sections.clothing, ["blood-stained burnt-orange cotton fitted tank top with a Longhorn emblem"]);
 });
 
 test("Package emits only the authoritative Package prompt and does not emit Package-local components", () => {

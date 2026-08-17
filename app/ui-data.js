@@ -11,6 +11,7 @@ import { CAMERA_CONFIG } from "../data/camera/config.js";
 import { EFFECTS_CONFIG } from "../data/effects/config.js";
 import { ATMOSPHERE_CONFIG } from "../data/weather/config.js";
 import { TIME_OF_DAY_CONFIG } from "../data/time-of-day/config.js";
+import { TOP_DETAIL_CONFIG } from "../data/clothing/top-details.js";
 import {
   TOP_RANDOM_BUCKETS,
   BOTTOM_RANDOM_BUCKETS,
@@ -26,8 +27,8 @@ const option = (value, label = value, groupId = null) => Object.freeze({ value, 
 const stringOptions = (values) => Object.freeze(values.map((value) => option(value)));
 const recordOptions = (groups) => Object.freeze(groups.flatMap((group) => group.items.map((item) => option(item.id, item.name, group.id))));
 const groupedRecordOptions = (groups) => Object.freeze(groups.map((group) => Object.freeze({ label: group.name, options: Object.freeze(group.items.map((item) => option(item.id, item.name, group.id))) })));
-const control = ({ id, label, options = [], groupedOptions = [], random = false, none = false, defaultValue = null, maxSelections = 1, note = "" }) => Object.freeze({ id, label, options, groupedOptions, random, none, defaultValue, maxSelections, note });
-const section = (id, label, controls, action = null) => Object.freeze({ id, label, controls: Object.freeze(controls), action });
+const control = ({ id, label, options = [], groupedOptions = [], random = false, none = false, defaultValue = null, defaultMode = "unselected", maxSelections = 1, note = "" }) => Object.freeze({ id, label, options, groupedOptions, random, none, defaultValue, defaultMode, maxSelections, note });
+const section = (id, label, controls, action = null, advancedControls = []) => Object.freeze({ id, label, controls: Object.freeze(controls), advancedControls: Object.freeze(advancedControls), action });
 const category = (id, label, sections, action = null) => Object.freeze({ id, label, sections: Object.freeze(sections), action });
 
 const hairColorGroups = Object.freeze(Object.entries(CHARACTER_HAIR.colors).map(([key, values]) => Object.freeze({ label: key === "natural" ? "Natural" : "Fantasy", options: stringOptions(values) })));
@@ -68,18 +69,27 @@ function catalogSection(id, label, groups, { random = false, none = false, maxSe
   return section(id, label, [control({ id: `${id}.selection`, label, groupedOptions: groupedRecordOptions(groups), random, none, maxSelections, note })]);
 }
 
-function clothingSection(id, label, groups, { random = true, none = true, note = "" } = {}) {
+function clothingSection(id, label, groups, { random = true, none = true, note = "", advancedControls = [] } = {}) {
   const controls = groups.map((group) => control({
     id: `${id}.${group.id}.selection`,
     label: group.name,
     groupedOptions: groupedRecordOptions([group]),
   }));
   const action = control({ id: `${id}.selection`, label, random, none, note });
-  return section(id, label, controls, action);
+  return section(id, label, controls, action, advancedControls);
 }
 
+const topAdvancedControls = Object.freeze(Object.entries(TOP_DETAIL_CONFIG).map(([id, config]) => control({
+  id: `clothing.tops.advanced.${id}`,
+  label: config.label,
+  options: Object.freeze(config.options.map((entry) => option(entry.id, entry.name))),
+  random: true,
+  none: true,
+  defaultMode: "none",
+})));
+
 const clothingSections = [
-  clothingSection("clothing.tops", "Tops", TOP_RANDOM_BUCKETS),
+  clothingSection("clothing.tops", "Tops", TOP_RANDOM_BUCKETS, { advancedControls: topAdvancedControls }),
   clothingSection("clothing.bottoms", "Bottoms", BOTTOM_RANDOM_BUCKETS),
   clothingSection("clothing.dresses", "Dresses", DRESS_RANDOM_BUCKETS),
   clothingSection("clothing.one-piece", "One-Piece", ONE_PIECE_RANDOM_BUCKETS),
@@ -136,5 +146,5 @@ export const UI_CATEGORIES = Object.freeze([
 ]);
 
 export function allUiControls() {
-  return UI_CATEGORIES.flatMap((entry) => [...(entry.action ? [entry.action] : []), ...entry.sections.flatMap((subsection) => [...(subsection.action ? [subsection.action] : []), ...subsection.controls])]);
+  return UI_CATEGORIES.flatMap((entry) => [...(entry.action ? [entry.action] : []), ...entry.sections.flatMap((subsection) => [...(subsection.action ? [subsection.action] : []), ...subsection.controls, ...subsection.advancedControls])]);
 }

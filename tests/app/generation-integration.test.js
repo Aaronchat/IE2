@@ -93,6 +93,32 @@ test("grouped Clothing Top + Bottom becomes one Built Outfit", () => {
   });
 });
 
+test("Top Advanced details adapt and generate as part of the selected top", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.tops.tank-tops.selection"] = manual("fitted-tank-top", "tank-tops");
+  ui.clothing["clothing.tops.advanced.color"] = manual("burnt-orange");
+  ui.clothing["clothing.tops.advanced.fabric"] = manual("cotton");
+  ui.clothing["clothing.tops.advanced.condition"] = manual("blood-stained");
+  ui.clothing["clothing.tops.advanced.graphic"] = manual("longhorn-emblem");
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.ok(generation.prompt.includes("blood-stained burnt-orange cotton fitted tank top with a Longhorn emblem"));
+});
+
+test("Random Top Advanced detail is deterministic and requests a seed", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.tops.tank-tops.selection"] = manual("fitted-tank-top", "tank-tops");
+  ui.clothing["clothing.tops.advanced.color"] = { mode: "random", value: null };
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState(), createSeed: () => 123 });
+  assert.equal(generation.seed, 123);
+  assert.match(generation.prompt, /(red|burnt-orange|black|white) fitted tank top/u);
+});
+
+test("Top Advanced details cannot silently apply without a top", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.tops.advanced.color"] = manual("red");
+  assert.throws(() => uiStateToGenerationControls(ui), /require a selected or Random top/);
+});
+
 test("Package selection converts to the existing package path", () => {
   const ui = baseUi();
   ui.clothing["clothing.packages.sci-fi.selection"] = manual("space-suit", "sci-fi");

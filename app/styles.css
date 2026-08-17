@@ -28,15 +28,18 @@ button:hover { border-color: #53627d; }
 .panel { border: 1px solid var(--line); border-radius: 14px; background: rgba(15, 18, 27, .92); box-shadow: 0 16px 50px rgba(0,0,0,.2); overflow: hidden; }
 .category + .category { border-top: 1px solid var(--line); }
 .category > summary { list-style: none; display: flex; justify-content: space-between; align-items: center; padding: 17px 18px; font-size: 19px; font-weight: 750; cursor: pointer; background: #121724; }
-.category > summary::-webkit-details-marker, .subcategory > summary::-webkit-details-marker { display: none; }
-.category > summary::before, .subcategory > summary::before { content: "›"; display: inline-block; margin-right: 10px; transition: transform .15s ease; }
-.category[open] > summary::before, .subcategory[open] > summary::before { transform: rotate(90deg); }
+.category > summary::-webkit-details-marker, .subcategory > summary::-webkit-details-marker, .advanced-controls > summary::-webkit-details-marker { display: none; }
+.category > summary::before, .subcategory > summary::before, .advanced-controls > summary::before { content: "›"; display: inline-block; margin-right: 10px; transition: transform .15s ease; }
+.category[open] > summary::before, .subcategory[open] > summary::before, .advanced-controls[open] > summary::before { transform: rotate(90deg); }
 .category > summary { justify-content: flex-start; }
 .summary-count { margin-left: auto; min-width: 28px; padding: 2px 8px; border-radius: 999px; background: #222a3b; color: var(--muted); font-size: 12px; text-align: center; }
 .category-body { padding: 10px; }
 .subcategory { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); margin: 8px 0; overflow: hidden; }
 .subcategory > summary { padding: 13px 14px; cursor: pointer; font-weight: 650; background: var(--panel-2); }
 .subcategory-body { padding: 12px; }
+.advanced-controls { border-top: 1px solid var(--line); margin-top: 4px; }
+.advanced-controls > summary { cursor: pointer; font-weight: 650; padding: 12px 2px; }
+.advanced-controls-body { padding-top: 4px; }
 .control-row { padding: 4px 2px 12px; }
 .control-row + .control-row { border-top: 1px solid var(--line); padding-top: 12px; }
 .control-heading { display: flex; gap: 10px; align-items: baseline; margin-bottom: 8px; }

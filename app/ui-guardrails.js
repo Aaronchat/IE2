@@ -127,9 +127,10 @@ export function applyModeGuardrails(state, controlId, mode) {
 
 export function applyManualGuardrails(state, controlId, selectedValue) {
   const clothingSection = clothingSectionFor(controlId);
-  if (clothingSection && controlId !== clothingActionId(clothingSection)) {
+  if (clothingSection && controlId !== clothingActionId(clothingSection) && !controlId.startsWith(`${clothingSection}.advanced.`)) {
     clearEntry(state, clothingActionId(clothingSection));
-    clearPrefix(state, clothingSection, { except: [controlId, clothingActionId(clothingSection)] });
+    const advancedIds = [...state.keys()].filter((id) => id.startsWith(`${clothingSection}.advanced.`));
+    clearPrefix(state, clothingSection, { except: [controlId, clothingActionId(clothingSection), ...advancedIds] });
     if (PRIMARY_SECTIONS.includes(clothingSection)) clearConflictingPrimarySections(state, clothingSection);
   }
 

@@ -44,6 +44,30 @@ test("manual Top/Bottom family choice clears standalone primary clothing but pre
   assert.deepEqual(state.get("clothing.packages.sci-fi.selection"), unselected());
 });
 
+test("changing a Top garment preserves its Advanced details", () => {
+  const state = new Map([
+    ["clothing.tops.selection", unselected()],
+    ["clothing.tops.tank-tops.selection", manual({ value: "old-top" })],
+    ["clothing.tops.blouses.selection", unselected()],
+    ["clothing.tops.advanced.color", manual({ value: "red" })],
+    ["clothing.tops.advanced.condition", manual({ value: "ripped" })],
+  ]);
+  applyManualGuardrails(state, "clothing.tops.blouses.selection", { value: "new-top" });
+  assert.deepEqual(state.get("clothing.tops.tank-tops.selection"), unselected());
+  assert.equal(state.get("clothing.tops.advanced.color").mode, "manual");
+  assert.equal(state.get("clothing.tops.advanced.condition").mode, "manual");
+});
+
+test("changing an Advanced Top detail does not clear the selected garment", () => {
+  const state = new Map([
+    ["clothing.tops.selection", unselected()],
+    ["clothing.tops.tank-tops.selection", manual({ value: "top" })],
+    ["clothing.tops.advanced.color", unselected()],
+  ]);
+  applyManualGuardrails(state, "clothing.tops.advanced.color", { value: "red" });
+  assert.equal(state.get("clothing.tops.tank-tops.selection").mode, "manual");
+});
+
 test("manual standalone primary clothing clears Top/Bottom and other standalone structures", () => {
   const state = new Map([
     ["clothing.tops.tank-tops.selection", manual({ value: "top" })],
