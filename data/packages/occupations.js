@@ -387,7 +387,7 @@ export const OCCUPATION_PACKAGES = Object.freeze({
     Object.freeze({
       id: "twin-peaks-waitress-uniform",
       name: "Twin Peaks Waitress Uniform",
-      prompt: "twin peaks waitress uniform",
+      prompt: "Twin Peaks waitress uniform (white Twin Peaks tank top, plaid shorts, waitress utility belt)",
       temperature: Object.freeze(["very-hot", "warm", "moderate"]),
       season: Object.freeze(["spring", "summer", "autumn"]),
       formality: "very-casual",

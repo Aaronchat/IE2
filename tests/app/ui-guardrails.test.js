@@ -70,6 +70,29 @@ test("changing an Advanced Top detail does not clear the selected garment", () =
   assert.equal(state.get("clothing.tops.tank-tops.selection").mode, "manual");
 });
 
+test("manual Swimwear preserves one top and one bottom while replacing slot conflicts", () => {
+  const state = new Map([
+    ["clothing.swimwear.selection", unselected()],
+    ["clothing.swimwear.bikini-tops.selection", manual({ value: "string-bikini-top", groupId: "bikini-tops" })],
+    ["clothing.swimwear.two-piece-swim-tops.selection", unselected()],
+    ["clothing.swimwear.bikini-bottoms.selection", unselected()],
+    ["clothing.swimwear.one-piece-swimsuits.selection", unselected()],
+  ]);
+
+  applyManualGuardrails(state, "clothing.swimwear.bikini-bottoms.selection", { value: "brazilian-bikini-bottom", groupId: "bikini-bottoms" });
+  assert.equal(state.get("clothing.swimwear.bikini-tops.selection").mode, "manual");
+
+  state.set("clothing.swimwear.bikini-bottoms.selection", manual({ value: "brazilian-bikini-bottom", groupId: "bikini-bottoms" }));
+  applyManualGuardrails(state, "clothing.swimwear.two-piece-swim-tops.selection", { value: "cropped-swim-top", groupId: "two-piece-swim-tops" });
+  assert.deepEqual(state.get("clothing.swimwear.bikini-tops.selection"), unselected());
+  assert.equal(state.get("clothing.swimwear.bikini-bottoms.selection").mode, "manual");
+
+  state.set("clothing.swimwear.two-piece-swim-tops.selection", manual({ value: "cropped-swim-top", groupId: "two-piece-swim-tops" }));
+  applyManualGuardrails(state, "clothing.swimwear.one-piece-swimsuits.selection", { value: "monokini", groupId: "one-piece-swimsuits" });
+  assert.deepEqual(state.get("clothing.swimwear.two-piece-swim-tops.selection"), unselected());
+  assert.deepEqual(state.get("clothing.swimwear.bikini-bottoms.selection"), unselected());
+});
+
 test("manual standalone primary clothing clears Top/Bottom and other standalone structures", () => {
   const state = new Map([
     ["clothing.tops.tank-tops.selection", manual({ value: "top" })],

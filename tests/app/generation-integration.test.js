@@ -178,12 +178,41 @@ test("Condition applies to a selected Swimwear garment", () => {
   assert.ok(runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt.includes("ripped underwire bikini top"));
 });
 
+test("Swimwear UI combines one independently selected top and bottom", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.swimwear.bikini-tops.selection"] = manual("string-bikini-top", "bikini-tops");
+  ui.clothing["clothing.swimwear.bikini-bottoms.selection"] = manual("brazilian-bikini-bottom", "bikini-bottoms");
+  const controls = uiStateToGenerationControls(ui);
+  assert.deepEqual(controls.clothing.primary.outfit, [
+    { id: "string-bikini-top", groupId: "bikini-tops" },
+    { id: "brazilian-bikini-bottom", groupId: "bikini-bottoms" },
+  ]);
+  const prompt = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt;
+  assert.ok(prompt.includes("string bikini top"));
+  assert.ok(prompt.includes("Brazilian bikini bottom"));
+});
+
+test("Swimwear UI rejects two manual selections for the same assembly slot", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.swimwear.bikini-tops.selection"] = manual("string-bikini-top", "bikini-tops");
+  ui.clothing["clothing.swimwear.two-piece-swim-tops.selection"] = manual("cropped-swim-top", "two-piece-swim-tops");
+  assert.throws(() => uiStateToGenerationControls(ui), /only one Swimwear top/);
+});
+
 test("Package selection converts to the existing package path", () => {
   const ui = baseUi();
   ui.clothing["clothing.packages.sci-fi.selection"] = manual("space-suit", "sci-fi");
   assert.deepEqual(uiStateToGenerationControls(ui).clothing.primary, {
     mode: "manual", path: "package", selection: { mode: "manual", id: "space-suit", groupId: "sci-fi" },
   });
+});
+
+test("Twin Peaks package emits its fixed uniform components", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.packages.occupations.selection"] = manual("twin-peaks-waitress-uniform", "occupations");
+  assert.ok(runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt.includes(
+    "Twin Peaks waitress uniform (white Twin Peaks tank top, plaid shorts, waitress utility belt)",
+  ));
 });
 
 test("Camera defaults and Effects selections convert correctly", () => {

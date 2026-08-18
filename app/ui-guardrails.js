@@ -1,5 +1,6 @@
 import { CHARACTER_NAMES } from "../data/character/names.js";
 import { COVERS_CONFIG } from "../data/covers/config.js";
+import { SWIMWEAR_CATALOG_GROUPS } from "../engine/selection/random/clothing.js";
 
 const PRIMARY_RANDOM_ID = "clothing.primary-random";
 const PRIMARY_PAIR_SECTIONS = Object.freeze(["clothing.tops", "clothing.bottoms"]);
@@ -84,6 +85,26 @@ function clearConflictingPrimarySections(state, sectionId) {
   }
 }
 
+function swimwearSlot(value) {
+  const id = value?.value ?? value;
+  const groupId = value?.groupId;
+  const group = SWIMWEAR_CATALOG_GROUPS.find((entry) => entry.id === groupId);
+  const record = group?.items.find((entry) => entry.id === id);
+  return record?.slot ?? group?.defaults?.slot ?? null;
+}
+
+function clearConflictingSwimwearSelections(state, controlId, selectedValue) {
+  const selectedSlot = swimwearSlot(selectedValue);
+  if (!selectedSlot) throw new Error(`Swimwear selection ${selectedValue?.value ?? selectedValue} has no assembly slot.`);
+  for (const [id, current] of state) {
+    if (id === controlId || id === "clothing.swimwear.selection" || id.startsWith("clothing.swimwear.advanced.")) continue;
+    if (!id.startsWith("clothing.swimwear.") || current.mode !== "manual" || !current.values.length) continue;
+    const currentSlot = swimwearSlot(current.values[0]);
+    const conflicts = selectedSlot === "one-piece" || currentSlot === "one-piece" || currentSlot === selectedSlot;
+    if (conflicts) clearEntry(state, id);
+  }
+}
+
 function selectedCount(state, prefix, excludeId = null) {
   let count = 0;
   for (const [id, current] of state) {
@@ -156,8 +177,12 @@ export function applyManualGuardrails(state, controlId, selectedValue) {
   const clothingSection = clothingSectionFor(controlId);
   if (clothingSection && controlId !== clothingActionId(clothingSection) && !controlId.startsWith(`${clothingSection}.advanced.`)) {
     clearEntry(state, clothingActionId(clothingSection));
-    const advancedIds = [...state.keys()].filter((id) => id.startsWith(`${clothingSection}.advanced.`));
-    clearPrefix(state, clothingSection, { except: [controlId, clothingActionId(clothingSection), ...advancedIds] });
+    if (clothingSection === "clothing.swimwear") {
+      clearConflictingSwimwearSelections(state, controlId, selectedValue);
+    } else {
+      const advancedIds = [...state.keys()].filter((id) => id.startsWith(`${clothingSection}.advanced.`));
+      clearPrefix(state, clothingSection, { except: [controlId, clothingActionId(clothingSection), ...advancedIds] });
+    }
     if (PRIMARY_SECTIONS.includes(clothingSection)) clearConflictingPrimarySections(state, clothingSection);
   }
 

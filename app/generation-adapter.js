@@ -1,4 +1,5 @@
 import { prepareGeneration } from "../engine/generation/index.js";
+import { SWIMWEAR_CATALOG_GROUPS } from "../engine/selection/random/clothing.js";
 
 function entry(category, id) {
   return category?.[id];
@@ -67,6 +68,33 @@ function clothingSectionState(source, sectionId, label) {
   return { mode: "unselected" };
 }
 
+function swimwearSlot(ref) {
+  const group = SWIMWEAR_CATALOG_GROUPS.find((entry) => entry.id === ref.groupId);
+  const record = group?.items.find((entry) => entry.id === ref.id);
+  return record?.slot ?? group?.defaults?.slot ?? null;
+}
+
+function swimwearSectionState(source) {
+  const sectionId = "clothing.swimwear";
+  const actionId = `${sectionId}.selection`;
+  const action = entry(source, actionId);
+  const manual = Object.entries(source).filter(([id, control]) => (
+    id !== actionId && id.startsWith(`${sectionId}.`) && !id.startsWith(`${sectionId}.advanced.`) && control?.mode === "manual" && selectedValues(control).length
+  ));
+  if ((action?.mode === "random" || action?.mode === "none") && manual.length) {
+    throw new Error(`Swimwear ${action.mode === "random" ? "Random" : "None"} cannot be combined with manual Swimwear selections.`);
+  }
+  const refs = manual.map(([, control]) => manualRef(control, "Swimwear"));
+  if (refs.length > 2) throw new Error("Swimwear allows a maximum of one top and one bottom.");
+  const slots = refs.map(swimwearSlot);
+  if (slots.some((slot) => !slot)) throw new Error("Every manual Swimwear selection requires an approved assembly slot.");
+  if (slots.includes("one-piece") && refs.length > 1) throw new Error("One-piece Swimwear cannot be combined with another Swimwear selection.");
+  if (slots.length === 2 && slots[0] === slots[1]) throw new Error(`Choose only one Swimwear ${slots[0]} at a time.`);
+  if (refs.length) return { mode: "manual", refs };
+  if (action?.mode === "random" || action?.mode === "none") return { mode: action.mode };
+  return { mode: "unselected" };
+}
+
 const CLOTHING_DETAIL_IDS = Object.freeze({
   tops: ["color", "fabric", "condition", "graphic"],
   bottoms: ["condition"],
@@ -118,7 +146,11 @@ function adaptClothing(ui) {
     ["clothing.swimwear", "swimwear", "swimwear", "Swimwear"],
     ["clothing.sleepwear", "sleepwear", "sleepwear", "Sleepwear"],
     ["clothing.packages", "packages", "package", "Packages"],
-  ].map(([sectionId, detailKey, structure, label]) => ({ detailKey, structure, state: clothingSectionState(source, sectionId, label) }));
+  ].map(([sectionId, detailKey, structure, label]) => ({
+    detailKey,
+    structure,
+    state: structure === "swimwear" ? swimwearSectionState(source) : clothingSectionState(source, sectionId, label),
+  }));
 
   const extras = Object.fromEntries([
     ["outerwear", "Outerwear"],
@@ -156,7 +188,12 @@ function adaptClothing(ui) {
         ? { mode: "manual", path: "package", selection: { mode: "random" } }
         : { mode: "manual", path: "package", selection: state };
     } else {
-      out.primary = { mode: "manual", path: "built-outfit", structure, outfit: state };
+      out.primary = {
+        mode: "manual",
+        path: "built-outfit",
+        structure,
+        outfit: structure === "swimwear" && state.mode === "manual" ? state.refs : state,
+      };
     }
   }
 
