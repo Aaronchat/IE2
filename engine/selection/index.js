@@ -3,7 +3,7 @@ import { createSeededRng } from "./random/rng.js";
 import { RandomRuntimeState } from "./random/state.js";
 import { selectCharacter } from "./character.js";
 import { selectClothing } from "./clothing.js";
-import { selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects, selectThemes, selectCovers } from "./domains.js";
+import { selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects, selectThemes, selectCovers, selectTattoos } from "./domains.js";
 
 function randomContext(random = {}) {
   const rng = random.rng ?? (Object.hasOwn(random, "seed") ? createSeededRng(random.seed) : null);
@@ -20,6 +20,7 @@ export function selectGeneration({ controls = {}, random = {} } = {}) {
   const context = randomContext(random);
   const result = {};
   result.character = selectCharacter(controls.character, context);
+  const tattoos = selectTattoos(controls.tattoos); if (tattoos) result.tattoos = tattoos;
   result.clothing = selectClothing(controls.clothing, context);
   const footwear = selectFootwear(controls.footwear, context); if (footwear) result.footwear = footwear;
   const accessories = selectAccessories(controls.accessories, context); if (accessories) result.accessories = accessories;
