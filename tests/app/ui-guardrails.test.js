@@ -6,6 +6,8 @@ import {
   applyManualGuardrails,
   applyModeGuardrails,
   canAddManualSelection,
+  activeCoverType,
+  eligibleCoverStyleGroups,
   eligibleNameGroups,
 } from "../../app/ui-guardrails.js";
 
@@ -158,4 +160,35 @@ test("manual Name options follow the active Ethnicity and disappear for Random E
   state.set("character.ethnicity", random());
   assert.equal(activeCharacterEthnicity(state), null);
   assert.deepEqual(eligibleNameGroups(state, groups), []);
+});
+
+test("Covers exposes only the selected type's Style group", () => {
+  const groups = [
+    { groupId: "novel-styles", label: "Novel Style", options: [] },
+    { groupId: "album-styles", label: "Album Style", options: [] },
+    { groupId: "dvd-styles", label: "DVD Style", options: [] },
+    { groupId: "magazine-styles", label: "Magazine Style", options: [] },
+  ];
+  const state = new Map([["covers.type", manual({ value: "dvd" })]]);
+  assert.equal(activeCoverType(state), "dvd");
+  assert.deepEqual(eligibleCoverStyleGroups(state, groups).map((group) => group.groupId), ["dvd-styles"]);
+  state.set("covers.type", random());
+  assert.deepEqual(eligibleCoverStyleGroups(state, groups), []);
+});
+
+test("changing or randomizing Cover Type clears incompatible Style and metadata", () => {
+  const state = new Map([
+    ["covers.type", manual({ value: "novel" })],
+    ["covers.style", manual({ value: "romance" })],
+    ["covers.metadata.novel.title", manual("Old Title")],
+    ["covers.era", manual({ value: "1970s" })],
+  ]);
+  applyManualGuardrails(state, "covers.type", { value: "album" });
+  assert.deepEqual(state.get("covers.style"), unselected());
+  assert.deepEqual(state.get("covers.metadata.novel.title"), unselected());
+  assert.equal(state.get("covers.era").mode, "manual");
+
+  state.set("covers.style", manual({ value: "metal" }));
+  applyModeGuardrails(state, "covers.type", "random");
+  assert.deepEqual(state.get("covers.style"), unselected());
 });

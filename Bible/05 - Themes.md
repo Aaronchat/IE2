@@ -63,9 +63,11 @@ Theme output contains no explanatory prose and does not generate Clothing, Locat
 
 ## UI
 
-Themes is the final top-level selector. Its three catalog categories are available for browsing, and the interface prevents a fourth structured manual selection. Random and None remain parent-level Theme actions.
+Themes is the final normal positive-prompt domain. Its three catalog categories are available for browsing, and the interface prevents a fourth structured manual selection. Random and None remain parent-level Theme actions.
 
 Effects is displayed inside Camera immediately before Themes, but Camera and Effects retain separate data, Selection, Resolution, and prompt semantics.
+
+Covers / Presentation is displayed after Themes as a separate final top-level category. Covers does not alter Theme behavior or become part of the Theme stack.
 
 ## Validation
 

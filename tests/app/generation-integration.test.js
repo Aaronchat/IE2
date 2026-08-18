@@ -30,6 +30,11 @@ function baseUi() {
       "effects.film-age": { mode: "default", value: null },
     },
     themes: { "themes.selection": { mode: "none", value: null } },
+    covers: {
+      "covers.type": unset(),
+      "covers.style": unset(),
+      "covers.era": unset(),
+    },
   };
 }
 
@@ -224,6 +229,44 @@ test("Themes UI rejects a fourth manual selection", () => {
   );
   ui.themes["themes.holidays-events.selection"] = multi({ value: "christmas", groupId: "holidays-events" });
   assert.throws(() => uiStateToGenerationControls(ui), /maximum of 3/);
+});
+
+test("untouched Covers UI is absent and preserves the existing prompt exactly", () => {
+  const ui = baseUi();
+  const controls = uiStateToGenerationControls(ui);
+  assert.equal(controls.covers, undefined);
+  const prompt = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt;
+  const withoutCoversCategory = structuredClone(ui);
+  delete withoutCoversCategory.covers;
+  assert.equal(prompt, runUiGeneration({ uiState: withoutCoversCategory, randomState: new RandomRuntimeState() }).prompt);
+});
+
+test("Covers UI adapts contextual Style, Era, and partial metadata", () => {
+  const ui = baseUi();
+  ui.covers["covers.type"] = manual("dvd", "cover-types");
+  ui.covers["covers.style"] = manual("horror", "dvd-styles");
+  ui.covers["covers.era"] = manual("1970s", "cover-eras");
+  ui.covers["covers.metadata.dvd.movie-title"] = { mode: "manual", value: "Castle Blood" };
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.deepEqual(generation.controls.covers, {
+    type: { mode: "manual", id: "dvd", groupId: "cover-types" },
+    style: { mode: "manual", id: "horror", groupId: "dvd-styles" },
+    era: { mode: "manual", id: "1970s", groupId: "cover-eras" },
+    metadata: { "movie-title": "Castle Blood" },
+  });
+  assert.ok(generation.prompt.includes("\n\nPresented as a 1970s horror movie DVD cover"));
+  assert.ok(generation.prompt.includes("titled \"Castle Blood\""));
+});
+
+test("Random Cover Type requests a seed and does not accept incompatible manual text", () => {
+  const randomUi = baseUi();
+  randomUi.covers["covers.type"] = { mode: "random", value: null };
+  const generation = runUiGeneration({ uiState: randomUi, randomState: new RandomRuntimeState(), createSeed: () => 2121 });
+  assert.equal(generation.seed, 2121);
+  assert.equal(generation.controls.covers.type.mode, "random");
+
+  randomUi.covers["covers.metadata.novel.title"] = { mode: "manual", value: "Wrong Context" };
+  assert.throws(() => uiStateToGenerationControls(randomUi), /requires an explicit Cover Type|Random Covers text/);
 });
 
 test("adapted controls pass through prepareGeneration and return the final prompt", () => {

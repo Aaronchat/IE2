@@ -4,6 +4,7 @@ import { EFFECTS_CONFIG } from "../../data/effects/config.js";
 import { ATMOSPHERE_CONFIG } from "../../data/weather/config.js";
 import { TIME_OF_DAY_CONFIG } from "../../data/time-of-day/config.js";
 import { THEMES_CONFIG } from "../../data/themes/config.js";
+import { COVERS_CONFIG } from "../../data/covers/config.js";
 import { assertMode, enforceMax, findEnabledRecord, result } from "./controls.js";
 import { selectRandomFootwear } from "./random/footwear.js";
 import { selectRandomAccessories } from "./random/accessories.js";
@@ -11,6 +12,7 @@ import { selectRandomLocation } from "./random/locations.js";
 import { selectRandomAtmosphere } from "./random/atmosphere.js";
 import { selectRandomTimeOfDay } from "./random/time-of-day.js";
 import { selectRandomThemes } from "./random/themes.js";
+import { coverStyleGroup, selectRandomCoverEra, selectRandomCoverStyle, selectRandomCoverType } from "./random/covers.js";
 
 export function selectSingleRecord(control, groups, label, randomSelector, context, { none = false } = {}) {
   assertMode(control, ["manual", ...(none ? ["none"] : []), ...(randomSelector ? ["random"] : [])], label);
@@ -72,6 +74,64 @@ export function selectThemes(control, context) {
   return result("manual", Object.freeze(selections.map(({ id, groupId }) =>
     findEnabledRecord(CATALOGS.themes, id, "Theme", groupId),
   )));
+}
+
+function cleanMetadata(metadata, typeId) {
+  if (metadata == null) return Object.freeze({});
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) throw new Error("Covers metadata must be an object.");
+  const allowed = new Set(COVERS_CONFIG.metadataFieldsByType[typeId].map((field) => field.id));
+  const out = {};
+  for (const [id, value] of Object.entries(metadata)) {
+    if (!allowed.has(id)) throw new Error(`Covers metadata ${id} is not valid for ${typeId}.`);
+    if (typeof value !== "string") throw new Error(`Covers metadata ${id} must be a string.`);
+    const cleaned = value.replace(/\s+/gu, " ").trim();
+    if (cleaned) out[id] = cleaned;
+  }
+  return Object.freeze(out);
+}
+
+export function selectCovers(control, context) {
+  if (!control) return undefined;
+  const typeControl = control.type;
+  assertMode(typeControl, ["manual", "random"], "Covers Cover Type");
+
+  const type = typeControl.mode === "random"
+    ? selectRandomCoverType(context)
+    : findEnabledRecord([CATALOGS.covers.types], typeControl.id, "Cover Type");
+  const typeResult = result(typeControl.mode, type);
+  const styleGroup = coverStyleGroup(type.id);
+  let styleResult;
+
+  if (typeControl.mode === "random") {
+    if (control.style) throw new Error("Random Cover Type resolves its contextual Style automatically.");
+    if (styleGroup && COVERS_CONFIG.randomTypeResolvesStyle) styleResult = result("random", selectRandomCoverStyle(type.id, context));
+  } else if (control.style) {
+    if (!styleGroup) throw new Error(`${type.name} has no approved Cover Style catalog.`);
+    assertMode(control.style, ["manual", "random"], "Covers Style");
+    const style = control.style.mode === "random"
+      ? selectRandomCoverStyle(type.id, context)
+      : findEnabledRecord([styleGroup], control.style.id, `${type.name} Cover Style`);
+    styleResult = result(control.style.mode, style);
+  }
+
+  let eraResult;
+  if (control.era) {
+    assertMode(control.era, ["manual", "none", "random"], "Covers Era");
+    if (control.era.mode === "none") eraResult = result("none", null);
+    else if (control.era.mode === "random") eraResult = result("random", selectRandomCoverEra(context));
+    else eraResult = result("manual", findEnabledRecord([CATALOGS.covers.eras], control.era.id, "Cover Era"));
+  }
+
+  if (typeControl.mode === "random" && Object.keys(control.metadata ?? {}).length) {
+    throw new Error("Manual Covers metadata requires an explicit Cover Type.");
+  }
+  const value = Object.freeze({
+    type: typeResult,
+    ...(styleResult ? { style: styleResult } : {}),
+    ...(eraResult ? { era: eraResult } : {}),
+    metadata: cleanMetadata(control.metadata, type.id),
+  });
+  return result(typeControl.mode, value);
 }
 
 function selectConfiguredControls(controls, groupsByControl, config, domain) {

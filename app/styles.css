@@ -46,7 +46,8 @@ button:hover { border-color: #53627d; }
 .control-heading label { font-weight: 650; }
 .control-note { color: var(--muted); font-size: 12px; }
 .control-actions { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto; gap: 8px; }
-.control-actions select { width: 100%; }
+.control-actions select, .control-actions input { width: 100%; }
+.control-actions input { grid-column: 1 / -1; }
 .mode-button.active { border-color: var(--accent); background: #23345f; box-shadow: 0 0 0 1px rgba(124,156,255,.18) inset; }
 .none-button.active { background: #30333c; border-color: #747b89; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; margin-top: 8px; }

@@ -1,4 +1,5 @@
 import { CHARACTER_NAMES } from "../data/character/names.js";
+import { COVERS_CONFIG } from "../data/covers/config.js";
 
 const PRIMARY_RANDOM_ID = "clothing.primary-random";
 const PRIMARY_PAIR_SECTIONS = Object.freeze(["clothing.tops", "clothing.bottoms"]);
@@ -116,6 +117,23 @@ function clearManualNameIfNeeded(state, ethnicityMode, ethnicityValue) {
   if (!eligible.includes(selectedName)) clearEntry(state, "character.name");
 }
 
+function clearCoverDependents(state) {
+  clearEntry(state, "covers.style");
+  clearPrefix(state, "covers.metadata");
+}
+
+export function activeCoverType(state) {
+  const current = stateEntry(state, "covers.type");
+  if (!current || current.mode !== "manual") return null;
+  return current.values[0]?.value ?? current.values[0] ?? null;
+}
+
+export function eligibleCoverStyleGroups(state, groupedOptions) {
+  const typeId = activeCoverType(state);
+  const groupId = typeId ? COVERS_CONFIG.styleGroupByType[typeId] : null;
+  return groupId ? groupedOptions.filter((group) => group.groupId === groupId) : [];
+}
+
 export function applyModeGuardrails(state, controlId, mode) {
   if (controlId === PRIMARY_RANDOM_ID && mode === "random") clearPrimarySelections(state);
 
@@ -131,6 +149,7 @@ export function applyModeGuardrails(state, controlId, mode) {
   }
 
   if (controlId === "character.ethnicity") clearManualNameIfNeeded(state, mode, null);
+  if (controlId === "covers.type" && mode !== "manual") clearCoverDependents(state);
 }
 
 export function applyManualGuardrails(state, controlId, selectedValue) {
@@ -149,6 +168,10 @@ export function applyManualGuardrails(state, controlId, selectedValue) {
   if (controlId === "character.ethnicity") {
     const ethnicity = selectedValue?.value ?? selectedValue;
     clearManualNameIfNeeded(state, "manual", ethnicity);
+  }
+  if (controlId === "covers.type") {
+    const nextType = selectedValue?.value ?? selectedValue;
+    if (activeCoverType(state) !== nextType) clearCoverDependents(state);
   }
 }
 

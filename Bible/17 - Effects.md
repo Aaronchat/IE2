@@ -84,7 +84,7 @@ Effects does not create a Lighting system. Natural Light Portrait, Flash Photogr
 
 Cinematic Color Grade, High Fashion Editorial, and Glossy Magazine Look are not approved Effects records; their future ownership remains unresolved.
 
-Covers such as Romance Novel Cover, Album Cover, DVD Cover, VHS Cover, Magazine Cover, and Movie Poster belong to a future separate finished-artifact system and are not Effects.
+Covers such as Romance Novel Cover, Album Cover, DVD Cover, Magazine Cover, and Movie Poster belong to the separate active Covers / Presentation domain and are not Effects. VHS Cover remains unapproved for the initial Covers catalog.
 
 ## Prompt Behavior
 
@@ -110,6 +110,6 @@ Effects validation checks:
 - Atmosphere catalog entries do not leak into Effects
 - deferred Lighting candidates remain absent
 - unresolved Theme/styling candidates remain absent
-- Cover concepts remain absent
+- Cover concepts remain absent from Effects
 
 The validator does not add a compatibility matrix or unrelated visual-style architecture.

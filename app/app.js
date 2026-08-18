@@ -1,7 +1,7 @@
 import { UI_CATEGORIES } from "./ui-data.js";
 import { RandomRuntimeState } from "../engine/selection/index.js";
 import { runUiGeneration } from "./generation-adapter.js";
-import { applyManualGuardrails, applyModeGuardrails, canAddManualSelection, eligibleNameGroups } from "./ui-guardrails.js";
+import { activeCoverType, applyManualGuardrails, applyModeGuardrails, canAddManualSelection, eligibleCoverStyleGroups, eligibleNameGroups } from "./ui-guardrails.js";
 
 const root = document.querySelector("#engine-controls");
 const search = document.querySelector("#control-search");
@@ -21,6 +21,7 @@ const randomState = new RandomRuntimeState();
 const controlViews = new Map();
 const sectionIndicators = [];
 const categoryIndicators = [];
+const conditionalSections = [];
 
 function flattenedOptions(control) {
   return control.options.length ? control.options : control.groupedOptions.flatMap((group) => group.options);
@@ -94,7 +95,9 @@ function renderOptions(select, control) {
     return;
   }
 
-  const groupedOptions = control.id === "character.name" ? eligibleNameGroups(state, control.groupedOptions) : control.groupedOptions;
+  let groupedOptions = control.groupedOptions;
+  if (control.id === "character.name") groupedOptions = eligibleNameGroups(state, groupedOptions);
+  if (control.id === "covers.style") groupedOptions = eligibleCoverStyleGroups(state, groupedOptions);
   for (const group of groupedOptions) {
     const optgroup = document.createElement("optgroup");
     optgroup.label = group.label;
@@ -144,13 +147,20 @@ function renderControl(control, { compact = false } = {}) {
 
   const actionRow = document.createElement("div");
   actionRow.className = "control-actions";
+  const textInput = control.inputType === "text" ? document.createElement("input") : null;
+  if (textInput) {
+    textInput.type = "text";
+    textInput.setAttribute("aria-label", control.label);
+    textInput.placeholder = control.placeholder;
+    actionRow.append(textInput);
+  }
   const hasOptions = control.options.length > 0 || control.groupedOptions.length > 0;
-  const select = hasOptions ? document.createElement("select") : null;
+  const select = !textInput && hasOptions ? document.createElement("select") : null;
   if (select) {
     select.setAttribute("aria-label", control.label);
     renderOptions(select, control);
     actionRow.append(select);
-  } else {
+  } else if (!textInput) {
     actionRow.classList.add("mode-only");
   }
 
@@ -168,7 +178,7 @@ function renderControl(control, { compact = false } = {}) {
     noneButton.type = "button";
     noneButton.className = "mode-button none-button";
     noneButton.dataset.mode = "none";
-    noneButton.textContent = "None";
+    noneButton.textContent = control.noneLabel;
     actionRow.append(noneButton);
   }
 
@@ -185,10 +195,18 @@ function renderControl(control, { compact = false } = {}) {
       select.disabled = !hasManualChoices;
       select.title = hasManualChoices ? "" : "Choose a specific ethnicity to select a manual name. Random Name remains available.";
     }
+    if (control.id === "covers.style") {
+      const hasManualChoices = select.options.length > 1;
+      select.disabled = !hasManualChoices;
+      select.title = hasManualChoices ? "" : "Choose a Cover Type with approved styles first.";
+      const randomButton = wrapper.querySelector('button[data-mode="random"]');
+      if (randomButton) randomButton.disabled = !hasManualChoices;
+    }
   }
 
   function redraw() {
     const current = stateFor(control);
+    if (textInput) textInput.value = current.values[0] ?? "";
     chips.replaceChildren();
     const allOptions = flattenedOptions(control);
     for (const selected of current.values) {
@@ -197,8 +215,9 @@ function renderControl(control, { compact = false } = {}) {
       addChip(chips, found.label, () => {
         current.values = current.values.filter((item) => (item.value ?? item) !== (selected.value ?? selected));
         current.mode = current.values.length ? "manual" : "unselected";
+        if (control.id === "covers.type" && current.mode === "unselected") applyModeGuardrails(state, control.id, "unselected");
         setButtonState(wrapper, current.mode);
-        redraw();
+        redrawAllAffected(control.id);
         updateOutput();
       });
     }
@@ -230,6 +249,18 @@ function renderControl(control, { compact = false } = {}) {
       current.mode = "manual";
       select.value = "";
       redrawAllAffected(control.id);
+      updateOutput();
+    });
+  }
+
+  if (textInput) {
+    textInput.addEventListener("input", () => {
+      const current = stateFor(control);
+      current.values = textInput.value.trim() ? [textInput.value] : [];
+      current.mode = current.values.length ? "manual" : "unselected";
+      generationError.hidden = true;
+      generationError.textContent = "";
+      updateSelectionIndicators();
       updateOutput();
     });
   }
@@ -274,12 +305,25 @@ function updateSelectionIndicators() {
 function redrawAllAffected(controlId) {
   for (const view of controlViews.values()) view.redraw();
   if (controlId === "character.ethnicity") controlViews.get("character.name")?.refreshOptions();
+  if (controlId === "covers.type") controlViews.get("covers.style")?.refreshOptions();
+  updateConditionalVisibility();
   updateSelectionIndicators();
+}
+
+function coverContextAllows(section) {
+  return !section.visibleForCoverTypes?.length || section.visibleForCoverTypes.includes(activeCoverType(state));
+}
+
+function updateConditionalVisibility() {
+  for (const { section, details } of conditionalSections) {
+    details.hidden = !coverContextAllows(section) || details.dataset.searchHidden === "true";
+  }
 }
 
 function renderSection(section) {
   const details = document.createElement("details");
   details.className = "subcategory";
+  conditionalSections.push({ section, details });
   const summary = document.createElement("summary");
   const title = document.createElement("span");
   title.textContent = section.label;
@@ -346,6 +390,7 @@ function renderCategory(category, index) {
 }
 
 UI_CATEGORIES.forEach((category, index) => root.append(renderCategory(category, index)));
+updateConditionalVisibility();
 updateSelectionIndicators();
 updateOutput();
 
@@ -362,8 +407,9 @@ search.addEventListener("input", () => {
     }
   });
   document.querySelectorAll("details.subcategory").forEach((section) => {
-    section.hidden = [...section.querySelectorAll(".control-row")].every((row) => row.hidden);
+    section.dataset.searchHidden = String([...section.querySelectorAll(".control-row")].every((row) => row.hidden));
   });
+  updateConditionalVisibility();
   document.querySelectorAll("details.category").forEach((category) => {
     category.hidden = [...category.querySelectorAll(".control-row")].every((row) => row.hidden);
   });
@@ -386,6 +432,7 @@ clearAll.addEventListener("click", () => {
   }
   generationError.hidden = true;
   generationError.textContent = "";
+  updateConditionalVisibility();
   updateSelectionIndicators();
   updateOutput();
 });

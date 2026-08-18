@@ -173,6 +173,43 @@ test("Theme None emits nothing and remains distinguishable", () => {
   assert.ok(result.omissions.some((entry) => entry.section === "themes" && entry.state === "user-none"));
 });
 
+test("untouched Covers emits nothing and leaves the normal prompt byte-for-byte unchanged", () => {
+  const result = buildPrompt(resolve());
+  assert.deepEqual(result.sections.covers, []);
+  assert.equal(result.prompt, result.fragments.join(", "));
+  assert.equal(result.prompt.includes("Presented as"), false);
+  assert.equal(result.prompt.includes("\n\n"), false);
+});
+
+test("Covers appends one separate paragraph after Themes while preserving Camera", () => {
+  const result = buildPrompt(resolve({
+    themes: { mode: "manual", selections: [{ id: "gothic" }] },
+    covers: {
+      type: { mode: "manual", id: "dvd" },
+      style: { mode: "manual", id: "horror" },
+      era: { mode: "manual", id: "1970s" },
+      metadata: { "movie-title": "Castle Blood", "starring-name": "Emily Stone" },
+    },
+  }));
+  assert.ok(result.sections.camera.includes("captured with a Canon EOS R5"));
+  assert.deepEqual(result.sections.covers, ["Presented as a 1970s horror movie DVD cover, titled \"Castle Blood\", starring Emily Stone, featuring a fictional tagline."]);
+  const [normal, presentation] = result.prompt.split("\n\n");
+  assert.ok(normal.endsWith("Theme: Gothic."));
+  assert.equal(presentation, result.sections.covers[0]);
+});
+
+test("Covers supports blank generated text and partial manual overrides", () => {
+  const romance = buildPrompt(resolve({ covers: {
+    type: { mode: "manual", id: "novel" }, style: { mode: "manual", id: "romance" },
+  } }));
+  assert.equal(romance.sections.covers[0], "Presented as a cheesy romance novel cover, featuring fake review quotes, an innuendo-style book title, and an innuendo-style author name.");
+
+  const album = buildPrompt(resolve({ covers: {
+    type: { mode: "manual", id: "album" }, metadata: { "artist-band": "The Short and Curlies" },
+  } }));
+  assert.equal(album.sections.covers[0], "Presented as an album cover by The Short and Curlies, featuring a fictional album title.");
+});
+
 test("Built Outfit emits its authoritative garment prompts in structure order", () => {
   const state = resolve({ clothing: { primary: {
     mode: "manual", path: "built-outfit", structure: "top-bottom",

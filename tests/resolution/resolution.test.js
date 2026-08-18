@@ -67,6 +67,16 @@ test("Themes pass through Resolution unchanged and do not alter other domains", 
   assert.equal(resolved.selections.clothing.primary.value.builtOutfit.outfit.top.id, "fitted-tank-top");
 });
 
+test("Covers passes through Resolution unchanged and does not alter Camera", () => {
+  const selection = selectGeneration({ controls: { covers: {
+    type: { mode: "manual", id: "magazine" },
+    style: { mode: "manual", id: "mens-magazine" },
+  } } });
+  const resolved = resolveGeneration(selection);
+  assert.equal(resolved.selections.covers, selection.selections.covers);
+  assert.equal(resolved.selections.camera["camera-body"].value.id, "canon-eos-r5");
+});
+
 test("Coverage merges Clothing, Footwear, Accessories conservatively and drives tattoo visibility", () => {
   const r = resolve({
     clothing: { primary: { mode: "manual", path: "built-outfit", structure: "top-bottom", outfit: { top: { id: "fitted-tank-top", groupId: "tank-tops" }, bottom: { id: "skinny-jeans", groupId: "jeans" } } } },

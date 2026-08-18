@@ -24,6 +24,9 @@ import { FILM_AGE } from "../../data/effects/film-age.js";
 import { THEME_COLORS } from "../../data/themes/colors.js";
 import { THEME_HOLIDAYS_EVENTS } from "../../data/themes/holidays-events.js";
 import { THEME_GENRES_AESTHETICS } from "../../data/themes/genres-aesthetics.js";
+import { COVER_TYPES } from "../../data/covers/cover-types.js";
+import { COVER_STYLE_GROUPS } from "../../data/covers/styles.js";
+import { COVER_ERAS } from "../../data/covers/eras.js";
 
 export const CATALOGS = Object.freeze({
   footwear: FOOTWEAR_RANDOM_BUCKETS,
@@ -45,4 +48,5 @@ export const CATALOGS = Object.freeze({
   }),
   effects: Object.freeze({ "effects-imperfections": EFFECTS_IMPERFECTIONS, "film-age": FILM_AGE }),
   themes: Object.freeze([THEME_COLORS, THEME_HOLIDAYS_EVENTS, THEME_GENRES_AESTHETICS]),
+  covers: Object.freeze({ types: COVER_TYPES, styles: COVER_STYLE_GROUPS, eras: COVER_ERAS }),
 });

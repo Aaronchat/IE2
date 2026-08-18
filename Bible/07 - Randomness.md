@@ -391,6 +391,18 @@ Only unique enabled Themes may appear in a generated stack. After each Theme is 
 
 Individual Themes use effective catalog weights, standard 25 / +5 item decay, lifetime counters, and the shared seeded RNG. Theme Random adds no cross-domain compatibility or interpretation.
 
+## Covers / Presentation
+
+Covers Random is contextual and hierarchical.
+
+Random Cover Type selects one enabled record from the Cover Type group. When the resolved type has an approved Style group, Random Cover Type then selects one enabled record only from that contextual group. Movie Poster has no approved initial Style group and therefore resolves without a Style.
+
+For an explicit Cover Type, Random Style selects only from that type's approved Style group. Styles are never selected from one global cross-type pool.
+
+Random Era selects one enabled decade from the Era group only when the user explicitly chooses Random Era. A blank Era remains blank.
+
+Cover Types, Styles, and Eras use effective catalog weights, standard 25 / +5 item decay, lifetime counters, and the shared seeded RNG. Random always resolves concrete records and never emits the word Random.
+
 ## Unsupported and Reserved Domains
 
 Camera has no Random system.
@@ -431,6 +443,7 @@ Random-specific tests verify:
 - Accessory 0/1/2 odds structure and two-category exclusion
 - Packages use a flat pool
 - Themes use approved 50/40/10 stack-size odds and a flat unique-record pool
+- Covers uses contextual Type -> Style Random resolution with optional independent Era Random
 - Camera and Effects receive no Random selector
 - catalog files do not acquire runtime counter or decay fields
 

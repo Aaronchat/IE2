@@ -7,7 +7,7 @@ const byId = new Map(controls.map((entry) => [entry.id, entry]));
 
 test("UI exposes all active top-level domains", () => {
   assert.deepEqual(UI_CATEGORIES.map((entry) => entry.id), [
-    "character", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes",
+    "character", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes", "covers",
   ]);
 });
 
@@ -102,8 +102,8 @@ test("Effects is visually nested beneath Camera without changing Effects control
   assert.equal(UI_CATEGORIES.some((entry) => entry.id === "effects"), false);
 });
 
-test("Themes is final and exposes three organizational categories with parent Random/None", () => {
-  const themes = UI_CATEGORIES.at(-1);
+test("Themes remains the final normal prompt domain and exposes its approved stack UI", () => {
+  const themes = UI_CATEGORIES.at(-2);
   assert.equal(themes.id, "themes");
   assert.deepEqual(themes.sections.map((entry) => entry.label), ["Colors", "Holidays & Events", "Genres & Aesthetics"]);
   assert.equal(themes.action.id, "themes.selection");
@@ -112,6 +112,24 @@ test("Themes is final and exposes three organizational categories with parent Ra
   assert.equal(themes.action.none, true);
   assert.equal(themes.action.defaultMode, "none");
   for (const section of themes.sections) assert.equal(section.controls[0].maxSelections, 3);
+});
+
+test("Covers / Presentation is final with contextual Styles, optional Era, and text inputs", () => {
+  const covers = UI_CATEGORIES.at(-1);
+  assert.equal(covers.id, "covers");
+  assert.equal(covers.label, "Covers / Presentation");
+  assert.equal(byId.get("covers.type").random, true);
+  assert.equal(byId.get("covers.type").defaultMode, "unselected");
+  assert.deepEqual(byId.get("covers.style").groupedOptions.map((group) => group.groupId), [
+    "novel-styles", "album-styles", "dvd-styles", "magazine-styles",
+  ]);
+  assert.equal(byId.get("covers.style").groupedOptions.some((group) => group.groupId === "movie-poster-styles"), false);
+  assert.equal(byId.get("covers.era").random, true);
+  assert.equal(byId.get("covers.era").none, true);
+  assert.equal(byId.get("covers.era").noneLabel, "Blank");
+  assert.equal(byId.get("covers.metadata.novel.title").inputType, "text");
+  assert.equal(byId.get("covers.metadata.album.artist-band").inputType, "text");
+  assert.equal(byId.get("covers.metadata.magazine.primary-headline").inputType, "text");
 });
 
 test("remaining garment categories expose Condition under Advanced", () => {

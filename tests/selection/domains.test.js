@@ -94,3 +94,26 @@ test("Theme Random is reproducible with a seed", () => {
   assert.deepEqual(first, second);
   assert.ok(first.length >= 1 && first.length <= 3);
 });
+
+test("Covers enforces contextual Styles, optional Era, and explicit-type metadata", () => {
+  const selected = selectGeneration({ controls: { covers: {
+    type: { mode: "manual", id: "dvd" },
+    style: { mode: "manual", id: "horror" },
+    era: { mode: "manual", id: "1970s" },
+    metadata: { "movie-title": "Castle Blood" },
+  } } }).selections.covers;
+  assert.equal(selected.value.type.value.id, "dvd");
+  assert.equal(selected.value.style.value.id, "horror");
+  assert.equal(selected.value.era.value.id, "1970s");
+  assert.deepEqual(selected.value.metadata, { "movie-title": "Castle Blood" });
+
+  assert.throws(() => selectGeneration({ controls: { covers: {
+    type: { mode: "manual", id: "novel" }, style: { mode: "manual", id: "metal" },
+  } } }), /Unknown Novel Cover Style/);
+  assert.throws(() => selectGeneration({ controls: { covers: {
+    type: { mode: "manual", id: "movie-poster" }, style: { mode: "random" },
+  } }, random: { seed: 1 } }), /no approved Cover Style/);
+  assert.throws(() => selectGeneration({ controls: { covers: {
+    type: { mode: "random" }, metadata: { title: "Nope" },
+  } }, random: { seed: 1 } }), /requires an explicit Cover Type/);
+});

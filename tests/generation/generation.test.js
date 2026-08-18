@@ -101,6 +101,15 @@ test("Theme Random runs through the complete pipeline and emits the final sectio
   assert.ok(result.prompt.prompt.endsWith(result.prompt.sections.themes[0]));
 });
 
+test("Covers Random runs through the full pipeline and emits a concrete presentation paragraph", () => {
+  const result = prepareGeneration({ controls: { covers: { type: { mode: "random" }, era: { mode: "random" } } }, random: { seed: "covers-pipeline" } });
+  assert.equal(result.selection.selections.covers.mode, "random");
+  assert.equal(result.resolved.selections.covers, result.selection.selections.covers);
+  assert.equal(result.prompt.sections.covers.length, 1);
+  assert.ok(result.prompt.prompt.includes("\n\nPresented as "));
+  assert.equal(/\brandom\b/iu.test(result.prompt.sections.covers[0]), false);
+});
+
 test("orchestrator coordinates public APIs and completes only after Prompt Building", () => {
   const source = fs.readFileSync(new URL("../../engine/generation/index.js", import.meta.url), "utf8");
   const selectionIndex = source.indexOf("selectGeneration(");

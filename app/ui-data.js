@@ -13,6 +13,7 @@ import { EFFECTS_CONFIG } from "../data/effects/config.js";
 import { ATMOSPHERE_CONFIG } from "../data/weather/config.js";
 import { TIME_OF_DAY_CONFIG } from "../data/time-of-day/config.js";
 import { CLOTHING_CONDITION, TOP_DETAIL_CONFIG } from "../data/clothing/top-details.js";
+import { COVERS_CONFIG } from "../data/covers/config.js";
 import {
   TOP_RANDOM_BUCKETS,
   BOTTOM_RANDOM_BUCKETS,
@@ -27,9 +28,9 @@ import {
 const option = (value, label = value, groupId = null) => Object.freeze({ value, label, groupId });
 const stringOptions = (values) => Object.freeze(values.map((value) => option(value)));
 const recordOptions = (groups) => Object.freeze(groups.flatMap((group) => group.items.map((item) => option(item.id, item.name, group.id))));
-const groupedRecordOptions = (groups) => Object.freeze(groups.map((group) => Object.freeze({ label: group.name, options: Object.freeze(group.items.map((item) => option(item.id, item.name, group.id))) })));
-const control = ({ id, label, options = [], groupedOptions = [], random = false, none = false, defaultValue = null, defaultMode = "unselected", maxSelections = 1, note = "" }) => Object.freeze({ id, label, options, groupedOptions, random, none, defaultValue, defaultMode, maxSelections, note });
-const section = (id, label, controls, action = null, advancedControls = []) => Object.freeze({ id, label, controls: Object.freeze(controls), advancedControls: Object.freeze(advancedControls), action });
+const groupedRecordOptions = (groups) => Object.freeze(groups.map((group) => Object.freeze({ groupId: group.id, label: group.name, options: Object.freeze(group.items.map((item) => option(item.id, item.name, group.id))) })));
+const control = ({ id, label, options = [], groupedOptions = [], random = false, none = false, noneLabel = "None", defaultValue = null, defaultMode = "unselected", maxSelections = 1, note = "", inputType = "select", placeholder = "" }) => Object.freeze({ id, label, options, groupedOptions, random, none, noneLabel, defaultValue, defaultMode, maxSelections, note, inputType, placeholder });
+const section = (id, label, controls, action = null, advancedControls = [], visibleForCoverTypes = []) => Object.freeze({ id, label, controls: Object.freeze(controls), advancedControls: Object.freeze(advancedControls), action, visibleForCoverTypes: Object.freeze(visibleForCoverTypes) });
 const category = (id, label, sections, action = null) => Object.freeze({ id, label, sections: Object.freeze(sections), action });
 
 const hairColorGroups = Object.freeze(Object.entries(CHARACTER_HAIR.colors).map(([key, values]) => Object.freeze({ label: key === "natural" ? "Natural" : "Fantasy", options: stringOptions(values) })));
@@ -160,6 +161,27 @@ const themeAction = control({
   note: "Random stack size: 50% single, 40% double, 10% triple. Maximum three unique Themes.",
 });
 
+const coverSections = [
+  section("covers.presentation", "Presentation", [
+    control({ id: "covers.type", label: "Cover Type", groupedOptions: groupedRecordOptions([CATALOGS.covers.types]), random: true, note: "Blank leaves the generated prompt unchanged." }),
+    control({ id: "covers.style", label: "Style / Subtype", groupedOptions: groupedRecordOptions(CATALOGS.covers.styles), random: true, note: "Choose an explicit Cover Type first. Random Cover Type resolves a valid contextual style automatically." }),
+    control({ id: "covers.era", label: "Era / Decade", groupedOptions: groupedRecordOptions([CATALOGS.covers.eras]), random: true, none: true, noneLabel: "Blank", note: "Optional. Random resolves a concrete decade." }),
+  ]),
+  ...Object.entries(COVERS_CONFIG.metadataFieldsByType).map(([typeId, fields]) => section(
+    `covers.metadata.${typeId}`,
+    `${CATALOGS.covers.types.items.find((record) => record.id === typeId).name} Text`,
+    fields.map((field) => control({
+      id: `covers.metadata.${typeId}.${field.id}`,
+      label: field.label,
+      inputType: "text",
+      placeholder: "Blank = image generator decides",
+    })),
+    null,
+    [],
+    [typeId],
+  )),
+];
+
 export const UI_CATEGORIES = Object.freeze([
   category("character", "Character", characterSections),
   category("clothing", "Clothing", clothingSections, control({ id: "clothing.primary-random", label: "Primary Outfit", random: true, note: "Uses the existing Built Outfit / Package Random path." })),
@@ -170,6 +192,7 @@ export const UI_CATEGORIES = Object.freeze([
   category("time-of-day", "Time of Day", [], timeAction),
   category("camera", "Camera", [...cameraSections, ...effectsSections]),
   category("themes", "Themes", themeSections, themeAction),
+  category("covers", "Covers / Presentation", coverSections),
 ]);
 
 export function allUiControls() {

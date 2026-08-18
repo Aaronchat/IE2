@@ -111,6 +111,76 @@ function themeFragments(selection) {
   return Object.freeze([`Theme: ${stack}`]);
 }
 
+function quoted(value) {
+  return JSON.stringify(value);
+}
+
+function joinedList(items) {
+  if (items.length < 2) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
+}
+
+function novelCoverText(metadata, romance) {
+  const title = metadata.title;
+  const author = metadata.author;
+  const extras = [];
+  if (romance) extras.push("fake review quotes");
+  if (!title) extras.push(romance ? "an innuendo-style book title" : "a fictional book title");
+  if (!author) extras.push(romance ? "an innuendo-style author name" : "a fictional author name");
+  const lead = [title ? `titled ${quoted(title)}` : "", author ? `by ${author}` : ""].filter(Boolean).join(" ");
+  return [lead, extras.length ? `featuring ${joinedList(extras)}` : ""].filter(Boolean).join(", ");
+}
+
+function albumCoverText(metadata) {
+  const title = metadata["album-title"];
+  const artist = metadata["artist-band"];
+  const lead = [artist ? `by ${artist}` : "", title ? `titled ${quoted(title)}` : ""].filter(Boolean).join(", ");
+  const missing = [!artist ? "a fictional artist or band name" : "", !title ? "a fictional album title" : ""].filter(Boolean);
+  return [lead, missing.length ? `featuring ${joinedList(missing)}` : ""].filter(Boolean).join(", ");
+}
+
+function movieCoverText(metadata) {
+  const fields = [
+    ["movie-title", "a fictional movie title", (value) => `titled ${quoted(value)}`],
+    ["tagline", "a fictional tagline", (value) => `with the tagline ${quoted(value)}`],
+    ["starring-name", "a fictional starring name", (value) => `starring ${value}`],
+  ];
+  const supplied = fields.filter(([id]) => metadata[id]).map(([id, , format]) => format(metadata[id]));
+  const missing = fields.filter(([id]) => !metadata[id]).map(([, fallback]) => fallback);
+  return [...supplied, missing.length ? `featuring ${joinedList(missing)}` : ""].filter(Boolean).join(", ");
+}
+
+function magazineCoverText(metadata) {
+  const name = metadata["magazine-name"];
+  const headline = metadata["primary-headline"];
+  const supplied = [name ? `with the masthead ${quoted(name)}` : "", headline ? `featuring the primary headline ${quoted(headline)}` : ""].filter(Boolean);
+  const missing = [!name ? "a fictional magazine title" : "", !headline ? "fictional cover lines" : ""].filter(Boolean);
+  return [...supplied, missing.length ? `featuring ${joinedList(missing)}` : ""].join(", ");
+}
+
+function coverText(typeId, metadata, styleId) {
+  if (typeId === "novel") return novelCoverText(metadata, styleId === "romance");
+  if (typeId === "album") return albumCoverText(metadata);
+  if (typeId === "dvd" || typeId === "movie-poster") return movieCoverText(metadata);
+  if (typeId === "magazine") return magazineCoverText(metadata);
+  throw new Error(`Unknown Cover Type ${typeId}.`);
+}
+
+function coverFragments(selection) {
+  if (!selection?.value) return Object.freeze([]);
+  const type = selection.value.type?.value;
+  if (!type) throw new Error("Covers requires a resolved Cover Type.");
+  const style = selection.value.style?.value;
+  const era = selection.value.era?.value;
+  const presentation = style ? promptOf(style, "Cover Style") : promptOf(type, "Cover Type");
+  const phrase = `${era ? `${promptOf(era, "Cover Era")} ` : ""}${presentation}`;
+  const article = /^[aeiou]/iu.test(phrase) ? "an" : "a";
+  const secondary = coverText(type.id, selection.value.metadata ?? {}, style?.id);
+  const separator = secondary.startsWith("by ") ? " " : ", ";
+  return Object.freeze([`Presented as ${article} ${phrase}${secondary ? `${separator}${secondary}` : ""}.`]);
+}
+
 function omissionStates(selections) {
   const omissions = [];
   const note = (section, control, state) => omissions.push(Object.freeze({ section, control, state }));
@@ -165,13 +235,15 @@ export function buildPrompt(resolvedState) {
     camera: configuredFragments(selections.camera, CATALOGS.camera, CAMERA_CONFIG, "Camera"),
     effects: configuredFragments(selections.effects, CATALOGS.effects, EFFECTS_CONFIG, "Effects"),
     themes: themeFragments(selections.themes),
+    covers: coverFragments(selections.covers),
   });
 
   const fragments = Object.freeze(PROMPT_SECTION_ORDER.flatMap((section) => sections[section]));
+  const normalPrompt = fragments.join(", ");
   return Object.freeze({
     sections,
     omissions: omissionStates(selections),
     fragments,
-    prompt: fragments.join(", "),
+    prompt: sections.covers.length ? `${normalPrompt}.\n\n${sections.covers[0]}` : normalPrompt,
   });
 }

@@ -241,6 +241,54 @@ function adaptThemes(source = {}) {
   return selections.length ? { mode: "manual", selections } : undefined;
 }
 
+function adaptCovers(source = {}) {
+  const typeControl = entry(source, "covers.type");
+  const styleControl = entry(source, "covers.style");
+  const eraControl = entry(source, "covers.era");
+  const metadataEntries = Object.entries(source).filter(([id, control]) => (
+    id.startsWith("covers.metadata.") && control?.mode === "manual" && selectedValues(control).length
+  ));
+  const subordinateActive = [styleControl, eraControl].some((control) => control && !["unselected", "none"].includes(control.mode)) || metadataEntries.length;
+
+  if (!typeControl || typeControl.mode === "unselected") {
+    if (subordinateActive) throw new Error("Covers Style, Era, and text require a Cover Type.");
+    return undefined;
+  }
+  if (!["manual", "random"].includes(typeControl.mode)) throw new Error(`Cover Type does not support UI mode ${typeControl.mode}.`);
+
+  const type = typeControl.mode === "random" ? { mode: "random" } : { mode: "manual", ...manualRef(typeControl, "Cover Type") };
+  const out = { type };
+
+  if (styleControl && styleControl.mode !== "unselected") {
+    if (type.mode === "random") throw new Error("Random Cover Type resolves its contextual Style automatically.");
+    if (styleControl.mode === "random") out.style = { mode: "random" };
+    else if (styleControl.mode === "manual") out.style = { mode: "manual", ...manualRef(styleControl, "Cover Style") };
+    else throw new Error(`Cover Style does not support UI mode ${styleControl.mode}.`);
+  }
+
+  if (eraControl && eraControl.mode !== "unselected") {
+    if (eraControl.mode === "random" || eraControl.mode === "none") out.era = { mode: eraControl.mode };
+    else if (eraControl.mode === "manual") out.era = { mode: "manual", ...manualRef(eraControl, "Cover Era") };
+    else throw new Error(`Cover Era does not support UI mode ${eraControl.mode}.`);
+  }
+
+  if (metadataEntries.length) {
+    if (type.mode === "random") throw new Error("Manual Covers text requires an explicit Cover Type.");
+    const metadata = {};
+    for (const [id, control] of metadataEntries) {
+      const [, , typeId, fieldId] = id.split(".");
+      if (typeId !== type.id) throw new Error(`Covers text for ${typeId} cannot be used with ${type.id}.`);
+      const value = selectedValues(control)[0];
+      if (typeof value !== "string") throw new Error(`${fieldId} must be text.`);
+      const cleaned = value.replace(/\s+/gu, " ").trim();
+      if (cleaned) metadata[fieldId] = cleaned;
+    }
+    if (Object.keys(metadata).length) out.metadata = metadata;
+  }
+
+  return out;
+}
+
 export function uiStateToGenerationControls(ui = {}) {
   const controls = {};
   const character = adaptCharacter(ui); if (Object.keys(character).length) controls.character = character;
@@ -253,6 +301,7 @@ export function uiStateToGenerationControls(ui = {}) {
   const camera = adaptConfigured(ui.camera, "camera"); if (Object.keys(camera).length) controls.camera = camera;
   const effects = adaptConfigured({ ...(ui.effects ?? {}), ...(ui.camera ?? {}) }, "effects"); if (Object.keys(effects).length) controls.effects = effects;
   const themes = adaptThemes(ui.themes); if (themes) controls.themes = themes;
+  const covers = adaptCovers(ui.covers); if (covers) controls.covers = covers;
   return controls;
 }
 

@@ -146,7 +146,7 @@ Camera does not own:
 - Lighting
 - Themes
 - physical Camera accessories
-- Covers / finished-artifact formats
+- Covers / finished-artifact formats, which are owned by the separate active Covers domain
 
 A physical camera appearing in an image remains an Accessories concept.
 
