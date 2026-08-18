@@ -117,3 +117,16 @@ test("Covers enforces contextual Styles, optional Era, and explicit-type metadat
     type: { mode: "random" }, metadata: { title: "Nope" },
   } }, random: { seed: 1 } }), /requires an explicit Cover Type/);
 });
+
+test("Tattoos select multiple Generic and Specific designs in order and reject invalid inputs", () => {
+  const tattoos = selectGeneration({ controls: { tattoos: [
+    { placementId: "left-arm", patternId: "full-sleeve", design: { mode: "generic", styleId: "watercolor" } },
+    { placementId: "right-arm", patternId: "lower-large", design: { mode: "specific", text: "  MBOTF  " } },
+  ] } }).selections.tattoos;
+  assert.equal(tattoos.mode, "manual");
+  assert.equal(tattoos.value[0].placement.id, "left-arm");
+  assert.equal(tattoos.value[0].design.style.id, "watercolor");
+  assert.equal(tattoos.value[1].design.text, "MBOTF");
+  assert.throws(() => selectGeneration({ controls: { tattoos: [{ placementId: "left-arm", patternId: "full-leg", design: { mode: "generic", styleId: "watercolor" } }] } }), /not valid for Left Arm/);
+  assert.throws(() => selectGeneration({ controls: { tattoos: [{ placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "   " } }] } }), /cannot be blank/);
+});

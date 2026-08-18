@@ -14,6 +14,7 @@ import { ATMOSPHERE_CONFIG } from "../data/weather/config.js";
 import { TIME_OF_DAY_CONFIG } from "../data/time-of-day/config.js";
 import { CLOTHING_CONDITION, TOP_DETAIL_CONFIG } from "../data/clothing/top-details.js";
 import { COVERS_CONFIG } from "../data/covers/config.js";
+import { TATTOO_GENERIC_STYLES, TATTOO_PLACEMENTS } from "../data/tattoos/config.js";
 import {
   TOP_RANDOM_BUCKETS,
   BOTTOM_RANDOM_BUCKETS,
@@ -31,7 +32,7 @@ const recordOptions = (groups) => Object.freeze(groups.flatMap((group) => group.
 const groupedRecordOptions = (groups) => Object.freeze(groups.map((group) => Object.freeze({ groupId: group.id, label: group.name, options: Object.freeze(group.items.map((item) => option(item.id, item.name, group.id))) })));
 const control = ({ id, label, options = [], groupedOptions = [], random = false, none = false, noneLabel = "None", defaultValue = null, defaultMode = "unselected", maxSelections = 1, note = "", inputType = "select", placeholder = "" }) => Object.freeze({ id, label, options, groupedOptions, random, none, noneLabel, defaultValue, defaultMode, maxSelections, note, inputType, placeholder });
 const section = (id, label, controls, action = null, advancedControls = [], visibleForCoverTypes = []) => Object.freeze({ id, label, controls: Object.freeze(controls), advancedControls: Object.freeze(advancedControls), action, visibleForCoverTypes: Object.freeze(visibleForCoverTypes) });
-const category = (id, label, sections, action = null) => Object.freeze({ id, label, sections: Object.freeze(sections), action });
+const category = (id, label, sections, action = null, repeatable = null) => Object.freeze({ id, label, sections: Object.freeze(sections), action, repeatable });
 
 const hairColorGroups = Object.freeze(Object.entries(CHARACTER_HAIR.colors).map(([key, values]) => Object.freeze({ label: key === "natural" ? "Natural" : "Fantasy", options: stringOptions(values) })));
 const hairStyleGroups = Object.freeze(Object.entries(CHARACTER_HAIR.styles).map(([key, values]) => Object.freeze({ label: key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()), options: stringOptions(values) })));
@@ -105,6 +106,15 @@ const conditionAdvancedControls = Object.freeze([control({
 function conditionControls(sectionId) {
   return Object.freeze(conditionAdvancedControls.map((entry) => Object.freeze({ ...entry, id: `${sectionId}.advanced.condition` })));
 }
+
+export const TATTOO_UI_CONFIG = Object.freeze({
+  placements: Object.freeze(TATTOO_PLACEMENTS.map((placement) => Object.freeze({
+    value: placement.id,
+    label: placement.name,
+    patterns: Object.freeze(placement.patterns.map((pattern) => option(pattern.id, pattern.name))),
+  }))),
+  genericStyles: Object.freeze(TATTOO_GENERIC_STYLES.map((style) => option(style.id, style.name))),
+});
 
 const clothingSections = [
   clothingSection("clothing.tops", "Tops", TOP_RANDOM_BUCKETS, { advancedControls: topAdvancedControls }),
@@ -184,6 +194,7 @@ const coverSections = [
 
 export const UI_CATEGORIES = Object.freeze([
   category("character", "Character", characterSections),
+  category("tattoos", "Tattoos", [], null, "tattoos"),
   category("clothing", "Clothing", clothingSections, control({ id: "clothing.primary-random", label: "Primary Outfit", random: true, note: "Uses the existing Built Outfit / Package Random path." })),
   category("footwear", "Footwear", footwearSections, control({ id: "footwear.selection", label: "Footwear", random: true })),
   category("accessories", "Accessories", accessorySections, control({ id: "accessories.selection", label: "Accessories", random: true, maxSelections: 2 })),

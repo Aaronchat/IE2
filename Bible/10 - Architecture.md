@@ -18,6 +18,7 @@ Infinite Engine/
 |   |-- time-of-day/
 |   |-- camera/
 |   |-- effects/
+|   |-- tattoos/
 |   |-- weather/
 |   |-- poses/
 |   |-- themes/
@@ -68,6 +69,7 @@ Folders are created when their first approved content is ready. The number of da
 | Time-of-Day-system explanation | `Bible/15 - Time of Day.md` |
 | Camera-system explanation | `Bible/16 - Camera.md` |
 | Effects-system explanation | `Bible/17 - Effects.md` |
+| Tattoo-system explanation | `Bible/19 - Tattoos.md` |
 | Theme-system explanation | `Bible/05 - Themes.md` |
 | Covers / Presentation-system explanation | `Bible/18 - Covers.md` |
 | Package-system explanation | `Bible/06 - Packages.md` |
@@ -83,6 +85,7 @@ Folders are created when their first approved content is ready. The number of da
 | Time of Day records and selection configuration | `data/time-of-day/` |
 | Camera records and selection configuration | `data/camera/` |
 | Effects records and selection configuration | `data/effects/` |
+| Tattoo placements, coverage patterns, and Generic styles | `data/tattoos/` |
 | Theme records and selection configuration | `data/themes/` |
 | Covers records and selection configuration | `data/covers/` |
 | Complete outfits, uniforms, and costumes | `data/packages/` |
@@ -125,7 +128,7 @@ Selection results preserve selection provenance (`manual`, `default`, `none`, or
 
 ## Resolution Engine
 
-`engine/resolution/` consumes a completed Selection result and produces the coherent structured generation state used by later Prompt Building. Resolution preserves Selection provenance, enforces approved cross-domain compatibility, applies Location consequences such as indoor Atmosphere suppression, preserves Built Outfit and Package structure, and calculates final body coverage and tattoo eligibility. Resolution does not perform ordinary re-selection, assemble final prompt prose, or call `completeGeneration()`. Themes and Covers pass through Resolution unchanged and create no cross-domain compatibility or mapping behavior.
+`engine/resolution/` consumes a completed Selection result and produces the coherent structured generation state used by later Prompt Building. Resolution preserves Selection provenance, enforces approved cross-domain compatibility, applies Location consequences such as indoor Atmosphere suppression, preserves Built Outfit and Package structure, and calculates final body coverage and tattoo eligibility. Tattoo Resolution consumes the existing `tattooVisibility`, preserves the original selected Tattoo list, and records visible/omitted Tattoos without relocation or rerolling. Resolution does not perform ordinary re-selection, assemble final prompt prose, or call `completeGeneration()`. Themes and Covers pass through Resolution unchanged and create no cross-domain compatibility or mapping behavior.
 
 Clothing compatibility helpers owned by Resolution may be called by Random Selection when an approved compatibility decision is required during assembly. Those helpers do not own Random weighting, decay, RNG, or lifetime behavior.
 
@@ -136,22 +139,23 @@ Clothing compatibility helpers owned by Resolution may be called by Random Selec
 Canonical section order is:
 
 1. Character
-2. Clothing / Package
-3. Footwear
-4. Accessories
-5. Location
-6. Atmosphere
-7. Time of Day
-8. Camera
-9. Effects
-10. Themes
+2. Tattoos
+3. Clothing / Package
+4. Footwear
+5. Accessories
+6. Location
+7. Atmosphere
+8. Time of Day
+9. Camera
+10. Effects
+11. Themes
 
 Covers / Presentation is not inserted into this comma-separated order. When active, it is appended afterward as a separate paragraph. When untouched, it contributes nothing and the normal prompt string remains unchanged.
 
-Catalog-owned `prompt` fields are authoritative wherever they exist. Package prompts are authoritative for Packages; Package-local components are not emitted. Character currently has no catalog prompt fields, so Prompt Building applies fixed deterministic formatting to active Character values while omitting Character Name as engine metadata. Character Features emit only their selected feature wording; placement-sensitive tattoo prompting remains deferred until active tattoo records exist and must use Resolution's `tattooVisibility` rather than recalculating coverage.
+Catalog-owned `prompt` fields are authoritative wherever they exist. Package prompts are authoritative for Packages; Package-local components are not emitted. Character currently has no catalog prompt fields, so Prompt Building applies fixed deterministic formatting to active Character values while omitting Character Name as engine metadata. Character Features emit only their selected feature wording. Tattoos emit as their own section immediately after Character and must consume Resolution-approved visible Tattoos rather than recalculating coverage.
 
 Multiple Accessories, Atmosphere selections, and Theme selections are emitted in established catalog order. Camera controls and Effects controls are emitted in their established configuration order, with multi-select values emitted in catalog order. Active Themes are combined into one compact final `Theme:` fragment. The first eight approved Camera defaults are positive generation instructions and therefore emit their authoritative prompts. Camera Spatial-Safe None, Effects None/default-empty states, Theme None, other user-selected None states, and Resolution-suppressed Atmosphere states emit no positive prompt text.
 
 Active Covers consume only their resolved Cover Type, contextual Style, optional Era, and optional contextual text. Covers does not rewrite the normal prompt or remove Camera. Its output is one compact finished-artifact instruction in a second paragraph.
 
-Normal prompt fragments are whitespace-normalized, trailing separator punctuation is removed, and non-empty fragments are joined with `, `. Prompt Building does not deduplicate fragments or rewrite authoritative catalog wording. Its structured result preserves silent-state distinctions through omission metadata for user None, default None, and Resolution suppression.
+Normal prompt fragments are whitespace-normalized, trailing separator punctuation is removed, and non-empty fragments are joined with `, `. Prompt Building does not deduplicate fragments or rewrite authoritative catalog wording. Its structured result preserves silent-state distinctions through omission metadata for user None, default None, Resolution-suppressed Tattoos, and other Resolution suppression.

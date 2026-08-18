@@ -22,7 +22,7 @@ test("same resolved state produces the same structured result and final prompt",
 });
 
 test("canonical section ordering is fixed", () => {
-  assert.deepEqual(PROMPT_SECTION_ORDER, ["character", "clothing", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects", "themes"]);
+  assert.deepEqual(PROMPT_SECTION_ORDER, ["character", "tattoos", "clothing", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects", "themes"]);
 });
 
 test("Character uses approved deterministic formatting and includes Name first", () => {
@@ -287,4 +287,34 @@ test("Clothing None omits only that top-bottom slot from the prompt", () => {
   const result = buildPrompt(state);
   assert.deepEqual(result.sections.clothing, ["skinny jeans"]);
   assert.ok(result.omissions.some((entry) => entry.section === "clothing" && entry.control === "tops" && entry.state === "user-none"));
+});
+
+test("visible Tattoos emit after Character in selected order with Generic and Specific prompt formatting", () => {
+  const state = resolve({
+    character: withCharacter({ name: { mode: "manual", value: "Emma" } }),
+    tattoos: [
+      { placementId: "left-arm", patternId: "full-sleeve", design: { mode: "generic", styleId: "watercolor" } },
+      { placementId: "right-arm", patternId: "lower-large", design: { mode: "specific", text: "MBOTF" } },
+      { placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "broken heart" } },
+    ],
+  });
+  const result = buildPrompt(state);
+  assert.deepEqual(result.sections.tattoos, [
+    "a full watercolor tattoo sleeve on her left arm",
+    'a large "MBOTF" tattoo on her lower right arm',
+    "a small broken-heart tattoo on her abdomen",
+  ]);
+  assert.ok(result.prompt.indexOf("Emma") < result.prompt.indexOf("a full watercolor tattoo sleeve"));
+  assert.ok(result.prompt.indexOf("a full watercolor tattoo sleeve") < result.prompt.indexOf("captured with a Canon EOS R5"));
+});
+
+test("Prompt Building emits only Resolution-visible Tattoos and records blocked Tattoos as suppressed", () => {
+  const state = resolve({
+    tattoos: [{ placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "broken heart" } }],
+    clothing: { primary: { mode: "manual", path: "built-outfit", structure: "dress", outfit: { id: "spaghetti-strap-sundress", groupId: "sundresses" } } },
+  });
+  const result = buildPrompt(state);
+  assert.deepEqual(result.sections.tattoos, []);
+  assert.equal(result.prompt.includes("broken-heart"), false);
+  assert.ok(result.omissions.some((entry) => entry.section === "tattoos" && entry.control === "tattoos[0]" && entry.state === "resolution-suppressed"));
 });

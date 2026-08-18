@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { allUiControls, UI_CATEGORIES } from "../../app/ui-data.js";
+import { allUiControls, TATTOO_UI_CONFIG, UI_CATEGORIES } from "../../app/ui-data.js";
 
 const controls = allUiControls();
 const byId = new Map(controls.map((entry) => [entry.id, entry]));
 
 test("UI exposes all active top-level domains", () => {
   assert.deepEqual(UI_CATEGORIES.map((entry) => entry.id), [
-    "character", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes", "covers",
+    "character", "tattoos", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes", "covers",
   ]);
 });
 
@@ -100,6 +100,19 @@ test("Effects is visually nested beneath Camera without changing Effects control
     "effects.film-age",
   ]);
   assert.equal(UI_CATEGORIES.some((entry) => entry.id === "effects"), false);
+});
+
+test("Tattoos is a repeatable top-level UI module after Character with approved initial data", () => {
+  const tattoos = UI_CATEGORIES.find((entry) => entry.id === "tattoos");
+  assert.equal(tattoos.repeatable, "tattoos");
+  assert.deepEqual(TATTOO_UI_CONFIG.placements.map((entry) => entry.label), [
+    "Upper Chest", "Abdomen", "Left Shoulder", "Right Shoulder", "Left Arm", "Right Arm", "Left Leg", "Right Leg",
+  ]);
+  assert.deepEqual(TATTOO_UI_CONFIG.genericStyles.map((entry) => entry.label), [
+    "Traditional", "Neo-Traditional", "Japanese", "Tribal", "Blackwork", "Fine-Line", "Watercolor", "Realism", "Geometric", "Biomechanical",
+  ]);
+  assert.ok(TATTOO_UI_CONFIG.placements.find((entry) => entry.value === "left-arm").patterns.some((entry) => entry.value === "full-sleeve"));
+  assert.equal(allUiControls().some((entry) => entry.id.startsWith("tattoos.")), false);
 });
 
 test("Themes remains the final normal prompt domain and exposes its approved stack UI", () => {

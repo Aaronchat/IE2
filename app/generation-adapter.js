@@ -53,6 +53,21 @@ function adaptCharacter(ui) {
   return out;
 }
 
+function adaptTattoos(items = []) {
+  if (!Array.isArray(items)) throw new Error("Tattoos UI state must be an array.");
+  return items.map((item, index) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error(`Tattoo ${index + 1} UI state must be an object.`);
+    const design = item.design;
+    if (!design || typeof design !== "object" || Array.isArray(design)) throw new Error(`Tattoo ${index + 1} requires a Design.`);
+    if (design.mode === "specific") {
+      const text = typeof design.text === "string" ? design.text.replace(/\s+/gu, " ").trim() : design.text;
+      return { placementId: item.placementId, patternId: item.patternId, design: { mode: "specific", text } };
+    }
+    if (design.mode === "generic") return { placementId: item.placementId, patternId: item.patternId, design: { mode: "generic", styleId: design.styleId } };
+    throw new Error(`Tattoo ${index + 1} Design must be Generic or Specific.`);
+  });
+}
+
 function clothingSectionState(source, sectionId, label) {
   const actionId = `${sectionId}.selection`;
   const action = entry(source, actionId);
@@ -329,6 +344,7 @@ function adaptCovers(source = {}) {
 export function uiStateToGenerationControls(ui = {}) {
   const controls = {};
   const character = adaptCharacter(ui); if (Object.keys(character).length) controls.character = character;
+  const tattoos = adaptTattoos(ui.tattoos ?? []); if (tattoos.length) controls.tattoos = tattoos;
   const clothing = adaptClothing(ui); if (Object.keys(clothing).length) controls.clothing = clothing;
   const footwear = adaptSingleSplitDomain(ui.footwear, "footwear.selection", "Footwear"); if (footwear) controls.footwear = footwear;
   const accessories = adaptAccessories(ui.accessories); if (accessories) controls.accessories = accessories;

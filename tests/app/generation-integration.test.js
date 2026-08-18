@@ -10,6 +10,7 @@ const unset = () => ({ mode: "unselected", value: null });
 function baseUi() {
   return {
     character: { "character.ethnicity": { mode: "default", value: "Caucasian" } },
+    tattoos: [],
     clothing: { "clothing.primary-random": unset() },
     footwear: { "footwear.selection": unset() },
     accessories: { "accessories.selection": { mode: "unselected", value: null, values: [] } },
@@ -408,4 +409,31 @@ test("Clothing section Random works at the parent level without garment-family R
   const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState(), createSeed: () => 31415 });
   assert.equal(generation.result.selection.selections.clothing.primary.value.builtOutfit.slotModes.top, "random");
   assert.equal(generation.result.selection.selections.clothing.primary.value.builtOutfit.slotModes.bottom, "none");
+});
+
+test("repeatable Tattoo UI state adapts into tattoos[] and emits multiple Tattoos", () => {
+  const ui = baseUi();
+  ui.tattoos = [
+    { placementId: "left-arm", patternId: "full-sleeve", design: { mode: "generic", styleId: "watercolor" } },
+    { placementId: "right-arm", patternId: "lower-large", design: { mode: "specific", text: "MBOTF" } },
+    { placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "broken heart" } },
+  ];
+  const controls = uiStateToGenerationControls(ui);
+  assert.deepEqual(controls.tattoos, ui.tattoos);
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  for (const fragment of [
+    "a full watercolor tattoo sleeve on her left arm",
+    'a large "MBOTF" tattoo on her lower right arm',
+    "a small broken-heart tattoo on her abdomen",
+  ]) assert.ok(generation.prompt.includes(fragment), fragment);
+});
+
+test("UI generation omits a covered Tattoo without changing its requested placement", () => {
+  const ui = baseUi();
+  ui.tattoos = [{ placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "broken heart" } }];
+  ui.clothing["clothing.dresses.sundresses.selection"] = manual("spaghetti-strap-sundress", "sundresses");
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.equal(generation.prompt.includes("broken-heart"), false);
+  assert.equal(generation.result.resolved.selections.tattoos.value[0].placement.id, "abdomen");
+  assert.equal(generation.result.resolved.selections.tattoos.resolution.omitted[0].tattoo.placement.id, "abdomen");
 });

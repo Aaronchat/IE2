@@ -5,6 +5,7 @@ import { buildCharacterFragments } from "./character.js";
 
 export const PROMPT_SECTION_ORDER = Object.freeze([
   "character",
+  "tattoos",
   "clothing",
   "footwear",
   "accessories",
@@ -47,6 +48,34 @@ function detailedGarmentPrompt(record, details = {}, label = "Clothing") {
   parts.push(promptOf(record, label));
   if (details.graphic) parts.push(promptOf(details.graphic, `${label} graphic`));
   return normalizeFragment(parts.join(" "));
+}
+
+function specificTattooDesign(text) {
+  const cleaned = text.replace(/\s+/gu, " ").trim();
+  if (/^[A-Z0-9][A-Z0-9 &'’.-]*$/u.test(cleaned) && /[A-Z]/u.test(cleaned)) return JSON.stringify(cleaned);
+  return cleaned.replace(/\s+/gu, "-");
+}
+
+function tattooDesignPrompt(design) {
+  if (design?.mode === "generic") return promptOf(design.style, "Tattoo Generic Style");
+  if (design?.mode === "specific") return specificTattooDesign(design.text);
+  throw new Error("Resolved Tattoo requires a Generic or Specific Design.");
+}
+
+function tattooPrompt(tattoo) {
+  const pattern = tattoo?.pattern;
+  if (!pattern) throw new Error("Resolved Tattoo requires a Size / Coverage Pattern.");
+  const design = tattooDesignPrompt(tattoo.design);
+  if (pattern.format === "sleeve") return normalizeFragment(`a ${pattern.sizePrompt} ${design} tattoo sleeve on her ${pattern.placementPrompt}`);
+  if (pattern.format === "leg") return normalizeFragment(`a ${pattern.sizePrompt} ${design} leg tattoo on her ${pattern.placementPrompt}`);
+  if (pattern.format === "tattoo") return normalizeFragment(`a ${pattern.sizePrompt} ${design} tattoo on her ${pattern.placementPrompt}`);
+  throw new Error(`Unknown Tattoo prompt format ${pattern.format}.`);
+}
+
+function tattooFragments(selection) {
+  if (!selection) return Object.freeze([]);
+  if (!selection.resolution || !Array.isArray(selection.resolution.visible)) throw new Error("Prompt Building requires Resolution-approved Tattoo visibility.");
+  return Object.freeze(selection.resolution.visible.map(tattooPrompt));
 }
 
 function clothingFragments(clothing) {
@@ -199,6 +228,10 @@ function omissionStates(selections) {
     if (selections.clothing?.[key]?.mode === "none") note("clothing", key, "user-none");
   }
 
+  for (const omitted of selections.tattoos?.resolution?.omitted ?? []) {
+    note("tattoos", `tattoos[${omitted.index}]`, "resolution-suppressed");
+  }
+
   for (const [controlId, controlConfig] of Object.entries(CAMERA_CONFIG.controls)) {
     const result = selections.camera?.[controlId];
     if (result?.mode === "none") note("camera", controlId, "user-none");
@@ -226,6 +259,7 @@ export function buildPrompt(resolvedState) {
 
   const sections = Object.freeze({
     character: buildCharacterFragments(selections.character),
+    tattoos: tattooFragments(selections.tattoos),
     clothing: clothingFragments(selections.clothing),
     footwear: Object.freeze(selections.footwear?.value ? [promptOf(selections.footwear.value, "Footwear")] : []),
     accessories: accessoryFragments(selections.accessories),

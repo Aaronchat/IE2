@@ -1,4 +1,4 @@
-import { UI_CATEGORIES } from "./ui-data.js";
+import { TATTOO_UI_CONFIG, UI_CATEGORIES } from "./ui-data.js";
 import { RandomRuntimeState } from "../engine/selection/index.js";
 import { runUiGeneration } from "./generation-adapter.js";
 import { activeCoverType, applyManualGuardrails, applyModeGuardrails, canAddManualSelection, eligibleCoverStyleGroups, eligibleNameGroups } from "./ui-guardrails.js";
@@ -22,6 +22,8 @@ const controlViews = new Map();
 const sectionIndicators = [];
 const categoryIndicators = [];
 const conditionalSections = [];
+const tattooRows = [];
+let tattooCategoryView = null;
 
 function flattenedOptions(control) {
   return control.options.length ? control.options : control.groupedOptions.flatMap((group) => group.options);
@@ -46,6 +48,16 @@ function stateFor(control) {
 function serializeUiState() {
   const payload = {};
   for (const category of UI_CATEGORIES) {
+    if (category.repeatable === "tattoos") {
+      payload.tattoos = tattooRows.map((row) => ({
+        placementId: row.placementId || null,
+        patternId: row.patternId || null,
+        design: row.designMode === "specific"
+          ? { mode: "specific", text: row.specificText }
+          : { mode: "generic", styleId: row.styleId || null },
+      }));
+      continue;
+    }
     const categoryState = {};
     if (category.action) {
       const current = stateFor(category.action);
@@ -229,7 +241,7 @@ function renderControl(control, { compact = false } = {}) {
   }
 
   if (select) {
-  select.addEventListener("change", () => {
+    select.addEventListener("change", () => {
       if (!select.value) return;
       const selectedOption = select.selectedOptions[0];
       const current = stateFor(control);
@@ -294,6 +306,10 @@ function updateSelectionIndicators() {
     marker.hidden = !ids.some((id) => isSpecificState(state.get(id)));
   }
   for (const { category, marker } of categoryIndicators) {
+    if (category.repeatable === "tattoos") {
+      marker.hidden = tattooRows.length === 0;
+      continue;
+    }
     const ids = [
       ...(category.action ? [category.action.id] : []),
       ...category.sections.flatMap((section) => [...(section.action ? [section.action.id] : []), ...sectionControls(section).map((control) => control.id)]),
@@ -358,6 +374,135 @@ function renderSection(section) {
   return details;
 }
 
+function tattooSelect(label, values, currentValue, onChange, { disabled = false } = {}) {
+  const field = document.createElement("label");
+  field.className = "tattoo-field";
+  const caption = document.createElement("span");
+  caption.textContent = label;
+  const select = document.createElement("select");
+  select.disabled = disabled;
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = `Choose ${label.toLowerCase()}…`;
+  select.append(blank);
+  for (const entry of values) {
+    const option = document.createElement("option");
+    option.value = entry.value;
+    option.textContent = entry.label;
+    select.append(option);
+  }
+  select.value = currentValue ?? "";
+  select.addEventListener("change", () => onChange(select.value));
+  field.append(caption, select);
+  return field;
+}
+
+function renderTattooRow(row, index) {
+  const card = document.createElement("div");
+  card.className = "tattoo-card control-row";
+  card.dataset.search = `tattoo placement size coverage generic specific ${TATTOO_UI_CONFIG.placements.map((entry) => entry.label).join(" ")} ${TATTOO_UI_CONFIG.genericStyles.map((entry) => entry.label).join(" ")}`.toLowerCase();
+
+  const header = document.createElement("div");
+  header.className = "tattoo-card-header";
+  const title = document.createElement("strong");
+  title.textContent = `Tattoo ${index + 1}`;
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "tattoo-remove";
+  remove.textContent = "Remove";
+  remove.addEventListener("click", () => {
+    tattooRows.splice(index, 1);
+    tattooCategoryView?.redraw();
+    updateSelectionIndicators();
+    updateOutput();
+  });
+  header.append(title, remove);
+  card.append(header);
+
+  const grid = document.createElement("div");
+  grid.className = "tattoo-grid";
+  grid.append(tattooSelect("Placement", TATTOO_UI_CONFIG.placements, row.placementId, (value) => {
+    row.placementId = value;
+    row.patternId = "";
+    tattooCategoryView?.redraw();
+    updateOutput();
+  }));
+
+  const placement = TATTOO_UI_CONFIG.placements.find((entry) => entry.value === row.placementId);
+  grid.append(tattooSelect("Size / Coverage Pattern", placement?.patterns ?? [], row.patternId, (value) => {
+    row.patternId = value;
+    updateOutput();
+  }, { disabled: !placement }));
+
+  grid.append(tattooSelect("Design", [
+    { value: "generic", label: "Generic" },
+    { value: "specific", label: "Specific" },
+  ], row.designMode, (value) => {
+    row.designMode = value || "generic";
+    row.styleId = "";
+    row.specificText = "";
+    tattooCategoryView?.redraw();
+    updateOutput();
+  }));
+
+  if (row.designMode === "specific") {
+    const field = document.createElement("label");
+    field.className = "tattoo-field";
+    const caption = document.createElement("span");
+    caption.textContent = "Specific Design";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "e.g. MBOTF or broken heart";
+    input.value = row.specificText;
+    input.addEventListener("input", () => {
+      row.specificText = input.value;
+      updateOutput();
+    });
+    field.append(caption, input);
+    grid.append(field);
+  } else {
+    grid.append(tattooSelect("Generic Style", TATTOO_UI_CONFIG.genericStyles, row.styleId, (value) => {
+      row.styleId = value;
+      updateOutput();
+    }));
+  }
+  card.append(grid);
+  return card;
+}
+
+function renderTattooEditor() {
+  const editor = document.createElement("div");
+  editor.className = "tattoo-editor";
+  const addRow = document.createElement("div");
+  addRow.className = "tattoo-add-row control-row";
+  addRow.dataset.search = "tattoos tattoo placement size coverage generic specific traditional neo-traditional japanese tribal blackwork fine-line watercolor realism geometric biomechanical";
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "tattoo-add";
+  add.textContent = "Add Tattoo";
+  add.addEventListener("click", () => {
+    tattooRows.push({ placementId: "", patternId: "", designMode: "generic", styleId: "", specificText: "" });
+    tattooCategoryView?.redraw();
+    updateSelectionIndicators();
+    updateOutput();
+  });
+  addRow.append(add);
+  editor.append(addRow);
+
+  const list = document.createElement("div");
+  list.className = "tattoo-list";
+  tattooRows.forEach((row, index) => list.append(renderTattooRow(row, index)));
+  editor.append(list);
+
+  tattooCategoryView = {
+    redraw() {
+      list.replaceChildren();
+      tattooRows.forEach((row, index) => list.append(renderTattooRow(row, index)));
+    },
+  };
+  return editor;
+}
+
 function renderCategory(category, index) {
   const details = document.createElement("details");
   details.className = "category";
@@ -379,12 +524,16 @@ function renderCategory(category, index) {
   details.append(summary);
   const body = document.createElement("div");
   body.className = "category-body";
-  if (category.action) {
-    const action = renderControl(category.action, { compact: category.sections.length === 0 });
-    action.classList.add("category-action");
-    body.append(action);
+  if (category.repeatable === "tattoos") {
+    body.append(renderTattooEditor());
+  } else {
+    if (category.action) {
+      const action = renderControl(category.action, { compact: category.sections.length === 0 });
+      action.classList.add("category-action");
+      body.append(action);
+    }
+    category.sections.forEach((section) => body.append(renderSection(section)));
   }
-  category.sections.forEach((section) => body.append(renderSection(section)));
   details.append(body);
   return details;
 }
@@ -419,6 +568,8 @@ expandAll.addEventListener("click", () => document.querySelectorAll("details").f
 collapseAll.addEventListener("click", () => document.querySelectorAll("details").forEach((details) => { details.open = false; }));
 clearAll.addEventListener("click", () => {
   state.clear();
+  tattooRows.splice(0, tattooRows.length);
+  tattooCategoryView?.redraw();
   for (const category of UI_CATEGORIES) {
     if (category.action) stateFor(category.action);
     for (const section of category.sections) {
@@ -441,7 +592,6 @@ copyState.addEventListener("click", async () => {
   copyState.textContent = "Copied";
   setTimeout(() => { copyState.textContent = "Copy state"; }, 1200);
 });
-
 
 generateButton.addEventListener("click", () => {
   generateButton.disabled = true;

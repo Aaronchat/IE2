@@ -93,3 +93,16 @@ pre { margin: 0; max-height: calc(100vh - 140px); overflow: auto; padding: 15px;
 @media (max-width: 620px) {
   .section-action .control-actions.mode-only { grid-template-columns: 1fr 1fr; }
 }
+
+.tattoo-editor { display: grid; gap: 10px; }
+.tattoo-add-row { padding-bottom: 4px; }
+.tattoo-add { border-color: var(--accent); background: #23345f; font-weight: 700; }
+.tattoo-list { display: grid; gap: 10px; }
+.tattoo-card { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 12px; }
+.tattoo-card + .tattoo-card { border-top: 1px solid var(--line); padding-top: 12px; }
+.tattoo-card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.tattoo-remove { min-height: 34px; padding: 5px 10px; }
+.tattoo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tattoo-field { display: grid; gap: 6px; color: var(--muted); font-size: 12px; }
+.tattoo-field select, .tattoo-field input { width: 100%; color: #f4f6fb; }
+@media (max-width: 620px) { .tattoo-grid { grid-template-columns: 1fr; } }

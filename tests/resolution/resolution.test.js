@@ -120,3 +120,40 @@ test("Selection uses approved Clothing resolvers by default without changing exp
   const custom = selectGeneration({ controls: { clothing: { primary: { mode: "random" } } }, random: { seed: 7, swimwearResolver: () => Object.freeze([{ id: "custom" }]) } });
   assert.ok(custom.selections.clothing.primary);
 });
+
+test("Tattoo Resolution preserves multiple visible tattoos in selected order", () => {
+  const r = resolve({ tattoos: [
+    { placementId: "left-arm", patternId: "full-sleeve", design: { mode: "generic", styleId: "watercolor" } },
+    { placementId: "right-arm", patternId: "lower-large", design: { mode: "specific", text: "MBOTF" } },
+    { placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "broken heart" } },
+  ] });
+  assert.equal(r.selections.tattoos.value.length, 3);
+  assert.deepEqual(r.selections.tattoos.resolution.visible.map((entry) => entry.placement.id), ["left-arm", "right-arm", "abdomen"]);
+  assert.deepEqual(r.selections.tattoos.resolution.omitted, []);
+});
+
+test("a covered Tattoo is omitted without relocation, reroll, or deletion from the selected list", () => {
+  const r = resolve({
+    tattoos: [
+      { placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "broken heart" } },
+      { placementId: "right-arm", patternId: "lower-large", design: { mode: "specific", text: "MBOTF" } },
+    ],
+    clothing: { primary: { mode: "manual", path: "built-outfit", structure: "dress", outfit: { id: "spaghetti-strap-sundress", groupId: "sundresses" } } },
+  });
+  assert.deepEqual(r.selections.tattoos.value.map((entry) => entry.placement.id), ["abdomen", "right-arm"]);
+  assert.deepEqual(r.selections.tattoos.resolution.visible.map((entry) => entry.placement.id), ["right-arm"]);
+  assert.equal(r.selections.tattoos.resolution.omitted[0].tattoo.placement.id, "abdomen");
+});
+
+test("a full Tattoo sleeve is omitted when any required arm region is covered", () => {
+  const r = resolve({
+    tattoos: [{ placementId: "left-arm", patternId: "full-sleeve", design: { mode: "generic", styleId: "watercolor" } }],
+    clothing: { primary: { mode: "manual", path: "built-outfit", structure: "top-bottom", outfit: {
+      top: { id: "fitted-t-shirt", groupId: "short-sleeve-tops" },
+      bottom: { mode: "none" },
+    } } },
+  });
+  assert.equal(r.selections.tattoos.resolution.visible.length, 0);
+  assert.equal(r.selections.tattoos.resolution.omitted.length, 1);
+  assert.ok(r.selections.tattoos.resolution.omitted[0].blockedRegions.some((entry) => entry.region === "upper-arm" && entry.side === "left"));
+});
