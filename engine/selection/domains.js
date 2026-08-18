@@ -5,6 +5,7 @@ import { ATMOSPHERE_CONFIG } from "../../data/weather/config.js";
 import { TIME_OF_DAY_CONFIG } from "../../data/time-of-day/config.js";
 import { THEMES_CONFIG } from "../../data/themes/config.js";
 import { COVERS_CONFIG } from "../../data/covers/config.js";
+import { TATTOO_GENERIC_STYLES, TATTOO_PLACEMENTS } from "../../data/tattoos/config.js";
 import { assertMode, enforceMax, findEnabledRecord, result } from "./controls.js";
 import { selectRandomFootwear } from "./random/footwear.js";
 import { selectRandomAccessories } from "./random/accessories.js";
@@ -19,6 +20,47 @@ export function selectSingleRecord(control, groups, label, randomSelector, conte
   if (control.mode === "none") return result("none", null);
   if (control.mode === "random") return result("random", randomSelector(context));
   return result("manual", findEnabledRecord(groups, control.id, label, control.groupId));
+}
+
+function tattooPlacement(id) {
+  const placement = TATTOO_PLACEMENTS.find((entry) => entry.id === id);
+  if (!placement) throw new Error(`Unknown Tattoo Placement ${id}.`);
+  return placement;
+}
+
+function tattooPattern(placement, id) {
+  const pattern = placement.patterns.find((entry) => entry.id === id);
+  if (!pattern) throw new Error(`Tattoo pattern ${id} is not valid for ${placement.name}.`);
+  return pattern;
+}
+
+function cleanSpecificTattooText(value) {
+  if (typeof value !== "string") throw new Error("Specific Tattoo design text must be a string.");
+  const cleaned = value.replace(/\s+/gu, " ").trim();
+  if (!cleaned) throw new Error("Specific Tattoo design text cannot be blank.");
+  return cleaned;
+}
+
+export function selectTattoos(controls) {
+  if (controls == null) return undefined;
+  if (!Array.isArray(controls)) throw new Error("Tattoos controls must be an array.");
+  const tattoos = controls.map((control, index) => {
+    if (!control || typeof control !== "object" || Array.isArray(control)) throw new Error(`Tattoo ${index + 1} must be an object.`);
+    const placement = tattooPlacement(control.placementId);
+    const pattern = tattooPattern(placement, control.patternId);
+    const design = control.design;
+    if (!design || typeof design !== "object" || Array.isArray(design)) throw new Error(`Tattoo ${index + 1} requires a Design.`);
+    if (design.mode === "generic") {
+      const style = TATTOO_GENERIC_STYLES.find((entry) => entry.id === design.styleId);
+      if (!style) throw new Error(`Unknown Tattoo Generic Style ${design.styleId}.`);
+      return Object.freeze({ placement, pattern, design: Object.freeze({ mode: "generic", style }) });
+    }
+    if (design.mode === "specific") {
+      return Object.freeze({ placement, pattern, design: Object.freeze({ mode: "specific", text: cleanSpecificTattooText(design.text) }) });
+    }
+    throw new Error(`Tattoo ${index + 1} Design must be Generic or Specific.`);
+  });
+  return result("manual", Object.freeze(tattoos));
 }
 
 export function selectFootwear(control, context) {
