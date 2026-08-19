@@ -4,7 +4,7 @@
 
 Packages represent complete outfits, uniforms, costumes, and other coordinated looks that should be selected as one unit rather than assembled as ordinary independent Clothing records.
 
-Selectable Package data lives in `data/packages/`. Package records are organized into group files such as Sci-Fi, Historical, Athletic, Occupations, Costumes, and Cultural.
+Selectable Package data lives in `data/packages/`. Package records are organized into group files such as Sci-Fi, Historical, Athletic, Occupations, Costumes, and Cultural. Diner Waitress Outfit is an approved Occupations Package because it represents a coordinated complete outfit rather than one ordinary garment.
 
 ## Inheritance
 

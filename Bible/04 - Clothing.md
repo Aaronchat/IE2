@@ -27,7 +27,7 @@ data/
 `-- packages/
 ```
 
-Complete outfits, uniforms, and costumes that prescribe multiple pieces belong to Packages. Footwear and Accessories remain independent modules.
+Complete outfits, uniforms, and costumes that prescribe multiple pieces belong to Packages. Footwear and Accessories remain independent modules. Wedding Dresses are an approved Dresses family with Traditional Wedding Dress and Modern Sleek Wedding Dress records.
 
 ## Clothing Records
 

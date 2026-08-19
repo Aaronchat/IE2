@@ -22,7 +22,14 @@ test("same resolved state produces the same structured result and final prompt",
 });
 
 test("canonical section ordering is fixed", () => {
-  assert.deepEqual(PROMPT_SECTION_ORDER, ["character", "tattoos", "clothing", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects", "themes"]);
+  assert.deepEqual(PROMPT_SECTION_ORDER, ["aspectRatio", "character", "tattoos", "clothing", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects", "themes"]);
+});
+
+test("Aspect Ratio emits before Character and blank emits nothing", () => {
+  const selected = buildPrompt(resolve({ aspectRatio: { mode: "manual", id: "9-16", groupId: "aspect-ratios" }, character: withCharacter() }));
+  assert.deepEqual(selected.sections.aspectRatio, ["9:16 aspect ratio"]);
+  assert.equal(selected.prompt.startsWith("9:16 aspect ratio, Caucasian"), true);
+  assert.deepEqual(buildPrompt(resolve({ character: withCharacter() })).sections.aspectRatio, []);
 });
 
 test("Character uses approved deterministic formatting and includes Name first", () => {

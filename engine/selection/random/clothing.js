@@ -25,6 +25,7 @@ import { BODYCON_DRESSES } from "../../../data/clothing/dresses/bodycon-dresses.
 import { EVENING_GOWNS } from "../../../data/clothing/dresses/evening-gowns.js";
 import { BALL_GOWNS } from "../../../data/clothing/dresses/ball-gowns.js";
 import { SWEATER_DRESSES } from "../../../data/clothing/dresses/sweater-dresses.js";
+import { WEDDING_DRESSES } from "../../../data/clothing/dresses/wedding-dresses.js";
 
 import { JUMPSUITS } from "../../../data/clothing/one-piece/jumpsuits.js";
 import { ROMPERS_PLAYSUITS } from "../../../data/clothing/one-piece/rompers-playsuits.js";
@@ -90,6 +91,7 @@ export const DRESS_RANDOM_BUCKETS = Object.freeze([
   EVENING_GOWNS,
   BALL_GOWNS,
   SWEATER_DRESSES,
+  WEDDING_DRESSES,
 ]);
 
 export const ONE_PIECE_RANDOM_BUCKETS = Object.freeze([

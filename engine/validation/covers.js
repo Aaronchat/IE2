@@ -28,6 +28,8 @@ const EXPECTED = Object.freeze({
     ["mens-magazine", "Men's Magazine", "men's magazine cover"],
     ["home-garden", "Home & Garden", "home and garden magazine cover"],
     ["fitness", "Fitness", "fitness magazine cover"],
+    ["sports-magazine", "Sports Magazine", "sports magazine cover"],
+    ["hunting-magazine", "Hunting Magazine", "hunting magazine cover"],
   ]),
   "cover-eras": Object.freeze(["1950s", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"].map((value) => [value, value, value])),
 });

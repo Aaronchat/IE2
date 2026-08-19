@@ -186,5 +186,35 @@ export const GENERAL_LOCATIONS = Object.freeze({
       prompt: "in a public restroom by a large window",
       environment: "indoor-exterior-view",
     }),
+    Object.freeze({
+      id: "hospital",
+      name: "Hospital",
+      prompt: "in a hospital",
+      environment: "indoor",
+    }),
+    Object.freeze({
+      id: "emergency-room",
+      name: "Emergency Room / ER",
+      prompt: "in a hospital emergency room",
+      environment: "indoor",
+    }),
+    Object.freeze({
+      id: "operating-room",
+      name: "Operating Room",
+      prompt: "in a hospital operating room",
+      environment: "indoor",
+    }),
+    Object.freeze({
+      id: "desert",
+      name: "Desert",
+      prompt: "in a desert",
+      environment: "outdoor",
+    }),
+    Object.freeze({
+      id: "deserted-island",
+      name: "Deserted Island",
+      prompt: "on a deserted island",
+      environment: "outdoor",
+    }),
   ]),
 });

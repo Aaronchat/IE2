@@ -27,7 +27,7 @@ Contextual Styles:
 - Novel: Romance, Mystery, Horror
 - Album: Metal, Rap, Yodeling
 - DVD: Romance, Action, Horror
-- Magazine: Men's Magazine, Home & Garden, Fitness
+- Magazine: Men's Magazine, Home & Garden, Fitness, Sports Magazine, Hunting Magazine
 
 Movie Poster has no approved initial Style catalog. No Movie Poster subtype is invented by this implementation.
 

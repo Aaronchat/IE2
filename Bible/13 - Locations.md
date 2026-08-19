@@ -75,6 +75,6 @@ Location validation checks:
 - required non-empty names and prompts
 - one of the three approved Environment values
 - effective `enabled` and `selectionWeight` values
-- the exact approved total of 106 Location records
+- the exact approved total of 111 Location records
 
 The validator does not invent Season, Temperature, Formality, compatibility, Variant, inheritance, or other Location rules.

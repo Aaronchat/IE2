@@ -133,6 +133,7 @@ const footwearSections = CATALOGS.footwear.map((group) => catalogSection(`footwe
 const accessorySections = CATALOGS.accessories.map((group) => catalogSection(`accessories.${group.id}`, group.name, [group], { maxSelections: 2 }));
 const locationSections = CATALOGS.locations.map((group) => catalogSection(`location.${group.id}`, group.name, [group]));
 const atmosphereSections = CATALOGS.atmosphere.map((group) => catalogSection(`atmosphere.${group.id}`, group.name, [group], { maxSelections: ATMOSPHERE_CONFIG.maxSelections }));
+const aspectRatioAction = control({ id: "aspect-ratio.selection", label: "Aspect Ratio", groupedOptions: groupedRecordOptions(CATALOGS.aspectRatios), note: "Optional. Emits first in the prompt when selected." });
 const timeAction = control({ id: "time-of-day.selection", label: "Time of Day", groupedOptions: groupedRecordOptions(CATALOGS.timeOfDay), random: true, none: Boolean(TIME_OF_DAY_CONFIG.none) });
 
 const cameraSections = Object.entries(CATALOGS.camera).map(([id, group]) => {
@@ -193,6 +194,7 @@ const coverSections = [
 ];
 
 export const UI_CATEGORIES = Object.freeze([
+  category("aspect-ratio", "Aspect Ratio", [], aspectRatioAction),
   category("character", "Character", characterSections),
   category("tattoos", "Tattoos", [], null, "tattoos"),
   category("clothing", "Clothing", clothingSections, control({ id: "clothing.primary-random", label: "Primary Outfit", random: true, note: "Uses the existing Built Outfit / Package Random path." })),

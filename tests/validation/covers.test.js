@@ -10,7 +10,7 @@ import { validateCovers } from "../../engine/validation/covers.js";
 const catalogs = () => structuredClone({ types: COVER_TYPES, styles: COVER_STYLE_GROUPS, eras: COVER_ERAS });
 
 test("initial Covers catalogs and contextual configuration validate", () => {
-  assert.deepEqual(validateCovers(), { typeCount: 5, styleCount: 12, eraCount: 8 });
+  assert.deepEqual(validateCovers(), { typeCount: 5, styleCount: 14, eraCount: 8 });
 });
 
 test("Covers validation rejects Random as data and unapproved Movie Poster styles", () => {
@@ -27,4 +27,10 @@ test("Covers validation rejects changed contextual mappings", () => {
   const config = structuredClone(COVERS_CONFIG);
   config.styleGroupByType.novel = "album-styles";
   assert.throws(() => validateCovers(catalogs(), config), /contextual Style mappings/);
+});
+
+
+test("Magazine includes approved Sports and Hunting styles", () => {
+  const magazine = COVER_STYLE_GROUPS.find((group) => group.id === "magazine-styles");
+  assert.deepEqual(magazine.items.slice(-2).map((record) => record.name), ["Sports Magazine", "Hunting Magazine"]);
 });

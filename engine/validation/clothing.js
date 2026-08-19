@@ -22,6 +22,7 @@ import { MAXI_DRESSES } from "../../data/clothing/dresses/maxi-dresses.js";
 import { MINI_DRESSES } from "../../data/clothing/dresses/mini-dresses.js";
 import { SUNDRESSES } from "../../data/clothing/dresses/sundresses.js";
 import { SWEATER_DRESSES } from "../../data/clothing/dresses/sweater-dresses.js";
+import { WEDDING_DRESSES } from "../../data/clothing/dresses/wedding-dresses.js";
 import { SOCKS_LEG_WARMERS } from "../../data/clothing/hosiery/socks-leg-warmers.js";
 import { STOCKINGS } from "../../data/clothing/hosiery/stockings.js";
 import { TIGHTS_PANTYHOSE } from "../../data/clothing/hosiery/tights-pantyhose.js";
@@ -74,6 +75,7 @@ const APPROVED_GROUP_IDS = Object.freeze([
   "mini-dresses",
   "sundresses",
   "sweater-dresses",
+  "wedding-dresses",
   "socks-leg-warmers",
   "stockings",
   "tights-pantyhose",
@@ -127,6 +129,7 @@ const CLOTHING_GROUPS = Object.freeze([
   MINI_DRESSES,
   SUNDRESSES,
   SWEATER_DRESSES,
+  WEDDING_DRESSES,
   SOCKS_LEG_WARMERS,
   STOCKINGS,
   TIGHTS_PANTYHOSE,

@@ -220,6 +220,13 @@ function adaptClothing(ui) {
   return out;
 }
 
+function adaptAspectRatio(source = {}) {
+  const control = entry(source, "aspect-ratio.selection");
+  if (!control || control.mode === "unselected") return undefined;
+  if (control.mode === "manual") return { mode: "manual", ...manualRef(control, "Aspect Ratio") };
+  throw new Error(`Aspect Ratio does not support UI mode ${control.mode}.`);
+}
+
 function adaptSingleSplitDomain(source, actionId, label) {
   const action = entry(source, actionId);
   const manual = activeManualEntries(source, { exclude: [actionId] });
@@ -343,6 +350,7 @@ function adaptCovers(source = {}) {
 
 export function uiStateToGenerationControls(ui = {}) {
   const controls = {};
+  const aspectRatio = adaptAspectRatio(ui["aspect-ratio"]); if (aspectRatio) controls.aspectRatio = aspectRatio;
   const character = adaptCharacter(ui); if (Object.keys(character).length) controls.character = character;
   const tattoos = adaptTattoos(ui.tattoos ?? []); if (tattoos.length) controls.tattoos = tattoos;
   const clothing = adaptClothing(ui); if (Object.keys(clothing).length) controls.clothing = clothing;

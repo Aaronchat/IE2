@@ -4,6 +4,7 @@ import { EFFECTS_CONFIG } from "../../data/effects/config.js";
 import { buildCharacterFragments } from "./character.js";
 
 export const PROMPT_SECTION_ORDER = Object.freeze([
+  "aspectRatio",
   "character",
   "tattoos",
   "clothing",
@@ -258,6 +259,7 @@ export function buildPrompt(resolvedState) {
   if (!selections.character || typeof selections.character !== "object") throw new Error("Prompt Building requires resolved Character selections.");
 
   const sections = Object.freeze({
+    aspectRatio: Object.freeze(selections.aspectRatio?.value ? [promptOf(selections.aspectRatio.value, "Aspect Ratio")] : []),
     character: buildCharacterFragments(selections.character),
     tattoos: tattooFragments(selections.tattoos),
     clothing: clothingFragments(selections.clothing),

@@ -3,7 +3,7 @@ import { createSeededRng } from "./random/rng.js";
 import { RandomRuntimeState } from "./random/state.js";
 import { selectCharacter } from "./character.js";
 import { selectClothing } from "./clothing.js";
-import { selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects, selectThemes, selectCovers, selectTattoos } from "./domains.js";
+import { selectAspectRatio, selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects, selectThemes, selectCovers, selectTattoos } from "./domains.js";
 
 function randomContext(random = {}) {
   const rng = random.rng ?? (Object.hasOwn(random, "seed") ? createSeededRng(random.seed) : null);
@@ -19,6 +19,7 @@ export function selectGeneration({ controls = {}, random = {} } = {}) {
   if (needsRandom(controls) && !random.rng && !Object.hasOwn(random, "seed")) throw new Error("Random selection requires an explicit seed or rng.");
   const context = randomContext(random);
   const result = {};
+  const aspectRatio = selectAspectRatio(controls.aspectRatio, context); if (aspectRatio) result.aspectRatio = aspectRatio;
   result.character = selectCharacter(controls.character, context);
   const tattoos = selectTattoos(controls.tattoos); if (tattoos) result.tattoos = tattoos;
   result.clothing = selectClothing(controls.clothing, context);

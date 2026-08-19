@@ -27,8 +27,10 @@ import { THEME_GENRES_AESTHETICS } from "../../data/themes/genres-aesthetics.js"
 import { COVER_TYPES } from "../../data/covers/cover-types.js";
 import { COVER_STYLE_GROUPS } from "../../data/covers/styles.js";
 import { COVER_ERAS } from "../../data/covers/eras.js";
+import { ASPECT_RATIOS } from "../../data/aspect-ratios/aspect-ratios.js";
 
 export const CATALOGS = Object.freeze({
+  aspectRatios: Object.freeze([ASPECT_RATIOS]),
   footwear: FOOTWEAR_RANDOM_BUCKETS,
   accessories: ACCESSORY_RANDOM_BUCKETS,
   locations: LOCATION_RANDOM_BUCKETS,

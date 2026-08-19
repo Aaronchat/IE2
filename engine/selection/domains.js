@@ -63,6 +63,11 @@ export function selectTattoos(controls) {
   return result("manual", Object.freeze(tattoos));
 }
 
+export function selectAspectRatio(control, context) {
+  if (!control) return undefined;
+  return selectSingleRecord(control, CATALOGS.aspectRatios, "Aspect Ratio", null, context);
+}
+
 export function selectFootwear(control, context) {
   if (!control) return undefined;
   return selectSingleRecord(control, CATALOGS.footwear, "Footwear", selectRandomFootwear, context);

@@ -10,6 +10,7 @@ Infinite Engine/
 |-- Ideas/
 |-- data/
 |   |-- vocabulary/
+|   |-- aspect-ratios/
 |   |-- character/
 |   |-- clothing/
 |   |-- footwear/
@@ -61,6 +62,7 @@ Folders are created when their first approved content is ready. The number of da
 
 | Information | Owner |
 | --- | --- |
+| Aspect-Ratio-system explanation | `Bible/20 - Aspect Ratio.md` |
 | Clothing-system explanation | `Bible/04 - Clothing.md` |
 | Footwear-system explanation | `Bible/11 - Footwear.md` |
 | Accessories-system explanation | `Bible/12 - Accessories.md` |
@@ -75,6 +77,7 @@ Folders are created when their first approved content is ready. The number of da
 | Package-system explanation | `Bible/06 - Packages.md` |
 | Random-selection behavior | `Bible/07 - Randomness.md` |
 | Cross-engine rules | `Bible/08 - Rules.md` |
+| Aspect Ratio records | `data/aspect-ratios/` |
 | Official body regions | `data/vocabulary/body-regions.js` |
 | Official temperatures, seasons, and formalities | `data/vocabulary/` |
 | Tank Top records and coverage | `data/clothing/tops/tank-tops.js` |
@@ -138,19 +141,22 @@ Clothing compatibility helpers owned by Resolution may be called by Random Selec
 
 Canonical section order is:
 
-1. Character
-2. Tattoos
-3. Clothing / Package
-4. Footwear
-5. Accessories
-6. Location
-7. Atmosphere
-8. Time of Day
-9. Camera
-10. Effects
-11. Themes
+1. Aspect Ratio
+2. Character
+3. Tattoos
+4. Clothing / Package
+5. Footwear
+6. Accessories
+7. Location
+8. Atmosphere
+9. Time of Day
+10. Camera
+11. Effects
+12. Themes
 
 Covers / Presentation is not inserted into this comma-separated order. When active, it is appended afterward as a separate paragraph. When untouched, it contributes nothing and the normal prompt string remains unchanged.
+
+Aspect Ratio is optional and passes through Resolution unchanged. When active, its authoritative prompt is emitted before Character.
 
 Catalog-owned `prompt` fields are authoritative wherever they exist. Package prompts are authoritative for Packages; Package-local components are not emitted. Character currently has no catalog prompt fields, so Prompt Building applies fixed deterministic formatting to active Character values while omitting Character Name as engine metadata. Character Features emit only their selected feature wording. Tattoos emit as their own section immediately after Character and must consume Resolution-approved visible Tattoos rather than recalculating coverage.
 

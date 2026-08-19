@@ -39,6 +39,8 @@ export const MAGAZINE_COVER_STYLES = Object.freeze({
     Object.freeze({ id: "mens-magazine", name: "Men's Magazine", prompt: "men's magazine cover" }),
     Object.freeze({ id: "home-garden", name: "Home & Garden", prompt: "home and garden magazine cover" }),
     Object.freeze({ id: "fitness", name: "Fitness", prompt: "fitness magazine cover" }),
+    Object.freeze({ id: "sports-magazine", name: "Sports Magazine", prompt: "sports magazine cover" }),
+    Object.freeze({ id: "hunting-magazine", name: "Hunting Magazine", prompt: "hunting magazine cover" }),
   ]),
 });
 

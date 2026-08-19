@@ -7,10 +7,25 @@ const byId = new Map(controls.map((entry) => [entry.id, entry]));
 
 test("UI exposes all active top-level domains", () => {
   assert.deepEqual(UI_CATEGORIES.map((entry) => entry.id), [
-    "character", "tattoos", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes", "covers",
+    "aspect-ratio", "character", "tattoos", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes", "covers",
   ]);
 });
 
+
+test("Aspect Ratio is first, manual-only, and exposes the two approved values", () => {
+  const aspect = UI_CATEGORIES[0];
+  assert.equal(aspect.id, "aspect-ratio");
+  assert.equal(aspect.action.id, "aspect-ratio.selection");
+  assert.equal(aspect.action.random, false);
+  assert.equal(aspect.action.none, false);
+  assert.deepEqual(aspect.action.groupedOptions.flatMap((group) => group.options.map((entry) => entry.label)), ["9:16", "9:19.5"]);
+});
+
+test("Wedding Dresses appear under the existing Dresses UI", () => {
+  const wedding = byId.get("clothing.dresses.wedding-dresses.selection");
+  assert.ok(wedding);
+  assert.deepEqual(wedding.groupedOptions[0].options.map((entry) => entry.label), ["Traditional Wedding Dress", "Modern Sleek Wedding Dress"]);
+});
 test("approved defaults are preserved", () => {
   assert.equal(byId.get("character.ethnicity").defaultValue, "Caucasian");
   assert.equal(byId.get("camera.camera-body").defaultValue, "canon-eos-r5");

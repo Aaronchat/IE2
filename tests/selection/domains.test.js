@@ -130,3 +130,23 @@ test("Tattoos select multiple Generic and Specific designs in order and reject i
   assert.throws(() => selectGeneration({ controls: { tattoos: [{ placementId: "left-arm", patternId: "full-leg", design: { mode: "generic", styleId: "watercolor" } }] } }), /not valid for Left Arm/);
   assert.throws(() => selectGeneration({ controls: { tattoos: [{ placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "   " } }] } }), /cannot be blank/);
 });
+
+
+test("Aspect Ratio supports only the two approved manual records", () => {
+  const selected = selectGeneration({ controls: { aspectRatio: { mode: "manual", id: "9-16", groupId: "aspect-ratios" } } }).selections.aspectRatio;
+  assert.equal(selected.mode, "manual");
+  assert.equal(selected.value.prompt, "9:16 aspect ratio");
+  assert.throws(() => selectGeneration({ controls: { aspectRatio: { mode: "random" } }, random: { seed: 1 } }), /does not support selection mode random/);
+});
+
+
+test("approved props, locations, and magazine styles are selectable through existing domains", () => {
+  const props = selectGeneration({ controls: { accessories: { mode: "manual", selections: [{ id: "stethoscope", groupId: "themed-props" }, { id: "m16", groupId: "themed-props" }] } } }).selections.accessories.value;
+  assert.deepEqual(props.map((entry) => entry.record.id), ["stethoscope", "m16"]);
+  for (const id of ["hospital", "emergency-room", "operating-room", "desert", "deserted-island"]) {
+    assert.equal(selectGeneration({ controls: { location: { mode: "manual", id, groupId: "general-locations" } } }).selections.location.value.id, id);
+  }
+  for (const id of ["sports-magazine", "hunting-magazine"]) {
+    assert.equal(selectGeneration({ controls: { covers: { type: { mode: "manual", id: "magazine" }, style: { mode: "manual", id } } } }).selections.covers.value.style.value.id, id);
+  }
+});

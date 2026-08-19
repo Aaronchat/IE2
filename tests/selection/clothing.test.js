@@ -41,3 +41,11 @@ test("section-level Random can select a Top without inventing a Bottom", () => {
   assert.equal(result.outfit.bottom, null);
   assert.deepEqual(result.slotModes, { top: "random", bottom: "none" });
 });
+
+
+test("approved Wedding Dresses and Diner Waitress Package are selectable", () => {
+  const wedding = selectGeneration({ controls: { clothing: { primary: { mode: "manual", path: "built-outfit", structure: "dress", outfit: { mode: "manual", id: "traditional-wedding-dress", groupId: "wedding-dresses" } } } } }).selections.clothing.primary.value;
+  assert.equal(wedding.builtOutfit.outfit.prompt, "traditional wedding dress");
+  const diner = selectGeneration({ controls: { clothing: { primary: { mode: "manual", path: "package", id: "diner-waitress-outfit", groupId: "occupations" } } } }).selections.clothing.primary.value;
+  assert.equal(diner.package.prompt, "diner waitress outfit");
+});

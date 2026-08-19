@@ -19,7 +19,7 @@ const APPROVED_ENVIRONMENTS = Object.freeze([
   "indoor-exterior-view",
 ]);
 
-const EXPECTED_RECORD_COUNT = 106;
+const EXPECTED_RECORD_COUNT = 111;
 
 const LOCATION_GROUPS = Object.freeze([
   GENERAL_LOCATIONS,
