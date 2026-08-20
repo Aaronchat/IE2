@@ -377,6 +377,23 @@ The existing Package groups remain organizational and are not Random buckets.
 
 All eligible Packages begin equally weighted. Selected Packages use standard 25 / +5 decay and lifetime counters.
 
+## Tattoos
+
+Tattoos Random is clothing-aware. Clothing is selected first, and Tattoos reuses the existing coverage resolver only to determine which approved Random tattoo areas are fully uncovered. Covered or partially covered areas are never selected as Random candidates.
+
+The approved Random candidate areas are upper/lower left arm, upper/lower right arm, upper abdomen, lower abdomen, upper/lower left leg, and upper/lower right leg. Upper and lower abdomen each require both left and right sides of that body region to be uncovered.
+
+Area-count selection is equal among the approved choices available for the number of exposed areas:
+
+- one exposed area -> one area
+- two exposed areas -> one or two areas
+- three exposed areas -> one, two, or three areas
+- four or more exposed areas -> one, two, three, or All exposed areas
+
+Each chosen area then chooses Large or Small with equal probability. Large produces exactly one tattoo. Small chooses one, two, or three tattoos with equal probability.
+
+Random Tattoos use Generic styles only. Generic styles use standard individual 25 / +5 decay and lifetime counters. Specific design text remains Manual-only.
+
 ## Themes
 
 Theme Random uses one flat pool across all Theme categories. Categories remain organizational and are not Random buckets.
