@@ -7,10 +7,9 @@ const byId = new Map(controls.map((entry) => [entry.id, entry]));
 
 test("UI exposes all active top-level domains", () => {
   assert.deepEqual(UI_CATEGORIES.map((entry) => entry.id), [
-    "aspect-ratio", "character", "tattoos", "clothing", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes", "covers",
+    "aspect-ratio", "character", "clothing", "tattoos", "footwear", "accessories", "location", "atmosphere", "time-of-day", "camera", "themes", "covers",
   ]);
 });
-
 
 test("Aspect Ratio is first, manual-only, and exposes the two approved values", () => {
   const aspect = UI_CATEGORIES[0];
@@ -117,9 +116,13 @@ test("Effects is visually nested beneath Camera without changing Effects control
   assert.equal(UI_CATEGORIES.some((entry) => entry.id === "effects"), false);
 });
 
-test("Tattoos is a repeatable top-level UI module after Character with approved initial data", () => {
+test("Tattoos is a repeatable top-level UI module immediately after Clothing with approved initial data", () => {
   const tattoos = UI_CATEGORIES.find((entry) => entry.id === "tattoos");
+  const clothingIndex = UI_CATEGORIES.findIndex((entry) => entry.id === "clothing");
+  assert.equal(UI_CATEGORIES[clothingIndex + 1].id, "tattoos");
   assert.equal(tattoos.repeatable, "tattoos");
+  assert.equal(tattoos.action.id, "tattoos.selection");
+  assert.equal(tattoos.action.random, true);
   assert.deepEqual(TATTOO_UI_CONFIG.placements.map((entry) => entry.label), [
     "Upper Chest", "Abdomen", "Left Shoulder", "Right Shoulder", "Left Arm", "Right Arm", "Left Leg", "Right Leg",
   ]);
@@ -127,7 +130,7 @@ test("Tattoos is a repeatable top-level UI module after Character with approved 
     "Traditional", "Neo-Traditional", "Japanese", "Tribal", "Blackwork", "Fine-Line", "Watercolor", "Realism", "Geometric", "Biomechanical",
   ]);
   assert.ok(TATTOO_UI_CONFIG.placements.find((entry) => entry.value === "left-arm").patterns.some((entry) => entry.value === "full-sleeve"));
-  assert.equal(allUiControls().some((entry) => entry.id.startsWith("tattoos.")), false);
+  assert.deepEqual(allUiControls().filter((entry) => entry.id.startsWith("tattoos.")).map((entry) => entry.id), ["tattoos.selection"]);
 });
 
 test("Themes remains the final normal prompt domain and exposes its approved stack UI", () => {
