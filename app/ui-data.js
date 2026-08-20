@@ -196,8 +196,8 @@ const coverSections = [
 export const UI_CATEGORIES = Object.freeze([
   category("aspect-ratio", "Aspect Ratio", [], aspectRatioAction),
   category("character", "Character", characterSections),
-  category("tattoos", "Tattoos", [], null, "tattoos"),
   category("clothing", "Clothing", clothingSections, control({ id: "clothing.primary-random", label: "Primary Outfit", random: true, note: "Uses the existing Built Outfit / Package Random path." })),
+  category("tattoos", "Tattoos", [], control({ id: "tattoos.selection", label: "Tattoos", random: true, note: "Random uses the exposed areas from the selected Clothing." }), "tattoos"),
   category("footwear", "Footwear", footwearSections, control({ id: "footwear.selection", label: "Footwear", random: true })),
   category("accessories", "Accessories", accessorySections, control({ id: "accessories.selection", label: "Accessories", random: true, maxSelections: 2 })),
   category("location", "Location", locationSections, control({ id: "location.selection", label: "Location", random: true })),
