@@ -14,6 +14,29 @@ function push(fragments, value) {
   if (typeof value === "string" && value.trim()) fragments.push(value.trim());
 }
 
+function multicolorHair(primary, secondary, treatment) {
+  const main = lower(primary);
+  const accent = lower(secondary);
+  switch (treatment) {
+    case "Highlights": return `${main} hair with ${accent} highlights`;
+    case "Streaks": return `${main} hair with ${accent} streaks`;
+    case "Ombré": return `${main}-to-${accent} ombré hair`;
+    case "Colored Tips": return `${main} hair with ${accent} tips`;
+    case "Split Dye": return `${main}-and-${accent} split-dyed hair`;
+    case "Face-Framing Color": return `${main} hair with ${accent} face-framing color`;
+    case "Contrasting Roots": return `${main} hair with ${accent} contrasting roots`;
+    case "Frosted Tips": return `${main} hair with ${accent} frosted tips`;
+    default: throw new Error(`Unknown Hair Color Treatment ${treatment}.`);
+  }
+}
+
+function hairStylePrompt(style) {
+  const normalized = lower(style);
+  if (normalized === "bald") return "bald";
+  if (normalized.endsWith(" hair")) return normalized;
+  return `${normalized} hairstyle`;
+}
+
 export function buildCharacterFragments(character = {}) {
   if (!character || typeof character !== "object" || Array.isArray(character)) {
     throw new Error("Prompt Building requires Character selections to be an object.");
@@ -25,19 +48,19 @@ export function buildCharacterFragments(character = {}) {
   push(fragments, clean(selectionValue(character, "ethnicity")));
   push(fragments, clean(selectionValue(character, "age")));
 
-  const hairLength = selectionValue(character, "hair-length");
-  const isBald = lower(hairLength) === "bald";
-  if (hairLength) push(fragments, `${lower(hairLength)} hair`);
-
-  if (!isBald) {
+  const hairStyle = selectionValue(character, "hair-style");
+  const legacyHairLength = selectionValue(character, "hair-length");
+  const isBald = lower(hairStyle) === "bald" || (!hairStyle && lower(legacyHairLength) === "bald");
+  if (isBald) {
+    push(fragments, "bald");
+  } else {
     const hairColor = selectionValue(character, "hair-color");
-    if (hairColor) push(fragments, `${lower(hairColor)} hair`);
-
-    const hairTexture = selectionValue(character, "hair-texture");
-    if (hairTexture) push(fragments, `${lower(hairTexture)} hair texture`);
-
-    const hairStyle = selectionValue(character, "hair-style");
-    if (hairStyle) push(fragments, `${lower(hairStyle).replace(/ \(generic\)$/u, "")} hairstyle`);
+    const secondary = selectionValue(character, "hair-secondary-color");
+    const treatment = selectionValue(character, "hair-color-treatment");
+    if (legacyHairLength && !hairStyle) push(fragments, `${lower(legacyHairLength)} hair`);
+    if (hairColor && secondary && treatment) push(fragments, multicolorHair(hairColor, secondary, treatment));
+    else if (hairColor) push(fragments, `${lower(hairColor)} hair`);
+    if (hairStyle) push(fragments, hairStylePrompt(hairStyle));
   }
 
   const eyeColor = selectionValue(character, "eye-color");

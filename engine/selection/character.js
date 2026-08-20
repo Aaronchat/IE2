@@ -10,10 +10,14 @@ import { CHARACTER_AGE_OPTIONS } from "../../data/character/age.js";
 import * as random from "./random/character.js";
 import { assertMode, enforceMax, result } from "./controls.js";
 
+const HAIR_COLORS = Object.values(CHARACTER_HAIR.colors).flat();
+const LEGACY_HAIR_LENGTHS = Object.freeze(["Very Long", "Long", "Medium", "Short", "Very Short", "Bald"]);
 const VALUES = Object.freeze({
-  "hair-color": Object.values(CHARACTER_HAIR.colors).flat(),
+  "hair-color": HAIR_COLORS,
+  "hair-secondary-color": HAIR_COLORS,
+  "hair-color-treatment": CHARACTER_HAIR.colorTreatments,
   "hair-style": Object.values(CHARACTER_HAIR.styles).flat(),
-  "hair-length": CHARACTER_HAIR.lengths,
+  "hair-length": LEGACY_HAIR_LENGTHS,
   "eye-color": CHARACTER_EYES.colors,
   makeup: CHARACTER_MAKEUP.options,
   build: CHARACTER_PHYSICAL_APPEARANCE.build,
@@ -23,19 +27,24 @@ const VALUES = Object.freeze({
   waist: CHARACTER_PHYSICAL_APPEARANCE.waist,
   "skin-tone": CHARACTER_SKIN.skinTones,
   freckles: CHARACTER_SKIN.freckles,
-  "hair-texture": CHARACTER_HAIR.textures,
   expression: CHARACTER_EXPRESSION.expressions,
   gaze: CHARACTER_EXPRESSION.gaze,
 });
 const RANDOM = Object.freeze({
-  "hair-color": random.selectRandomHairColor, "hair-style": random.selectRandomHairStyle,
-  "hair-length": random.selectRandomHairLength, "eye-color": random.selectRandomEyeColor,
-  makeup: random.selectRandomMakeup, build: random.selectRandomBuild,
-  "chest-description": random.selectRandomChestDescription, "hip-width": random.selectRandomHipWidth,
-  waist: random.selectRandomWaist, "skin-tone": random.selectRandomSkinTone,
-  freckles: random.selectRandomFreckles, "hair-texture": random.selectRandomHairTexture,
-  expression: random.selectRandomExpression, gaze: random.selectRandomGaze,
+  "hair-color": random.selectRandomHairColor,
+  "hair-style": random.selectRandomHairStyle,
+  "eye-color": random.selectRandomEyeColor,
+  makeup: random.selectRandomMakeup,
+  build: random.selectRandomBuild,
+  "chest-description": random.selectRandomChestDescription,
+  "hip-width": random.selectRandomHipWidth,
+  waist: random.selectRandomWaist,
+  "skin-tone": random.selectRandomSkinTone,
+  freckles: random.selectRandomFreckles,
+  expression: random.selectRandomExpression,
+  gaze: random.selectRandomGaze,
 });
+const MANUAL_ONLY = new Set(["hair-secondary-color", "hair-color-treatment", "hair-length"]);
 const DEFAULTS = Object.freeze({ "chest-description": "Buxom" });
 
 function manualValue(control, values, label) {
@@ -76,12 +85,20 @@ export function selectCharacter(controls = {}, context) {
   for (const [key, values] of Object.entries(VALUES)) {
     const control = controls[key];
     if (!control) continue;
-    assertMode(control, ["manual", "random", ...(Object.hasOwn(DEFAULTS, key) ? ["default"] : [])], `Character ${key}`);
+    const modes = MANUAL_ONLY.has(key)
+      ? ["manual"]
+      : ["manual", "random", ...(Object.hasOwn(DEFAULTS, key) ? ["default"] : [])];
+    assertMode(control, modes, `Character ${key}`);
     if (control.mode === "manual") out[key] = manualValue(control, values, key);
     else if (control.mode === "default") out[key] = result("default", DEFAULTS[key]);
     else if (key === "chest-adjective") out[key] = result("random", random.selectRandomChestAdjective({ ...context, weights: context.chestAdjectiveWeights }));
     else out[key] = result("random", RANDOM[key](context));
   }
+
+  const secondary = Boolean(out["hair-secondary-color"]);
+  const treatment = Boolean(out["hair-color-treatment"]);
+  if (secondary !== treatment) throw new Error("Secondary Hair Color and Hair Color Treatment must be selected together.");
+  if ((secondary || treatment) && !out["hair-color"]) throw new Error("Multicolor Hair requires a primary Hair Color.");
 
   if (controls.features) {
     assertMode(controls.features, ["manual"], "Character features");
