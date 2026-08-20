@@ -50,9 +50,9 @@ const characterSections = [
     control({ id: "character.freckles", label: "Freckles", options: stringOptions(CHARACTER_SKIN.freckles), random: true }),
   ]),
   section("hair", "Hair", [
-    control({ id: "character.hair-color", label: "Hair Color", groupedOptions: hairColorGroups, random: true }),
-    control({ id: "character.hair-length", label: "Hair Length", options: stringOptions(CHARACTER_HAIR.lengths), random: true }),
-    control({ id: "character.hair-texture", label: "Hair Texture", options: stringOptions(CHARACTER_HAIR.textures), random: true }),
+    control({ id: "character.hair-color", label: "Primary Hair Color", groupedOptions: hairColorGroups, random: true }),
+    control({ id: "character.hair-secondary-color", label: "Secondary Hair Color", groupedOptions: hairColorGroups, note: "Optional. Select together with a Color Treatment." }),
+    control({ id: "character.hair-color-treatment", label: "Color Treatment", options: stringOptions(CHARACTER_HAIR.colorTreatments), note: "Optional. Select together with a Secondary Hair Color." }),
     control({ id: "character.hair-style", label: "Hair Style", groupedOptions: hairStyleGroups, random: true }),
   ]),
   section("eyes", "Eyes", [control({ id: "character.eye-color", label: "Eye Color", options: stringOptions(CHARACTER_EYES.colors), random: true })]),
