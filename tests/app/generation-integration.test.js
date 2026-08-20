@@ -268,3 +268,192 @@ test("Themes UI adapts None, Manual stacks, and Random without merging other dom
   assert.deepEqual(uiStateToGenerationControls(randomUi).themes, { mode: "random" });
   assert.equal(hasRandomControl(uiStateToGenerationControls(randomUi)), true);
 });
+
+test("Themes UI rejects a fourth manual selection", () => {
+  const ui = baseUi();
+  ui.themes["themes.selection"] = unset();
+  ui.themes["themes.colors.selection"] = multi(
+    { value: "red", groupId: "colors" },
+    { value: "white", groupId: "colors" },
+    { value: "pink", groupId: "colors" },
+  );
+  ui.themes["themes.holidays-events.selection"] = multi({ value: "christmas", groupId: "holidays-events" });
+  assert.throws(() => uiStateToGenerationControls(ui), /maximum of 3/);
+});
+
+test("untouched Covers UI is absent and preserves the existing prompt exactly", () => {
+  const ui = baseUi();
+  const controls = uiStateToGenerationControls(ui);
+  assert.equal(controls.covers, undefined);
+  const prompt = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt;
+  const withoutCoversCategory = structuredClone(ui);
+  delete withoutCoversCategory.covers;
+  assert.equal(prompt, runUiGeneration({ uiState: withoutCoversCategory, randomState: new RandomRuntimeState() }).prompt);
+});
+
+test("Covers UI adapts contextual Style, Era, and partial metadata", () => {
+  const ui = baseUi();
+  ui.covers["covers.type"] = manual("dvd", "cover-types");
+  ui.covers["covers.style"] = manual("horror", "dvd-styles");
+  ui.covers["covers.era"] = manual("1970s", "cover-eras");
+  ui.covers["covers.metadata.dvd.movie-title"] = { mode: "manual", value: "Castle Blood" };
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.deepEqual(generation.controls.covers, {
+    type: { mode: "manual", id: "dvd", groupId: "cover-types" },
+    style: { mode: "manual", id: "horror", groupId: "dvd-styles" },
+    era: { mode: "manual", id: "1970s", groupId: "cover-eras" },
+    metadata: { "movie-title": "Castle Blood" },
+  });
+  assert.ok(generation.prompt.includes("\n\nPresented as a 1970s horror movie DVD cover"));
+  assert.ok(generation.prompt.includes("titled \"Castle Blood\""));
+});
+
+test("Random Cover Type requests a seed and does not accept incompatible manual text", () => {
+  const randomUi = baseUi();
+  randomUi.covers["covers.type"] = { mode: "random", value: null };
+  const generation = runUiGeneration({ uiState: randomUi, randomState: new RandomRuntimeState(), createSeed: () => 2121 });
+  assert.equal(generation.seed, 2121);
+  assert.equal(generation.controls.covers.type.mode, "random");
+
+  randomUi.covers["covers.metadata.novel.title"] = { mode: "manual", value: "Wrong Context" };
+  assert.throws(() => uiStateToGenerationControls(randomUi), /requires an explicit Cover Type|Random Covers text/);
+});
+
+test("adapted controls pass through prepareGeneration and return the final prompt", () => {
+  const ui = baseUi();
+  ui.location["location.general-locations.selection"] = manual("beach", "general-locations");
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.equal(typeof generation.prompt, "string");
+  assert.ok(generation.prompt.includes("beach"));
+  assert.equal(generation.prompt, generation.result.prompt.prompt);
+});
+
+test("Random UI generation receives a seed and uses it normally", () => {
+  const ui = baseUi();
+  ui.character["character.ethnicity"] = { mode: "random", value: null };
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState(), createSeed: () => 123456789 });
+  assert.equal(generation.seed, 123456789);
+  assert.equal(generation.result.selection.selections.character.ethnicity.mode, "random");
+});
+
+test("same explicit UI seed plus equivalent starting Random state is reproducible", () => {
+  const ui = baseUi();
+  ui.character["character.ethnicity"] = { mode: "random", value: null };
+  const a = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState(), createSeed: () => 42 });
+  const b = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState(), createSeed: () => 42 });
+  assert.deepEqual(a.result.selection.selections, b.result.selection.selections);
+  assert.deepEqual(a.result.randomState.snapshot(), b.result.randomState.snapshot());
+  assert.equal(a.prompt, b.prompt);
+});
+
+test("the same RandomRuntimeState instance can be reused between UI generations", () => {
+  const ui = baseUi();
+  ui.character["character.ethnicity"] = { mode: "random", value: null };
+  const state = new RandomRuntimeState();
+  const first = runUiGeneration({ uiState: ui, randomState: state, createSeed: () => 7 });
+  const second = runUiGeneration({ uiState: ui, randomState: state, createSeed: () => 8 });
+  assert.equal(first.result.randomState, state);
+  assert.equal(second.result.randomState, state);
+  assert.equal(Object.values(state.snapshot().lifetime).reduce((a, b) => a + b, 0), 2);
+});
+
+test("successful UI generation advances lifecycle exactly once", () => {
+  const state = new RandomRuntimeState();
+  let completions = 0;
+  const original = state.completeGeneration.bind(state);
+  state.completeGeneration = () => { completions += 1; original(); };
+  runUiGeneration({ uiState: baseUi(), randomState: state });
+  assert.equal(completions, 1);
+});
+
+test("failed UI generation does not receive an extra completion call", () => {
+  const ui = baseUi();
+  ui.location["location.general-locations.selection"] = manual("not-a-real-location", "general-locations");
+  const state = new RandomRuntimeState();
+  let completions = 0;
+  state.completeGeneration = () => { completions += 1; };
+  assert.throws(() => runUiGeneration({ uiState: ui, randomState: state }), /Unknown Location id/);
+  assert.equal(completions, 0);
+});
+
+test("invalid conflicting UI selection errors instead of silently inventing a choice", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.dresses.sundresses.selection"] = manual("spaghetti-strap-sundress", "sundresses");
+  ui.clothing["clothing.packages.sci-fi.selection"] = manual("space-suit", "sci-fi");
+  assert.throws(() => uiStateToGenerationControls(ui), /only one primary clothing structure or Package/);
+});
+
+test("Chest Adjective Random continues to fail closed", () => {
+  const ui = baseUi();
+  ui.character["character.chest-adjective"] = { mode: "random", value: null };
+  assert.throws(
+    () => runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState(), createSeed: () => 99 }),
+    /weights are not approved/,
+  );
+});
+
+test("non-Random generations do not create a seed but still reuse Random state", () => {
+  const state = new RandomRuntimeState();
+  let seedCalls = 0;
+  const generation = runUiGeneration({ uiState: baseUi(), randomState: state, createSeed: () => { seedCalls += 1; return 1; } });
+  assert.equal(seedCalls, 0);
+  assert.equal(generation.seed, null);
+  assert.equal(generation.result.randomState, state);
+});
+
+test("Clothing None omits one top-bottom slot while preserving the other", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.tops.selection"] = { mode: "none", value: null };
+  ui.clothing["clothing.bottoms.jeans.selection"] = manual("skinny-jeans", "jeans");
+  const controls = uiStateToGenerationControls(ui);
+  assert.deepEqual(controls.clothing.primary, {
+    mode: "manual", path: "built-outfit", structure: "top-bottom",
+    outfit: {
+      top: { mode: "none" },
+      bottom: { mode: "manual", id: "skinny-jeans", groupId: "jeans" },
+    },
+  });
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.ok(generation.prompt.includes("skinny jeans"));
+  assert.equal(generation.result.prompt.sections.clothing.some((fragment) => fragment.includes("tank top")), false);
+  assert.ok(generation.result.prompt.omissions.some((entry) => entry.section === "clothing" && entry.control === "tops" && entry.state === "user-none"));
+});
+
+test("Clothing section Random works at the parent level without garment-family Random", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.tops.selection"] = { mode: "random", value: null };
+  ui.clothing["clothing.bottoms.selection"] = { mode: "none", value: null };
+  const controls = uiStateToGenerationControls(ui);
+  assert.equal(controls.clothing.primary.outfit.top.mode, "random");
+  assert.equal(controls.clothing.primary.outfit.bottom.mode, "none");
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState(), createSeed: () => 31415 });
+  assert.equal(generation.result.selection.selections.clothing.primary.value.builtOutfit.slotModes.top, "random");
+  assert.equal(generation.result.selection.selections.clothing.primary.value.builtOutfit.slotModes.bottom, "none");
+});
+
+test("repeatable Tattoo UI state adapts into tattoos[] and emits multiple Tattoos", () => {
+  const ui = baseUi();
+  ui.tattoos = [
+    { placementId: "left-arm", patternId: "full-sleeve", design: { mode: "generic", styleId: "watercolor" } },
+    { placementId: "right-arm", patternId: "lower-large", design: { mode: "specific", text: "MBOTF" } },
+    { placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "broken heart" } },
+  ];
+  const controls = uiStateToGenerationControls(ui);
+  assert.deepEqual(controls.tattoos, ui.tattoos);
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  for (const fragment of [
+    "a full watercolor tattoo sleeve on her left arm",
+    'a large "MBOTF" tattoo on her lower right arm',
+    "a small broken-heart tattoo on her abdomen",
+  ]) assert.ok(generation.prompt.includes(fragment), fragment);
+});
+
+test("UI generation omits a covered Tattoo without changing its requested placement", () => {
+  const ui = baseUi();
+  ui.tattoos = [{ placementId: "abdomen", patternId: "small", design: { mode: "specific", text: "broken heart" } }];
+  ui.clothing["clothing.dresses.sundresses.selection"] = manual("spaghetti-strap-sundress", "sundresses");
+  const generation = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() });
+  assert.equal(generation.prompt.includes("broken-heart"), false);
+  assert.equal(generation.result.resolved.selections.tattoos.value[0].placement.id, "abdomen");
+  assert.equal(generation.result.resolved.selections.tattoos.resolution.omitted[0].tattoo.placement.id, "abdomen");
+});
