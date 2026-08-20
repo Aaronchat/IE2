@@ -6,8 +6,8 @@ import { buildCharacterFragments } from "./character.js";
 export const PROMPT_SECTION_ORDER = Object.freeze([
   "aspectRatio",
   "character",
-  "tattoos",
   "clothing",
+  "tattoos",
   "footwear",
   "accessories",
   "location",
@@ -261,8 +261,8 @@ export function buildPrompt(resolvedState) {
   const sections = Object.freeze({
     aspectRatio: Object.freeze(selections.aspectRatio?.value ? [promptOf(selections.aspectRatio.value, "Aspect Ratio")] : []),
     character: buildCharacterFragments(selections.character),
-    tattoos: tattooFragments(selections.tattoos),
     clothing: clothingFragments(selections.clothing),
+    tattoos: tattooFragments(selections.tattoos),
     footwear: Object.freeze(selections.footwear?.value ? [promptOf(selections.footwear.value, "Footwear")] : []),
     accessories: accessoryFragments(selections.accessories),
     location: Object.freeze(selections.location?.value ? [promptOf(selections.location.value, "Location")] : []),
