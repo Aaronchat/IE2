@@ -49,13 +49,15 @@ export function buildCharacterFragments(character = {}) {
   push(fragments, clean(selectionValue(character, "age")));
 
   const hairStyle = selectionValue(character, "hair-style");
-  const isBald = lower(hairStyle) === "bald";
+  const legacyHairLength = selectionValue(character, "hair-length");
+  const isBald = lower(hairStyle) === "bald" || (!hairStyle && lower(legacyHairLength) === "bald");
   if (isBald) {
     push(fragments, "bald");
   } else {
     const hairColor = selectionValue(character, "hair-color");
     const secondary = selectionValue(character, "hair-secondary-color");
     const treatment = selectionValue(character, "hair-color-treatment");
+    if (legacyHairLength && !hairStyle) push(fragments, `${lower(legacyHairLength)} hair`);
     if (hairColor && secondary && treatment) push(fragments, multicolorHair(hairColor, secondary, treatment));
     else if (hairColor) push(fragments, `${lower(hairColor)} hair`);
     if (hairStyle) push(fragments, hairStylePrompt(hairStyle));
