@@ -22,14 +22,19 @@ test("same resolved state produces the same structured result and final prompt",
 });
 
 test("canonical section ordering is fixed", () => {
-  assert.deepEqual(PROMPT_SECTION_ORDER, ["aspectRatio", "character", "tattoos", "clothing", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects", "themes"]);
+  assert.deepEqual(PROMPT_SECTION_ORDER, ["aspectRatio", "character", "clothing", "tattoos", "footwear", "accessories", "location", "atmosphere", "timeOfDay", "camera", "effects", "themes"]);
 });
 
-test("Aspect Ratio emits before Character and blank emits nothing", () => {
-  const selected = buildPrompt(resolve({ aspectRatio: { mode: "manual", id: "9-16", groupId: "aspect-ratios" }, character: withCharacter() }));
-  assert.deepEqual(selected.sections.aspectRatio, ["9:16 aspect ratio"]);
-  assert.equal(selected.prompt.startsWith("9:16 aspect ratio, Caucasian"), true);
-  assert.deepEqual(buildPrompt(resolve({ character: withCharacter() })).sections.aspectRatio, []);
+test("Aspect Ratio emits first, then Character, Clothing, and Tattoos", () => {
+  const state = resolve({
+    aspectRatio: { mode: "manual", id: "9-16", groupId: "aspect-ratios" },
+    character: withCharacter(),
+    clothing: { primary: { mode: "manual", path: "built-outfit", structure: "top-bottom", outfit: { top: { mode: "manual", id: "triangle-bikini-top", groupId: "bikini-tops" }, bottom: { mode: "none" } } } },
+    tattoos: [{ placementId: "abdomen", patternId: "upper-small", design: { mode: "generic", styleId: "traditional" } }],
+  });
+  const result = buildPrompt(state);
+  assert.equal(result.prompt.startsWith("9:16 aspect ratio, Caucasian"), true);
+  assert.ok(result.prompt.indexOf("bikini top") < result.prompt.indexOf("tattoo on her upper abdomen"));
 });
 
 test("Character uses approved deterministic formatting and includes Name first", () => {
