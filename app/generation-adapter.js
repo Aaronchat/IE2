@@ -177,18 +177,22 @@ function adaptClothing(ui) {
     ["lingerie", "Lingerie"],
   ].map(([key, label]) => [key, clothingSectionState(source, `clothing.${key}`, label)]));
 
-  if (manualSwimwear.top) {
+  const manualSwimwearPairStandalone = Boolean(
+    manualSwimwear.top && manualSwimwear.bottom
+    && !isActiveClothingState(slots.top) && !isActiveClothingState(slots.bottom)
+  );
+  if (!manualSwimwearPairStandalone && manualSwimwear.top) {
     if (isActiveClothingState(slots.top)) throw new Error("Choose only one top slot garment at a time.");
     slots.top = { mode: "manual", ...manualSwimwear.top };
   }
-  if (manualSwimwear.bottom) {
+  if (!manualSwimwearPairStandalone && manualSwimwear.bottom) {
     if (isActiveClothingState(slots.bottom)) throw new Error("Choose only one bottom slot garment at a time.");
     slots.bottom = { mode: "manual", ...manualSwimwear.bottom };
   }
 
   const activePair = Object.values(slots).some(isActiveClothingState);
   const activeStandalone = standalone.filter(({ state }) => isActiveClothingState(state));
-  const activeSwimwearStandalone = swimwear.mode === "random" || Boolean(swimwearOnePiece);
+  const activeSwimwearStandalone = swimwear.mode === "random" || Boolean(swimwearOnePiece) || manualSwimwearPairStandalone;
   const stateByDetailKey = {
     tops: slots.top,
     bottoms: slots.bottom,
@@ -221,7 +225,7 @@ function adaptClothing(ui) {
       mode: "manual",
       path: "built-outfit",
       structure: "swimwear",
-      outfit: swimwear.mode === "random" ? swimwear : [swimwearOnePiece],
+      outfit: swimwear.mode === "random" ? swimwear : (manualSwimwearPairStandalone ? swimwear.refs : [swimwearOnePiece]),
     };
   } else if (activeStandalone.length === 1) {
     const { structure, state } = activeStandalone[0];
