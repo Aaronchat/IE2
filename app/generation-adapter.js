@@ -54,7 +54,10 @@ function adaptCharacter(ui) {
 }
 
 function adaptTattoos(items = []) {
-  if (!Array.isArray(items)) throw new Error("Tattoos UI state must be an array.");
+  if (!Array.isArray(items)) {
+    if (items?.mode === "random") return { mode: "random" };
+    throw new Error("Tattoos UI state must be an array or Random mode.");
+  }
   return items.map((item, index) => {
     if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error(`Tattoo ${index + 1} UI state must be an object.`);
     const design = item.design;
@@ -352,7 +355,7 @@ export function uiStateToGenerationControls(ui = {}) {
   const controls = {};
   const aspectRatio = adaptAspectRatio(ui["aspect-ratio"]); if (aspectRatio) controls.aspectRatio = aspectRatio;
   const character = adaptCharacter(ui); if (Object.keys(character).length) controls.character = character;
-  const tattoos = adaptTattoos(ui.tattoos ?? []); if (tattoos.length) controls.tattoos = tattoos;
+  const tattoos = adaptTattoos(ui.tattoos ?? []); if (Array.isArray(tattoos) ? tattoos.length : tattoos) controls.tattoos = tattoos;
   const clothing = adaptClothing(ui); if (Object.keys(clothing).length) controls.clothing = clothing;
   const footwear = adaptSingleSplitDomain(ui.footwear, "footwear.selection", "Footwear"); if (footwear) controls.footwear = footwear;
   const accessories = adaptAccessories(ui.accessories); if (accessories) controls.accessories = accessories;
