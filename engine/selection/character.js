@@ -11,11 +11,13 @@ import * as random from "./random/character.js";
 import { assertMode, enforceMax, result } from "./controls.js";
 
 const HAIR_COLORS = Object.values(CHARACTER_HAIR.colors).flat();
+const LEGACY_HAIR_LENGTHS = Object.freeze(["Very Long", "Long", "Medium", "Short", "Very Short", "Bald"]);
 const VALUES = Object.freeze({
   "hair-color": HAIR_COLORS,
   "hair-secondary-color": HAIR_COLORS,
   "hair-color-treatment": CHARACTER_HAIR.colorTreatments,
   "hair-style": Object.values(CHARACTER_HAIR.styles).flat(),
+  "hair-length": LEGACY_HAIR_LENGTHS,
   "eye-color": CHARACTER_EYES.colors,
   makeup: CHARACTER_MAKEUP.options,
   build: CHARACTER_PHYSICAL_APPEARANCE.build,
@@ -42,7 +44,7 @@ const RANDOM = Object.freeze({
   expression: random.selectRandomExpression,
   gaze: random.selectRandomGaze,
 });
-const MANUAL_ONLY = new Set(["hair-secondary-color", "hair-color-treatment"]);
+const MANUAL_ONLY = new Set(["hair-secondary-color", "hair-color-treatment", "hair-length"]);
 const DEFAULTS = Object.freeze({ "chest-description": "Buxom" });
 
 function manualValue(control, values, label) {
