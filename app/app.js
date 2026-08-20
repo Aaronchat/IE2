@@ -49,6 +49,10 @@ function serializeUiState() {
   const payload = {};
   for (const category of UI_CATEGORIES) {
     if (category.repeatable === "tattoos") {
+      if (category.action && stateFor(category.action).mode === "random") {
+        payload.tattoos = { mode: "random" };
+        continue;
+      }
       payload.tattoos = tattooRows.map((row) => ({
         placementId: row.placementId || null,
         patternId: row.patternId || null,
@@ -282,6 +286,10 @@ function renderControl(control, { compact = false } = {}) {
       const current = stateFor(control);
       current.mode = button.dataset.mode;
       current.values = [];
+      if (control.id === "tattoos.selection" && current.mode === "random") {
+        tattooRows.splice(0, tattooRows.length);
+        tattooCategoryView?.redraw();
+      }
       applyModeGuardrails(state, control.id, current.mode);
       generationError.hidden = true;
       generationError.textContent = "";
@@ -307,7 +315,7 @@ function updateSelectionIndicators() {
   }
   for (const { category, marker } of categoryIndicators) {
     if (category.repeatable === "tattoos") {
-      marker.hidden = tattooRows.length === 0;
+      marker.hidden = tattooRows.length === 0 && stateFor(category.action).mode !== "random";
       continue;
     }
     const ids = [
@@ -481,6 +489,13 @@ function renderTattooEditor() {
   add.className = "tattoo-add";
   add.textContent = "Add Tattoo";
   add.addEventListener("click", () => {
+    const tattooAction = UI_CATEGORIES.find((entry) => entry.id === "tattoos")?.action;
+    if (tattooAction) {
+      const current = stateFor(tattooAction);
+      current.mode = "unselected";
+      current.values = [];
+      controlViews.get(tattooAction.id)?.redraw();
+    }
     tattooRows.push({ placementId: "", patternId: "", designMode: "generic", styleId: "", specificText: "" });
     tattooCategoryView?.redraw();
     updateSelectionIndicators();
@@ -525,6 +540,11 @@ function renderCategory(category, index) {
   const body = document.createElement("div");
   body.className = "category-body";
   if (category.repeatable === "tattoos") {
+    if (category.action) {
+      const action = renderControl(category.action, { compact: true });
+      action.classList.add("category-action");
+      body.append(action);
+    }
     body.append(renderTattooEditor());
   } else {
     if (category.action) {
