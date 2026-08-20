@@ -143,8 +143,8 @@ Canonical section order is:
 
 1. Aspect Ratio
 2. Character
-3. Tattoos
-4. Clothing / Package
+3. Clothing / Package
+4. Tattoos
 5. Footwear
 6. Accessories
 7. Location
@@ -158,7 +158,7 @@ Covers / Presentation is not inserted into this comma-separated order. When acti
 
 Aspect Ratio is optional and passes through Resolution unchanged. When active, its authoritative prompt is emitted before Character.
 
-Catalog-owned `prompt` fields are authoritative wherever they exist. Package prompts are authoritative for Packages; Package-local components are not emitted. Character currently has no catalog prompt fields, so Prompt Building applies fixed deterministic formatting to active Character values while omitting Character Name as engine metadata. Character Features emit only their selected feature wording. Tattoos emit as their own section immediately after Character and must consume Resolution-approved visible Tattoos rather than recalculating coverage.
+Catalog-owned `prompt` fields are authoritative wherever they exist. Package prompts are authoritative for Packages; Package-local components are not emitted. Character currently has no catalog prompt fields, so Prompt Building applies fixed deterministic formatting to active Character values while omitting Character Name as engine metadata. Character Features emit only their selected feature wording. Tattoos emit as their own section immediately after Clothing / Package and must consume Resolution-approved visible Tattoos rather than recalculating coverage.
 
 Multiple Accessories, Atmosphere selections, and Theme selections are emitted in established catalog order. Camera controls and Effects controls are emitted in their established configuration order, with multi-select values emitted in catalog order. Active Themes are combined into one compact final `Theme:` fragment. The first eight approved Camera defaults are positive generation instructions and therefore emit their authoritative prompts. Camera Spatial-Safe None, Effects None/default-empty states, Theme None, other user-selected None states, and Resolution-suppressed Atmosphere states emit no positive prompt text.
 
