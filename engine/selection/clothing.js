@@ -21,6 +21,12 @@ function garment(ref, label) {
   return findEnabledRecord(CATALOGS.clothing, ref.id, label, ref.groupId);
 }
 
+function effectiveGarmentSlot(ref, record) {
+  const group = CATALOGS.clothing.find((entry) => entry.id === ref?.groupId && entry.items.includes(record))
+    ?? CATALOGS.clothing.find((entry) => entry.items.includes(record));
+  return record?.slot ?? group?.defaults?.slot ?? null;
+}
+
 const DETAIL_CONFIG = Object.freeze({
   tops: TOP_DETAIL_CONFIG,
   bottoms: Object.freeze({ condition: CLOTHING_CONDITION }),
@@ -62,18 +68,26 @@ function garmentDetails(controls = {}, context) {
   return Object.freeze(selectedSections);
 }
 
-function slotSelection(control, { groups, label, bucketNamespace, context }) {
+function slotSelection(control, { groups, label, slot, bucketNamespace, context }) {
   if (!control || control.mode === "unselected" || control.mode === "none") {
     return Object.freeze({ mode: control?.mode ?? "unselected", record: null });
   }
-  if (control.mode === "manual") return Object.freeze({ mode: "manual", record: garment(control, label) });
+  if (control.mode === "manual") {
+    const record = garment(control, label);
+    if (effectiveGarmentSlot(control, record) !== slot) throw new Error(`${label} ${record.id} does not occupy the ${slot} slot.`);
+    return Object.freeze({ mode: "manual", record });
+  }
   if (control.mode === "random") {
     return Object.freeze({
       mode: "random",
       record: selectRandomGarmentFromGroups({ groups, rng: context.rng, state: context.state, bucketNamespace }),
     });
   }
-  if (control.id) return Object.freeze({ mode: "manual", record: garment(control, label) });
+  if (control.id) {
+    const record = garment(control, label);
+    if (effectiveGarmentSlot(control, record) !== slot) throw new Error(`${label} ${record.id} does not occupy the ${slot} slot.`);
+    return Object.freeze({ mode: "manual", record });
+  }
   throw new Error(`${label} does not support mode ${control.mode}.`);
 }
 
@@ -95,8 +109,8 @@ function manualBuiltOutfit(control, context) {
   if (!outfit) throw new Error("Manual Built Outfit requires outfit selections.");
   switch (structure) {
     case "top-bottom": {
-      const top = slotSelection(outfit.top, { groups: TOP_RANDOM_BUCKETS, label: "Clothing top", bucketNamespace: "clothing:tops:bucket", context });
-      const bottom = slotSelection(outfit.bottom, { groups: BOTTOM_RANDOM_BUCKETS, label: "Clothing bottom", bucketNamespace: "clothing:bottoms:bucket", context });
+      const top = slotSelection(outfit.top, { groups: TOP_RANDOM_BUCKETS, label: "Clothing top", slot: "top", bucketNamespace: "clothing:tops:bucket", context });
+      const bottom = slotSelection(outfit.bottom, { groups: BOTTOM_RANDOM_BUCKETS, label: "Clothing bottom", slot: "bottom", bucketNamespace: "clothing:bottoms:bucket", context });
       if (!top.record && !bottom.record) throw new Error("Top/Bottom clothing requires at least one selected or Random garment.");
       return Object.freeze({
         structure,
