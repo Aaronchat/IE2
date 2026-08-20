@@ -125,15 +125,15 @@ A generation completes when Prompt Building succeeds and the final prompt has be
 
 ## Selection Engine
 
-`engine/selection/` owns translation of current control states into requested catalog selections. It preserves explicit manual choices, applies only approved defaults and None states, delegates Random to `engine/selection/random/`, and enforces approved local selection limits. It does not perform cross-domain compatibility, coverage consequences, inheritance consequences, or prompt assembly; those remain Resolution or Prompt Building responsibilities.
+`engine/selection/` owns translation of current control states into requested catalog selections. It preserves explicit manual choices, applies only approved defaults and None states, delegates Random to `engine/selection/random/`, and enforces approved local selection limits. It does not own cross-domain compatibility, coverage consequences, inheritance consequences, or prompt assembly; those remain Resolution or Prompt Building responsibilities. Approved Random selectors may call Resolution-owned read-only helpers strictly to determine eligibility, such as clothing exposure for Random Tattoos, without taking ownership of final coverage or suppression.
 
-Selection results preserve selection provenance (`manual`, `default`, `none`, or `random`) alongside the selected value/record so later layers can distinguish why a value is present or absent. Disabled catalog records are not valid manual selections. Random requires an explicit seed or RNG and uses the shared `RandomRuntimeState`. Selection does not call `completeGeneration()`; the generation owner does so only after a completed generation.
+Selection results preserve selection provenance (`manual`, `default`, `none`, or `random`) alongside the selected value/record so later layers can distinguish why a value is present or absent. Disabled catalog records are not valid manual selections. Random requires an explicit seed or RNG and uses the shared `RandomRuntimeState`. Selection does not call `completeGeneration()`; the generation owner does so only after a completed generation. Clothing is selected before Random Tattoos so the approved Tattoo Random selector can inspect the already-selected Clothing exposure.
 
 ## Resolution Engine
 
 `engine/resolution/` consumes a completed Selection result and produces the coherent structured generation state used by later Prompt Building. Resolution preserves Selection provenance, enforces approved cross-domain compatibility, applies Location consequences such as indoor Atmosphere suppression, preserves Built Outfit and Package structure, and calculates final body coverage and tattoo eligibility. Tattoo Resolution consumes the existing `tattooVisibility`, preserves the original selected Tattoo list, and records visible/omitted Tattoos without relocation or rerolling. Resolution does not perform ordinary re-selection, assemble final prompt prose, or call `completeGeneration()`. Themes and Covers pass through Resolution unchanged and create no cross-domain compatibility or mapping behavior.
 
-Clothing compatibility helpers owned by Resolution may be called by Random Selection when an approved compatibility decision is required during assembly. Those helpers do not own Random weighting, decay, RNG, or lifetime behavior.
+Clothing compatibility and coverage helpers owned by Resolution may be called by Random Selection when an approved eligibility decision is required during assembly. Those helpers do not own Random weighting, decay, RNG, or lifetime behavior, and final Resolution remains authoritative for coverage consequences.
 
 ## Prompt Builder
 
