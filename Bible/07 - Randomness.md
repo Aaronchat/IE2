@@ -187,13 +187,17 @@ Names use equal base weight, standard decay, and runtime namespaced keys.
 
 ### Hair Color
 
-Hair Color uses the existing Natural and Fantasy families as equal buckets. Family selection occurs before individual color selection.
+Primary Hair Color uses the Natural and Fantasy families as equal buckets. Family selection occurs before individual color selection.
 
 Family buckets use standard equal-bucket decay. Individual colors use standard individual decay.
 
+Secondary Hair Color and Hair Color Treatment are manual-only in 2.1D. No Random activation chance or treatment weighting is approved, so Random does not invent multicolor Hair.
+
 ### Hair Style
 
-Hair Style uses the existing style families as equal buckets. Family selection occurs before individual style selection.
+Hair Style uses the approved complete-style families as equal buckets. Family selection occurs before individual style selection.
+
+Complete styles may already encode length and texture, such as `Long Wavy Hair`. Hair Length and Hair Texture are no longer user-facing or Random controls. A hidden manual Hair Length compatibility path remains only so older saved/programmatic inputs do not break.
 
 Family buckets use standard equal-bucket decay. Individual styles use standard individual decay.
 
@@ -201,7 +205,6 @@ Family buckets use standard equal-bucket decay. Individual styles use standard i
 
 These use equal base weights and standard individual decay:
 
-- Hair Length
 - Eye Color
 - Makeup
 - Build
@@ -209,7 +212,6 @@ These use equal base weights and standard individual decay:
 - Hip Width
 - Waist
 - Skin Tone
-- Hair Texture
 - Expression
 - Gaze
 
