@@ -48,7 +48,13 @@ function legPatterns(side) {
 
 export const TATTOO_PLACEMENTS = Object.freeze([
   placement("upper-chest", "Upper Chest", simplePatterns("upper chest", both("upper-chest"))),
-  placement("abdomen", "Abdomen", simplePatterns("abdomen", wholeAbdomen)),
+  placement("abdomen", "Abdomen", [
+    ...simplePatterns("abdomen", wholeAbdomen),
+    pattern("upper-small", "Upper Abdomen — Small", "small", "upper abdomen", [req("upper-abdomen", "left"), req("upper-abdomen", "right")]),
+    pattern("upper-large", "Upper Abdomen — Large", "large", "upper abdomen", [req("upper-abdomen", "left"), req("upper-abdomen", "right")]),
+    pattern("lower-small", "Lower Abdomen — Small", "small", "lower abdomen", [req("lower-abdomen", "left"), req("lower-abdomen", "right")]),
+    pattern("lower-large", "Lower Abdomen — Large", "large", "lower abdomen", [req("lower-abdomen", "left"), req("lower-abdomen", "right")]),
+  ]),
   placement("left-shoulder", "Left Shoulder", simplePatterns("left shoulder", [req("shoulder", "left")])),
   placement("right-shoulder", "Right Shoulder", simplePatterns("right shoulder", [req("shoulder", "right")])),
   placement("left-arm", "Left Arm", armPatterns("left")),
