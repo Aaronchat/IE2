@@ -4,7 +4,7 @@
 
 Tattoos is a repeatable body-detail module. A generation may contain zero, one, or multiple tattoos. Each tattoo is selected independently and preserves its own Placement, Size / Coverage Pattern, and Design.
 
-Tattoos do not support Random in this initial implementation. Adding more tattoos does not create a shared style, placement, or compatibility state between them.
+Tattoos support both the existing repeatable Manual workflow and a clothing-aware Random mode. Manual Tattoos remain independent entries; Random Tattoos uses only exposed candidate areas from the already-selected Clothing and does not invent Specific text.
 
 ## Data
 
@@ -27,7 +27,7 @@ Specific text is stored as user data rather than catalog data. Selection collaps
 
 ## Selection
 
-The public control shape is a repeatable `tattoos[]` array. Each element requires:
+Manual selection keeps the existing repeatable `tattoos[]` array. Each element requires:
 
 - `placementId`
 - `patternId`
@@ -36,6 +36,17 @@ The public control shape is a repeatable `tattoos[]` array. Each element require
 Generic Design requires `styleId`. Specific Design requires `text`.
 
 Selection validates that the Placement exists, the Size / Coverage Pattern belongs to that Placement, the Generic Style exists when used, and Specific text is non-empty. Tattoo order is preserved.
+
+Random selection uses `{ mode: "random" }`. Clothing is selected first so Random Tattoos can reuse the existing coverage resolver as an eligibility helper. Random candidates are the exposed upper/lower left/right arms, upper/lower abdomen, and upper/lower left/right legs. Upper and lower abdomen each count as one area and require both sides of that abdomen region to be uncovered.
+
+Random counts the currently eligible areas, then chooses how many areas to tattoo:
+
+- 1 eligible area -> 1
+- 2 eligible areas -> 1 or 2
+- 3 eligible areas -> 1, 2, or 3
+- 4 or more eligible areas -> 1, 2, 3, or All
+
+Each chosen area independently chooses Large or Small. Large creates exactly one tattoo in that area. Small creates 1-3 small tattoos in that area. Random designs use Generic styles only. Generic Style selection follows the standard individual Random decay/lifetime behavior; Specific designs remain Manual-only.
 
 ## Resolution
 
@@ -49,7 +60,7 @@ The original selected tattoo list remains preserved in the resolved state. Resol
 
 ## Prompt Behavior
 
-Tattoos is emitted immediately after Character and before Clothing / Package.
+Prompt order is unchanged: Tattoos is emitted immediately after Character and before Clothing / Package.
 
 Prompt Building consumes only Resolution-approved visible tattoos. It must not inspect clothing coverage or `finalCoverage` itself.
 
@@ -65,7 +76,7 @@ Multiple eligible tattoos emit in selected order as separate prompt fragments. O
 
 ## UI
 
-Tattoos is a repeatable top-level category after Character. The user may add or remove Tattoo entries. Each entry exposes Placement, contextual Size / Coverage Pattern, Design Type, and either Generic Style or Specific Design text.
+Tattoos is a repeatable top-level category immediately after Clothing. The user may add or remove Manual Tattoo entries, or choose Random for the whole Tattoos module. Choosing Random clears Manual Tattoo rows; adding a Manual Tattoo turns Random off. Each Manual entry exposes Placement, contextual Size / Coverage Pattern, Design Type, and either Generic Style or Specific Design text.
 
 ## Validation
 
