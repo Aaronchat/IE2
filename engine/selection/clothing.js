@@ -80,7 +80,7 @@ function slotSelection(control, { groups, label, slot, bucketNamespace, context 
   if (control.mode === "random") {
     return Object.freeze({
       mode: "random",
-      record: selectRandomGarmentFromGroups({ groups, rng: context.rng, state: context.state, namespace: bucketNamespace, bucketNamespace }),
+      record: selectRandomGarmentFromGroups({ groups, rng: context.rng, state: context.state, bucketNamespace }),
     });
   }
   if (control.id) {
