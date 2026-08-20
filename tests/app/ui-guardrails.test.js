@@ -93,6 +93,31 @@ test("manual Swimwear preserves one top and one bottom while replacing slot conf
   assert.deepEqual(state.get("clothing.swimwear.bikini-bottoms.selection"), unselected());
 });
 
+test("manual bikini top preserves a normal bottom and replaces only a normal top", () => {
+  const state = new Map([
+    ["clothing.primary-random", unselected()],
+    ["clothing.tops.tank-tops.selection", manual({ value: "fitted-tank-top", groupId: "tank-tops" })],
+    ["clothing.bottoms.mini-skirts.selection", manual({ value: "denim-mini-skirt", groupId: "mini-skirts" })],
+    ["clothing.swimwear.selection", unselected()],
+    ["clothing.swimwear.bikini-tops.selection", unselected()],
+  ]);
+  applyManualGuardrails(state, "clothing.swimwear.bikini-tops.selection", { value: "string-bikini-top", groupId: "bikini-tops" });
+  assert.deepEqual(state.get("clothing.tops.tank-tops.selection"), unselected());
+  assert.equal(state.get("clothing.bottoms.mini-skirts.selection").mode, "manual");
+});
+
+test("manual normal bottom preserves a bikini top and replaces only a swimwear bottom", () => {
+  const state = new Map([
+    ["clothing.primary-random", unselected()],
+    ["clothing.bottoms.mini-skirts.selection", unselected()],
+    ["clothing.swimwear.bikini-tops.selection", manual({ value: "string-bikini-top", groupId: "bikini-tops" })],
+    ["clothing.swimwear.bikini-bottoms.selection", manual({ value: "brazilian-bikini-bottom", groupId: "bikini-bottoms" })],
+  ]);
+  applyManualGuardrails(state, "clothing.bottoms.mini-skirts.selection", { value: "denim-mini-skirt", groupId: "mini-skirts" });
+  assert.equal(state.get("clothing.swimwear.bikini-tops.selection").mode, "manual");
+  assert.deepEqual(state.get("clothing.swimwear.bikini-bottoms.selection"), unselected());
+});
+
 test("manual standalone primary clothing clears Top/Bottom and other standalone structures", () => {
   const state = new Map([
     ["clothing.tops.tank-tops.selection", manual({ value: "top" })],
