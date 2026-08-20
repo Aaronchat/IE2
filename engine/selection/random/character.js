@@ -51,7 +51,6 @@ export const RANDOM_CHARACTER_CONTROLS = Object.freeze([
   "name",
   "hair-color",
   "hair-style",
-  "hair-length",
   "eye-color",
   "makeup",
   "build",
@@ -61,7 +60,6 @@ export const RANDOM_CHARACTER_CONTROLS = Object.freeze([
   "waist",
   "skin-tone",
   "freckles",
-  "hair-texture",
   "expression",
   "gaze",
 ]);
@@ -105,10 +103,6 @@ export function selectRandomHairStyle({ rng, state }) {
   return chooseStringBucket(CHARACTER_HAIR.styles, "character:hair-style", { rng, state });
 }
 
-export function selectRandomHairLength({ rng, state }) {
-  return chooseString(CHARACTER_HAIR.lengths, "character:hair-length", { rng, state });
-}
-
 export function selectRandomEyeColor({ rng, state }) {
   return chooseString(CHARACTER_EYES.colors, "character:eye-color", { rng, state });
 }
@@ -139,10 +133,6 @@ export function selectRandomWaist({ rng, state }) {
 
 export function selectRandomSkinTone({ rng, state }) {
   return chooseString(CHARACTER_SKIN.skinTones, "character:skin-tone", { rng, state });
-}
-
-export function selectRandomHairTexture({ rng, state }) {
-  return chooseString(CHARACTER_HAIR.textures, "character:hair-texture", { rng, state });
 }
 
 export function selectRandomExpression({ rng, state }) {
