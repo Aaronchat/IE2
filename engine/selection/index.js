@@ -21,8 +21,8 @@ export function selectGeneration({ controls = {}, random = {} } = {}) {
   const result = {};
   const aspectRatio = selectAspectRatio(controls.aspectRatio, context); if (aspectRatio) result.aspectRatio = aspectRatio;
   result.character = selectCharacter(controls.character, context);
-  const tattoos = selectTattoos(controls.tattoos); if (tattoos) result.tattoos = tattoos;
   result.clothing = selectClothing(controls.clothing, context);
+  const tattoos = selectTattoos(controls.tattoos, context, result.clothing); if (tattoos) result.tattoos = tattoos;
   const footwear = selectFootwear(controls.footwear, context); if (footwear) result.footwear = footwear;
   const accessories = selectAccessories(controls.accessories, context); if (accessories) result.accessories = accessories;
   const location = selectLocation(controls.location, context); if (location) result.location = location;
