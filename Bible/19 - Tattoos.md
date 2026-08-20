@@ -60,7 +60,7 @@ The original selected tattoo list remains preserved in the resolved state. Resol
 
 ## Prompt Behavior
 
-Prompt order is unchanged: Tattoos is emitted immediately after Character and before Clothing / Package.
+Tattoos is emitted immediately after Clothing / Package.
 
 Prompt Building consumes only Resolution-approved visible tattoos. It must not inspect clothing coverage or `finalCoverage` itself.
 
