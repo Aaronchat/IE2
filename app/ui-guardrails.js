@@ -93,6 +93,22 @@ function swimwearSlot(value) {
   return record?.slot ?? group?.defaults?.slot ?? null;
 }
 
+function clearManualPrimaryOutsidePairAndSwimwear(state) {
+  clearEntry(state, PRIMARY_RANDOM_ID);
+  for (const sectionId of PRIMARY_STANDALONE_SECTIONS) {
+    if (sectionId !== "clothing.swimwear") clearClothingSection(state, sectionId);
+  }
+}
+
+function clearManualSwimwearSlot(state, slot) {
+  for (const [id, current] of state) {
+    if (!id.startsWith("clothing.swimwear.") || id === "clothing.swimwear.selection" || id.startsWith("clothing.swimwear.advanced.")) continue;
+    if (current.mode !== "manual" || !current.values.length) continue;
+    const currentSlot = swimwearSlot(current.values[0]);
+    if (currentSlot === slot || currentSlot === "one-piece") clearEntry(state, id);
+  }
+}
+
 function clearConflictingSwimwearSelections(state, controlId, selectedValue) {
   const selectedSlot = swimwearSlot(selectedValue);
   if (!selectedSlot) throw new Error(`Swimwear selection ${selectedValue?.value ?? selectedValue} has no assembly slot.`);
@@ -103,6 +119,22 @@ function clearConflictingSwimwearSelections(state, controlId, selectedValue) {
     const conflicts = selectedSlot === "one-piece" || currentSlot === "one-piece" || currentSlot === selectedSlot;
     if (conflicts) clearEntry(state, id);
   }
+}
+
+function clearConflictingManualPrimaryForSwimwear(state, selectedValue) {
+  const slot = swimwearSlot(selectedValue);
+  if (!slot) throw new Error(`Swimwear selection ${selectedValue?.value ?? selectedValue} has no assembly slot.`);
+  clearEntry(state, PRIMARY_RANDOM_ID);
+  if (slot === "one-piece") {
+    for (const sectionId of PRIMARY_SECTIONS) {
+      if (sectionId !== "clothing.swimwear") clearClothingSection(state, sectionId);
+    }
+    return;
+  }
+  for (const sectionId of PRIMARY_STANDALONE_SECTIONS) {
+    if (sectionId !== "clothing.swimwear") clearClothingSection(state, sectionId);
+  }
+  clearClothingSection(state, slot === "top" ? "clothing.tops" : "clothing.bottoms");
 }
 
 function selectedCount(state, prefix, excludeId = null) {
@@ -179,11 +211,17 @@ export function applyManualGuardrails(state, controlId, selectedValue) {
     clearEntry(state, clothingActionId(clothingSection));
     if (clothingSection === "clothing.swimwear") {
       clearConflictingSwimwearSelections(state, controlId, selectedValue);
+      clearConflictingManualPrimaryForSwimwear(state, selectedValue);
     } else {
       const advancedIds = [...state.keys()].filter((id) => id.startsWith(`${clothingSection}.advanced.`));
       clearPrefix(state, clothingSection, { except: [controlId, clothingActionId(clothingSection), ...advancedIds] });
+      if (PRIMARY_PAIR_SECTIONS.includes(clothingSection)) {
+        clearManualPrimaryOutsidePairAndSwimwear(state);
+        clearManualSwimwearSlot(state, clothingSection === "clothing.tops" ? "top" : "bottom");
+      } else if (PRIMARY_SECTIONS.includes(clothingSection)) {
+        clearConflictingPrimarySections(state, clothingSection);
+      }
     }
-    if (PRIMARY_SECTIONS.includes(clothingSection)) clearConflictingPrimarySections(state, clothingSection);
   }
 
   for (const [domain, actionId] of Object.entries(SPLIT_DOMAIN_ACTIONS)) {

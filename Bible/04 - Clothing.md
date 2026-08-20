@@ -170,6 +170,8 @@ At the Clothing-section level:
 - `None` means **leave that Clothing section unspecified in the positive prompt**. It does not mean nudity, removal of clothing, or a negative instruction.
 - A manual selection within a garment family clears the parent section's Random/None mode and remains the explicit selection for that section.
 - Tops and Bottoms may be specified independently. Either slot may be intentionally omitted with None while the other is selected or Random. Coverage is calculated only from garments that Infinite Engine actually selected or specified; omitted clothing is not assumed for tattoo-visibility calculations.
+- Manual Swimwear respects each garment's approved slot. A Swimwear `top` may fill the top slot with a normal Bottom, and a Swimwear `bottom` may fill the bottom slot with a normal Top. Selecting another garment for the same slot replaces the previous slot choice regardless of whether it came from the normal Top/Bottom section or Swimwear. Swimwear `one-piece` records remain standalone and conflict with Top/Bottom slot garments.
+- Swimwear section Random remains the existing standalone Swimwear assembly path; slot mixing applies to explicit manual Swimwear garments only.
 - Lingerie remains Manual-or-None and has no Random control.
 
 The UI also provides one reset action that clears user selections/modes and restores established defaults. Collapsed parent sections display an indicator when a specific manual choice exists below them.

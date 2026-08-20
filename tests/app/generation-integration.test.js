@@ -179,15 +179,35 @@ test("Condition applies to a selected Swimwear garment", () => {
   assert.ok(runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt.includes("ripped underwire bikini top"));
 });
 
+test("manual bikini top combines with a normal denim mini skirt", () => {
+  const ui = baseUi();
+  ui.clothing["clothing.swimwear.bikini-tops.selection"] = manual("string-bikini-top", "bikini-tops");
+  ui.clothing["clothing.bottoms.mini-skirts.selection"] = manual("denim-mini-skirt", "mini-skirts");
+  const controls = uiStateToGenerationControls(ui);
+  assert.deepEqual(controls.clothing.primary, {
+    mode: "manual", path: "built-outfit", structure: "top-bottom",
+    outfit: {
+      top: { mode: "manual", id: "string-bikini-top", groupId: "bikini-tops" },
+      bottom: { mode: "manual", id: "denim-mini-skirt", groupId: "mini-skirts" },
+    },
+  });
+  const prompt = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt;
+  assert.ok(prompt.includes("string bikini top"));
+  assert.ok(prompt.includes("denim mini skirt"));
+});
+
 test("Swimwear UI combines one independently selected top and bottom", () => {
   const ui = baseUi();
   ui.clothing["clothing.swimwear.bikini-tops.selection"] = manual("string-bikini-top", "bikini-tops");
   ui.clothing["clothing.swimwear.bikini-bottoms.selection"] = manual("brazilian-bikini-bottom", "bikini-bottoms");
   const controls = uiStateToGenerationControls(ui);
-  assert.deepEqual(controls.clothing.primary.outfit, [
-    { id: "string-bikini-top", groupId: "bikini-tops" },
-    { id: "brazilian-bikini-bottom", groupId: "bikini-bottoms" },
-  ]);
+  assert.deepEqual(controls.clothing.primary, {
+    mode: "manual", path: "built-outfit", structure: "top-bottom",
+    outfit: {
+      top: { mode: "manual", id: "string-bikini-top", groupId: "bikini-tops" },
+      bottom: { mode: "manual", id: "brazilian-bikini-bottom", groupId: "bikini-bottoms" },
+    },
+  });
   const prompt = runUiGeneration({ uiState: ui, randomState: new RandomRuntimeState() }).prompt;
   assert.ok(prompt.includes("string bikini top"));
   assert.ok(prompt.includes("Brazilian bikini bottom"));

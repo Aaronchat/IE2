@@ -32,6 +32,25 @@ test("Top/Bottom permits one explicit None slot and preserves its omission mode"
   assert.deepEqual(result.slotModes, { top: "none", bottom: "manual" });
 });
 
+test("manual top-bottom accepts a Swimwear top with a normal Bottom by slot", () => {
+  const result = selectGeneration({ controls: { clothing: { primary: {
+    mode: "manual", path: "built-outfit", structure: "top-bottom",
+    outfit: {
+      top: { mode: "manual", id: "string-bikini-top", groupId: "bikini-tops" },
+      bottom: { mode: "manual", id: "denim-mini-skirt", groupId: "mini-skirts" },
+    },
+  } } } }).selections.clothing.primary.value.builtOutfit;
+  assert.equal(result.outfit.top.id, "string-bikini-top");
+  assert.equal(result.outfit.bottom.id, "denim-mini-skirt");
+});
+
+test("top-bottom rejects a one-piece Swimwear record in a slot", () => {
+  assert.throws(() => selectGeneration({ controls: { clothing: { primary: {
+    mode: "manual", path: "built-outfit", structure: "top-bottom",
+    outfit: { top: { mode: "manual", id: "monokini", groupId: "one-piece-swimsuits" }, bottom: { mode: "none" } },
+  } } } }), /does not occupy the top slot/);
+});
+
 test("section-level Random can select a Top without inventing a Bottom", () => {
   const result = selectGeneration({ controls: { clothing: { primary: {
     mode: "manual", path: "built-outfit", structure: "top-bottom",

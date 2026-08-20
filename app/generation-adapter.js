@@ -155,20 +155,20 @@ function adaptClothing(ui) {
     top: clothingSectionState(source, "clothing.tops", "Tops"),
     bottom: clothingSectionState(source, "clothing.bottoms", "Bottoms"),
   };
+  const swimwear = swimwearSectionState(source);
+  const manualSwimwear = swimwear.mode === "manual"
+    ? Object.fromEntries(swimwear.refs.map((ref) => [swimwearSlot(ref), ref]))
+    : {};
+  const swimwearOnePiece = manualSwimwear["one-piece"] ?? null;
   const details = Object.fromEntries(Object.entries(CLOTHING_DETAIL_IDS)
     .map(([section, ids]) => [section, clothingDetailStates(source, section, ids)])
     .filter(([, values]) => Object.keys(values).length));
   const standalone = [
-    ["clothing.dresses", "dresses", "dress", "Dresses"],
-    ["clothing.one-piece", "one-piece", "one-piece", "One-Piece"],
-    ["clothing.swimwear", "swimwear", "swimwear", "Swimwear"],
-    ["clothing.sleepwear", "sleepwear", "sleepwear", "Sleepwear"],
-    ["clothing.packages", "packages", "package", "Packages"],
-  ].map(([sectionId, detailKey, structure, label]) => ({
-    detailKey,
-    structure,
-    state: structure === "swimwear" ? swimwearSectionState(source) : clothingSectionState(source, sectionId, label),
-  }));
+    ["clothing.dresses", "dresses", "dress", "Dresses", clothingSectionState(source, "clothing.dresses", "Dresses")],
+    ["clothing.one-piece", "one-piece", "one-piece", "One-Piece", clothingSectionState(source, "clothing.one-piece", "One-Piece")],
+    ["clothing.sleepwear", "sleepwear", "sleepwear", "Sleepwear", clothingSectionState(source, "clothing.sleepwear", "Sleepwear")],
+    ["clothing.packages", "packages", "package", "Packages", clothingSectionState(source, "clothing.packages", "Packages")],
+  ].map(([sectionId, detailKey, structure, label, state]) => ({ sectionId, detailKey, structure, label, state }));
 
   const extras = Object.fromEntries([
     ["outerwear", "Outerwear"],
@@ -176,19 +176,35 @@ function adaptClothing(ui) {
     ["lingerie", "Lingerie"],
   ].map(([key, label]) => [key, clothingSectionState(source, `clothing.${key}`, label)]));
 
+  if (manualSwimwear.top) {
+    if (isActiveClothingState(slots.top)) throw new Error("Choose only one top slot garment at a time.");
+    slots.top = { mode: "manual", ...manualSwimwear.top };
+  }
+  if (manualSwimwear.bottom) {
+    if (isActiveClothingState(slots.bottom)) throw new Error("Choose only one bottom slot garment at a time.");
+    slots.bottom = { mode: "manual", ...manualSwimwear.bottom };
+  }
+
   const activePair = Object.values(slots).some(isActiveClothingState);
   const activeStandalone = standalone.filter(({ state }) => isActiveClothingState(state));
-  const stateByDetailKey = { tops: slots.top, bottoms: slots.bottom, ...Object.fromEntries(standalone.map(({ detailKey, state }) => [detailKey, state])), ...extras };
+  const activeSwimwearStandalone = swimwear.mode === "random" || Boolean(swimwearOnePiece);
+  const stateByDetailKey = {
+    tops: slots.top,
+    bottoms: slots.bottom,
+    swimwear,
+    ...Object.fromEntries(standalone.map(({ detailKey, state }) => [detailKey, state])),
+    ...extras,
+  };
   for (const section of Object.keys(details)) {
     if (primaryRandom || !isActiveClothingState(stateByDetailKey[section])) {
       throw new Error(`${section} Advanced details require a selected or Random ${section} garment.`);
     }
   }
-  if (primaryRandom && (activePair || activeStandalone.length)) {
+  if (primaryRandom && (activePair || activeStandalone.length || activeSwimwearStandalone)) {
     throw new Error("Primary Outfit Random cannot be combined with another active primary clothing selection.");
   }
-  if (activePair && activeStandalone.length) throw new Error("Choose only one primary clothing structure or Package at a time.");
-  if (activeStandalone.length > 1) throw new Error("Choose only one primary clothing structure or Package at a time.");
+  if (activePair && (activeStandalone.length || activeSwimwearStandalone)) throw new Error("Choose only one primary clothing structure or Package at a time.");
+  if (activeStandalone.length + Number(activeSwimwearStandalone) > 1) throw new Error("Choose only one primary clothing structure or Package at a time.");
 
   if (primaryRandom) {
     out.primary = { mode: "random" };
@@ -198,6 +214,13 @@ function adaptClothing(ui) {
       path: "built-outfit",
       structure: "top-bottom",
       outfit: { top: slots.top, bottom: slots.bottom },
+    };
+  } else if (activeSwimwearStandalone) {
+    out.primary = {
+      mode: "manual",
+      path: "built-outfit",
+      structure: "swimwear",
+      outfit: swimwear.mode === "random" ? swimwear : [swimwearOnePiece],
     };
   } else if (activeStandalone.length === 1) {
     const { structure, state } = activeStandalone[0];
@@ -210,7 +233,7 @@ function adaptClothing(ui) {
         mode: "manual",
         path: "built-outfit",
         structure,
-        outfit: structure === "swimwear" && state.mode === "manual" ? state.refs : state,
+        outfit: state,
       };
     }
   }
