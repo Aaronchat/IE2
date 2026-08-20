@@ -51,6 +51,19 @@ function detailedGarmentPrompt(record, details = {}, label = "Clothing") {
   return normalizeFragment(parts.join(" "));
 }
 
+function clothingGroup(record) {
+  return CATALOGS.clothing.find((group) => group.items.includes(record));
+}
+
+function clothingCategory(record) {
+  const group = clothingGroup(record);
+  return record?.category ?? group?.defaults?.category ?? null;
+}
+
+function detailsForSlotRecord(record, slotDetails, details) {
+  return clothingCategory(record) === "swimwear" ? details.swimwear : slotDetails;
+}
+
 function specificTattooDesign(text) {
   const cleaned = text.replace(/\s+/gu, " ").trim();
   if (/^[A-Z0-9][A-Z0-9 &'’.-]*$/u.test(cleaned) && /[A-Z]/u.test(cleaned)) return JSON.stringify(cleaned);
@@ -90,8 +103,8 @@ function clothingFragments(clothing) {
     const built = primary.builtOutfit;
     if (!built || typeof built !== "object") throw new Error("Built Outfit structure is required.");
     if (built.structure === "top-bottom") {
-      if (built.outfit?.top) fragments.push(detailedGarmentPrompt(built.outfit.top, details.tops, "Clothing top"));
-      if (built.outfit?.bottom) fragments.push(detailedGarmentPrompt(built.outfit.bottom, details.bottoms, "Clothing bottom"));
+      if (built.outfit?.top) fragments.push(detailedGarmentPrompt(built.outfit.top, detailsForSlotRecord(built.outfit.top, details.tops, details), "Clothing top"));
+      if (built.outfit?.bottom) fragments.push(detailedGarmentPrompt(built.outfit.bottom, detailsForSlotRecord(built.outfit.bottom, details.bottoms, details), "Clothing bottom"));
     } else if (built.structure === "swimwear") {
       for (const record of sortRecords(built.outfit ?? [], CATALOGS.clothing)) fragments.push(detailedGarmentPrompt(record, details.swimwear, "Swimwear"));
     } else if (["dress", "one-piece", "sleepwear"].includes(built.structure)) {
