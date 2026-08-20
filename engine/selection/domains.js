@@ -13,6 +13,7 @@ import { selectRandomLocation } from "./random/locations.js";
 import { selectRandomAtmosphere } from "./random/atmosphere.js";
 import { selectRandomTimeOfDay } from "./random/time-of-day.js";
 import { selectRandomThemes } from "./random/themes.js";
+import { selectRandomTattoos } from "./random/tattoos.js";
 import { coverStyleGroup, selectRandomCoverEra, selectRandomCoverStyle, selectRandomCoverType } from "./random/covers.js";
 
 export function selectSingleRecord(control, groups, label, randomSelector, context, { none = false } = {}) {
@@ -41,9 +42,12 @@ function cleanSpecificTattooText(value) {
   return cleaned;
 }
 
-export function selectTattoos(controls) {
+export function selectTattoos(controls, context, clothing) {
   if (controls == null) return undefined;
-  if (!Array.isArray(controls)) throw new Error("Tattoos controls must be an array.");
+  if (!Array.isArray(controls)) {
+    if (controls?.mode === "random") return result("random", selectRandomTattoos({ ...context, clothing }));
+    throw new Error("Tattoos controls must be an array or Random mode.");
+  }
   const tattoos = controls.map((control, index) => {
     if (!control || typeof control !== "object" || Array.isArray(control)) throw new Error(`Tattoo ${index + 1} must be an object.`);
     const placement = tattooPlacement(control.placementId);
