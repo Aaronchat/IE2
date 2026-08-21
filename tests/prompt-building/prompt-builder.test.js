@@ -108,12 +108,30 @@ test("Time of Day emits in its canonical position", () => {
   const result = buildPrompt(state);
   assert.deepEqual(result.sections.timeOfDay, ["at sunset"]);
   assert.ok(result.prompt.indexOf("sunny") < result.prompt.indexOf("at sunset"));
-  assert.ok(result.prompt.indexOf("at sunset") < result.prompt.indexOf("captured with a Canon EOS R5"));
+  assert.ok(result.prompt.indexOf("at sunset") < result.prompt.indexOf("clean modern photorealistic digital photography"));
 });
 
-test("Camera defaults emit authoritative prompts in stable control order while Spatial-Safe default None stays silent", () => {
+test("Camera defaults emit only Normal Photo and Full Body", () => {
   const result = buildPrompt(resolve()).sections.camera;
   assert.deepEqual(result, [
+    "clean modern photorealistic digital photography with natural photographic detail and realistic optics",
+    "full-body framing",
+  ]);
+});
+
+test("explicit manual legacy Camera controls remain backward compatible", () => {
+  const controls = { camera: {
+    "camera-body": { mode: "manual", id: "canon-eos-r5" },
+    "capture-medium": { mode: "manual", id: "digital" },
+    "lens-look": { mode: "manual", id: "50mm-standard" },
+    "focus-depth": { mode: "manual", id: "balanced-focus" },
+    framing: { mode: "manual", id: "full-body" },
+    "camera-angle": { mode: "manual", id: "eye-level" },
+    "subject-view": { mode: "manual", id: "straight-on-view" },
+    "viewer-pov": { mode: "manual", id: "direct-portrait-view" },
+  } };
+  assert.deepEqual(buildPrompt(resolve(controls)).sections.camera, [
+    "clean modern photorealistic digital photography with natural photographic detail and realistic optics",
     "captured with a Canon EOS R5",
     "digital photography",
     "50mm standard lens",
@@ -125,18 +143,12 @@ test("Camera defaults emit authoritative prompts in stable control order while S
   ]);
 });
 
-test("manual/default provenance does not alter Camera phrase ordering", () => {
-  const controls = { camera: {
-    "camera-body": { mode: "manual", id: "canon-eos-r5" },
-    "capture-medium": { mode: "manual", id: "digital" },
-    "lens-look": { mode: "manual", id: "50mm-standard" },
-    "focus-depth": { mode: "manual", id: "balanced-focus" },
-    framing: { mode: "manual", id: "full-body" },
-    "camera-angle": { mode: "manual", id: "eye-level" },
-    "subject-view": { mode: "manual", id: "straight-on-view" },
-    "viewer-pov": { mode: "manual", id: "direct-portrait-view" },
-  } };
-  assert.deepEqual(buildPrompt(resolve(controls)).sections.camera, buildPrompt(resolve()).sections.camera);
+test("Custom POV emits a first-person wrapper and suppresses the untouched preset POV default", () => {
+  const result = buildPrompt(resolve({ camera: {
+    "custom-pov": { mode: "manual", text: "a football racing toward her" },
+  } })).sections.camera;
+  assert.ok(result.includes("seen from the first-person viewpoint of a football racing toward her; the viewpoint entity itself is not visible in the image"));
+  assert.equal(result.includes("direct portrait viewpoint"), false);
 });
 
 test("Effects stack in control order and multi-select catalog order", () => {
@@ -203,7 +215,7 @@ test("Covers appends one separate paragraph after Themes while preserving Camera
       metadata: { "movie-title": "Castle Blood", "starring-name": "Emily Stone" },
     },
   }));
-  assert.ok(result.sections.camera.includes("captured with a Canon EOS R5"));
+  assert.ok(result.sections.camera.includes("clean modern photorealistic digital photography with natural photographic detail and realistic optics"));
   assert.deepEqual(result.sections.covers, ["Presented as a 1970s horror movie DVD cover, titled \"Castle Blood\", starring Emily Stone, featuring a fictional tagline."]);
   const [normal, presentation] = result.prompt.split("\n\n");
   assert.ok(normal.endsWith("Theme: Gothic."));
@@ -317,7 +329,7 @@ test("visible Tattoos emit after Character in selected order with Generic and Sp
     "a small broken-heart tattoo on her abdomen",
   ]);
   assert.ok(result.prompt.indexOf("Emma") < result.prompt.indexOf("a full watercolor tattoo sleeve"));
-  assert.ok(result.prompt.indexOf("a full watercolor tattoo sleeve") < result.prompt.indexOf("captured with a Canon EOS R5"));
+  assert.ok(result.prompt.indexOf("a full watercolor tattoo sleeve") < result.prompt.indexOf("clean modern photorealistic digital photography"));
 });
 
 test("Prompt Building emits only Resolution-visible Tattoos and records blocked Tattoos as suppressed", () => {
