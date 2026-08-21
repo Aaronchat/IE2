@@ -25,20 +25,30 @@ test("Wedding Dresses appear under the existing Dresses UI", () => {
   assert.ok(wedding);
   assert.deepEqual(wedding.groupedOptions[0].options.map((entry) => entry.label), ["Traditional Wedding Dress", "Modern Sleek Wedding Dress"]);
 });
-test("approved defaults are preserved", () => {
+
+test("approved defaults are preserved while Camera 2.1E exposes only meaningful defaults", () => {
   assert.equal(byId.get("character.ethnicity").defaultValue, "Caucasian");
-  assert.equal(byId.get("camera.camera-body").defaultValue, "canon-eos-r5");
-  assert.equal(byId.get("camera.capture-medium").defaultValue, "digital");
-  assert.equal(byId.get("camera.lens-look").defaultValue, "50mm-standard");
-  assert.equal(byId.get("camera.focus-depth").defaultValue, "balanced-focus");
+  assert.equal(byId.get("camera.photo-look").defaultValue, "normal-photo");
   assert.equal(byId.get("camera.framing").defaultValue, "full-body");
-  assert.equal(byId.get("camera.camera-angle").defaultValue, "eye-level");
-  assert.equal(byId.get("camera.subject-view").defaultValue, "straight-on-view");
-  assert.equal(byId.get("camera.viewer-pov").defaultValue, "direct-portrait-view");
+  assert.equal(byId.get("camera.camera-angle").defaultValue, null);
+  assert.equal(byId.get("camera.subject-view").defaultValue, null);
+  assert.equal(byId.get("camera.viewer-pov").defaultValue, null);
   assert.equal(byId.get("camera.spatial-safe-framing").defaultValue, null);
   assert.equal(byId.get("character.chest-description").defaultValue, "Buxom");
   assert.equal(byId.get("effects.effects-imperfections").defaultValue, null);
-  assert.equal(byId.get("effects.film-age").defaultValue, null);
+});
+
+test("Camera 2.1E hides technical equipment controls and exposes Custom POV", () => {
+  for (const id of ["camera.camera-body", "camera.capture-medium", "camera.lens-look", "camera.focus-depth", "effects.film-age"]) {
+    assert.equal(byId.has(id), false, id);
+  }
+  const custom = byId.get("camera.custom-pov");
+  assert.ok(custom);
+  assert.equal(custom.inputType, "text");
+  assert.match(custom.placeholder, /football/u);
+  const photoLook = byId.get("camera.photo-look");
+  assert.equal(photoLook.groupedOptions[0].options.length, 15);
+  assert.ok(photoLook.groupedOptions[0].options.some((entry) => entry.label === "Selfie Stick"));
 });
 
 test("approved Random exclusions and domain boundaries are preserved", () => {
@@ -58,11 +68,10 @@ test("approved None exclusions are preserved", () => {
   for (const entry of controls.filter((item) => item.id.startsWith("character."))) assert.equal(entry.none, false);
 });
 
-test("None remains available only where established in configured domains", () => {
+test("None remains available only where established in visible configured domains", () => {
   assert.equal(byId.get("time-of-day.selection").none, true);
   assert.equal(byId.get("camera.spatial-safe-framing").none, true);
   assert.equal(byId.get("effects.effects-imperfections").none, true);
-  assert.equal(byId.get("effects.film-age").none, true);
   assert.equal(byId.get("atmosphere.selection").none, true);
   for (const entry of controls.filter((item) => /^atmosphere\..+\.selection$/.test(item.id))) assert.equal(entry.none, false);
 });
@@ -107,12 +116,9 @@ test("Time of Day is a direct category control without a duplicate subsection", 
   assert.ok(time.action.groupedOptions.length > 0);
 });
 
-test("Effects is visually nested beneath Camera without changing Effects control ids", () => {
+test("Effects is visually nested beneath Camera without changing the visible Effects control id", () => {
   const camera = UI_CATEGORIES.find((entry) => entry.id === "camera");
-  assert.deepEqual(camera.sections.slice(-2).map((entry) => entry.id), [
-    "effects.effects-imperfections",
-    "effects.film-age",
-  ]);
+  assert.deepEqual(camera.sections.slice(-1).map((entry) => entry.id), ["effects.effects-imperfections"]);
   assert.equal(UI_CATEGORIES.some((entry) => entry.id === "effects"), false);
 });
 
