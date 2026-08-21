@@ -30,6 +30,28 @@ test("UT Tower is present in UT-specific locations", () => {
   assert.ok(byId.get("ut-specific-locations").items.some((item) => item.id === "ut-tower"));
 });
 
+test("UT generic Longhorns scenes are limited to the approved four", () => {
+  const ut = byId.get("ut-specific-locations").items;
+  const genericLonghorns = ut
+    .filter((item) => item.id.startsWith("longhorns-"))
+    .map((item) => item.id)
+    .sort();
+
+  assert.deepEqual(genericLonghorns, [
+    "longhorns-football-locker-room",
+    "longhorns-indoor-football-practice-facility",
+    "longhorns-tailgate-area",
+    "longhorns-trophy-room",
+  ]);
+});
+
+test("indoor football practice facility is explicitly named and prompted", () => {
+  const facility = byId.get("ut-specific-locations").items.find((item) => item.id === "longhorns-indoor-football-practice-facility");
+  assert.equal(facility.name, "Longhorns Indoor Football Practice Facility");
+  assert.equal(facility.prompt, "inside the Longhorns indoor football practice facility");
+  assert.equal(facility.environment, "indoor");
+});
+
 test("new generic scene locations are present", () => {
   const generic = new Set(byId.get("generic-locations").items.map((item) => item.id));
   for (const id of ["bedroom", "kitchen", "bathroom", "motel-room", "diner", "convenience-store", "laundromat", "parking-garage", "city-rooftop", "warehouse", "cabin-in-the-woods"]) {
