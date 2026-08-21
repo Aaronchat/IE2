@@ -45,6 +45,15 @@ function stateFor(control) {
   return state.get(control.id);
 }
 
+function serializeControlState(control) {
+  const current = stateFor(control);
+  return {
+    mode: current.mode,
+    value: control.maxSelections === 1 ? (current.values[0] ?? null) : undefined,
+    values: control.maxSelections > 1 ? current.values : undefined,
+  };
+}
+
 function serializeUiState() {
   const payload = {};
   for (const category of UI_CATEGORIES) {
@@ -63,23 +72,11 @@ function serializeUiState() {
       continue;
     }
     const categoryState = {};
-    if (category.action) {
-      const current = stateFor(category.action);
-      categoryState[category.action.id] = { mode: current.mode, value: current.values[0] ?? null, values: category.action.maxSelections > 1 ? current.values : undefined };
-    }
+    if (category.action) categoryState[category.action.id] = serializeControlState(category.action);
+    for (const modifier of category.modifiers ?? []) categoryState[modifier.id] = serializeControlState(modifier);
     for (const section of category.sections) {
-      if (section.action) {
-        const current = stateFor(section.action);
-        categoryState[section.action.id] = { mode: current.mode, value: current.values[0] ?? null, values: section.action.maxSelections > 1 ? current.values : undefined };
-      }
-      for (const control of sectionControls(section)) {
-        const current = stateFor(control);
-        categoryState[control.id] = {
-          mode: current.mode,
-          value: control.maxSelections === 1 ? (current.values[0] ?? null) : undefined,
-          values: control.maxSelections > 1 ? current.values : undefined,
-        };
-      }
+      if (section.action) categoryState[section.action.id] = serializeControlState(section.action);
+      for (const control of sectionControls(section)) categoryState[control.id] = serializeControlState(control);
     }
     payload[category.id] = categoryState;
   }
@@ -198,6 +195,15 @@ function renderControl(control, { compact = false } = {}) {
     actionRow.append(noneButton);
   }
 
+  const toggleButton = control.toggle ? document.createElement("button") : null;
+  if (toggleButton) {
+    toggleButton.type = "button";
+    toggleButton.className = "mode-button toggle-button";
+    toggleButton.textContent = control.label;
+    toggleButton.setAttribute("aria-pressed", "false");
+    actionRow.append(toggleButton);
+  }
+
   wrapper.append(actionRow);
   const chips = document.createElement("div");
   chips.className = "chips";
@@ -242,6 +248,11 @@ function renderControl(control, { compact = false } = {}) {
       if (found) chips.firstChild?.classList.add("default-chip");
     }
     setButtonState(wrapper, current.mode);
+    if (toggleButton) {
+      const active = current.mode === "manual";
+      toggleButton.classList.toggle("active", active);
+      toggleButton.setAttribute("aria-pressed", String(active));
+    }
   }
 
   if (select) {
@@ -277,6 +288,19 @@ function renderControl(control, { compact = false } = {}) {
       generationError.hidden = true;
       generationError.textContent = "";
       updateSelectionIndicators();
+      updateOutput();
+    });
+  }
+
+  if (toggleButton) {
+    toggleButton.addEventListener("click", () => {
+      const current = stateFor(control);
+      const active = current.mode === "manual";
+      current.mode = active ? "none" : "manual";
+      current.values = active ? [] : ["on"];
+      generationError.hidden = true;
+      generationError.textContent = "";
+      redrawAllAffected(control.id);
       updateOutput();
     });
   }
@@ -320,6 +344,7 @@ function updateSelectionIndicators() {
     }
     const ids = [
       ...(category.action ? [category.action.id] : []),
+      ...(category.modifiers ?? []).map((control) => control.id),
       ...category.sections.flatMap((section) => [...(section.action ? [section.action.id] : []), ...sectionControls(section).map((control) => control.id)]),
     ];
     marker.hidden = !ids.some((id) => isSpecificState(state.get(id)));
@@ -547,10 +572,25 @@ function renderCategory(category, index) {
     }
     body.append(renderTattooEditor());
   } else {
+    const categoryActions = [];
     if (category.action) {
       const action = renderControl(category.action, { compact: category.sections.length === 0 });
       action.classList.add("category-action");
-      body.append(action);
+      categoryActions.push(action);
+    }
+    for (const modifier of category.modifiers ?? []) {
+      const modifierControl = renderControl(modifier, { compact: true });
+      modifierControl.classList.add("category-modifier");
+      categoryActions.push(modifierControl);
+    }
+    if (categoryActions.length) {
+      if (categoryActions.length === 1) body.append(categoryActions[0]);
+      else {
+        const actionGroup = document.createElement("div");
+        actionGroup.className = "category-action-group";
+        actionGroup.append(...categoryActions);
+        body.append(actionGroup);
+      }
     }
     category.sections.forEach((section) => body.append(renderSection(section)));
   }
@@ -592,6 +632,7 @@ clearAll.addEventListener("click", () => {
   tattooCategoryView?.redraw();
   for (const category of UI_CATEGORIES) {
     if (category.action) stateFor(category.action);
+    for (const modifier of category.modifiers ?? []) stateFor(modifier);
     for (const section of category.sections) {
       if (section.action) stateFor(section.action);
       for (const control of sectionControls(section)) stateFor(control);
