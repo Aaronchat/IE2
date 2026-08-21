@@ -137,6 +137,11 @@ function manualBuiltOutfit(control, context) {
 
 export function selectClothing(controls = {}, context) {
   const out = {};
+  if (controls.provocative != null && typeof controls.provocative !== "boolean") {
+    throw new Error("Clothing Provocative modifier must be boolean.");
+  }
+  if (controls.provocative === true) out.provocative = true;
+
   if (controls.primary) {
     assertMode(controls.primary, ["manual", "random"], "Clothing primary");
     if (controls.primary.mode === "random") {
