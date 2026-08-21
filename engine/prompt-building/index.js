@@ -147,6 +147,25 @@ function configuredFragments(selection, groupsByControl, config, label) {
   return Object.freeze(fragments);
 }
 
+const LEGACY_CAMERA_TECHNICAL_CONTROLS = new Set(["camera-body", "capture-medium", "lens-look", "focus-depth"]);
+const SILENT_CAMERA_DEFAULT_CONTROLS = new Set(["camera-angle", "subject-view", "viewer-pov"]);
+
+function cameraFragments(selection) {
+  const fragments = [];
+  for (const [controlId, controlConfig] of Object.entries(CAMERA_CONFIG.controls)) {
+    const result = selection?.[controlId];
+    if (!result?.value) continue;
+    if (LEGACY_CAMERA_TECHNICAL_CONTROLS.has(controlId) && result.mode !== "manual") continue;
+    if (SILENT_CAMERA_DEFAULT_CONTROLS.has(controlId) && result.mode === "default") continue;
+    const records = Array.isArray(result.value) ? sortRecords(result.value, [CATALOGS.camera[controlId]]) : [result.value];
+    if (records.length > controlConfig.maxSelections) throw new Error(`Camera ${controlId} exceeds its approved selection maximum.`);
+    for (const record of records) fragments.push(promptOf(record, `Camera ${controlId}`));
+  }
+  const custom = selection?.["custom-pov"]?.value;
+  if (custom) fragments.push(normalizeFragment(`seen from the first-person viewpoint of ${custom}; the viewpoint entity itself is not visible in the image`));
+  return Object.freeze(fragments);
+}
+
 function themeFragments(selection) {
   if (!selection?.value?.length) return Object.freeze([]);
   const prompts = sortRecords(selection.value, CATALOGS.themes).map((record) => promptOf(record, "Theme"));
@@ -281,7 +300,7 @@ export function buildPrompt(resolvedState) {
     location: Object.freeze(selections.location?.value ? [promptOf(selections.location.value, "Location")] : []),
     atmosphere: atmosphereFragments(selections.atmosphere),
     timeOfDay: Object.freeze(selections.timeOfDay?.value ? [promptOf(selections.timeOfDay.value, "Time of Day")] : []),
-    camera: configuredFragments(selections.camera, CATALOGS.camera, CAMERA_CONFIG, "Camera"),
+    camera: cameraFragments(selections.camera),
     effects: configuredFragments(selections.effects, CATALOGS.effects, EFFECTS_CONFIG, "Effects"),
     themes: themeFragments(selections.themes),
     covers: coverFragments(selections.covers),

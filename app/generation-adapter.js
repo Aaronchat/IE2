@@ -314,6 +314,21 @@ function adaptConfigured(source = {}, prefix) {
   return out;
 }
 
+function adaptCamera(source = {}) {
+  const filtered = Object.fromEntries(Object.entries(source).filter(([id]) => id !== "camera.custom-pov"));
+  const out = adaptConfigured(filtered, "camera");
+  const custom = entry(source, "camera.custom-pov");
+  if (!custom || custom.mode === "unselected") return out;
+  if (custom.mode !== "manual") throw new Error(`Camera Custom POV does not support UI mode ${custom.mode}.`);
+  if (out["viewer-pov"]?.mode === "manual") throw new Error("Choose either a preset Viewer POV or Custom POV, not both.");
+  const value = selectedValues(custom)[0];
+  if (typeof value !== "string") throw new Error("Custom POV must be text.");
+  const cleaned = value.replace(/\s+/gu, " ").trim();
+  if (!cleaned) throw new Error("Custom POV cannot be blank.");
+  out["custom-pov"] = { mode: "manual", text: cleaned };
+  return out;
+}
+
 function adaptThemes(source = {}) {
   const action = entry(source, "themes.selection");
   const manual = activeManualEntries(source, { exclude: ["themes.selection"] });
@@ -385,7 +400,7 @@ export function uiStateToGenerationControls(ui = {}) {
   const location = adaptSingleSplitDomain(ui.location, "location.selection", "Location"); if (location) controls.location = location;
   const atmosphere = adaptAtmosphere(ui.atmosphere); if (atmosphere) controls.atmosphere = atmosphere;
   const timeOfDay = adaptTimeOfDay(ui["time-of-day"]); if (timeOfDay) controls.timeOfDay = timeOfDay;
-  const camera = adaptConfigured(ui.camera, "camera"); if (Object.keys(camera).length) controls.camera = camera;
+  const camera = adaptCamera(ui.camera); if (Object.keys(camera).length) controls.camera = camera;
   const effects = adaptConfigured({ ...(ui.effects ?? {}), ...(ui.camera ?? {}) }, "effects"); if (Object.keys(effects).length) controls.effects = effects;
   const themes = adaptThemes(ui.themes); if (themes) controls.themes = themes;
   const covers = adaptCovers(ui.covers); if (covers) controls.covers = covers;

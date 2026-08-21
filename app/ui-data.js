@@ -136,20 +136,40 @@ const atmosphereSections = CATALOGS.atmosphere.map((group) => catalogSection(`at
 const aspectRatioAction = control({ id: "aspect-ratio.selection", label: "Aspect Ratio", groupedOptions: groupedRecordOptions(CATALOGS.aspectRatios), note: "Optional. Emits first in the prompt when selected." });
 const timeAction = control({ id: "time-of-day.selection", label: "Time of Day", groupedOptions: groupedRecordOptions(CATALOGS.timeOfDay), random: true, none: Boolean(TIME_OF_DAY_CONFIG.none) });
 
-const cameraSections = Object.entries(CATALOGS.camera).map(([id, group]) => {
+const VISIBLE_CAMERA_CONTROL_IDS = Object.freeze([
+  "photo-look",
+  "framing",
+  "camera-angle",
+  "subject-view",
+  "viewer-pov",
+  "spatial-safe-framing",
+]);
+
+const cameraSections = VISIBLE_CAMERA_CONTROL_IDS.map((id) => {
+  const group = CATALOGS.camera[id];
   const config = CAMERA_CONFIG.controls[id];
-  return section(`camera.${id}`, group.name, [control({
+  const defaultValue = ["photo-look", "framing"].includes(id) ? (config.defaultSelection ?? null) : null;
+  const controls = [control({
     id: `camera.${id}`,
     label: group.name,
     groupedOptions: groupedRecordOptions([group]),
     random: false,
     none: Boolean(config.none),
-    defaultValue: config.defaultSelection ?? null,
+    defaultValue,
     maxSelections: config.maxSelections,
-  })]);
+  })];
+  if (id === "viewer-pov") controls.push(control({
+    id: "camera.custom-pov",
+    label: "Custom POV",
+    inputType: "text",
+    placeholder: "e.g. a football racing toward her",
+    note: "Optional. Use a preset Viewer POV or Custom POV, not both.",
+  }));
+  return section(`camera.${id}`, group.name, controls);
 });
 
-const effectsSections = Object.entries(CATALOGS.effects).map(([id, group]) => {
+const effectsSections = ["effects-imperfections"].map((id) => {
+  const group = CATALOGS.effects[id];
   const config = EFFECTS_CONFIG.controls[id];
   return section(`effects.${id}`, group.name, [control({
     id: `effects.${id}`,

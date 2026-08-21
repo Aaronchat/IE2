@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { CHARACTER_EXPRESSION } from "../../data/character/expression.js";
 
+import { PHOTO_LOOK } from "../../data/camera/photo-look.js";
 import { CAMERA_BODY } from "../../data/camera/camera-body.js";
 import { CAPTURE_MEDIUM } from "../../data/camera/capture-medium.js";
 import { LENS_LOOK } from "../../data/camera/lens-look.js";
@@ -15,6 +16,7 @@ import { SPATIAL_SAFE_FRAMING } from "../../data/camera/spatial-safe-framing.js"
 import { CAMERA_CONFIG } from "../../data/camera/config.js";
 
 const EXPECTED_GROUPS = Object.freeze([
+  Object.freeze({ id: "photo-look", count: 15 }),
   Object.freeze({ id: "camera-body", count: 15 }),
   Object.freeze({ id: "capture-medium", count: 17 }),
   Object.freeze({ id: "lens-look", count: 9 }),
@@ -27,6 +29,7 @@ const EXPECTED_GROUPS = Object.freeze([
 ]);
 
 const CAMERA_GROUPS = Object.freeze([
+  PHOTO_LOOK,
   CAMERA_BODY,
   CAPTURE_MEDIUM,
   LENS_LOOK,
@@ -39,9 +42,10 @@ const CAMERA_GROUPS = Object.freeze([
 ]);
 
 const EXPECTED_GROUP_BY_ID = new Map(EXPECTED_GROUPS.map((entry) => [entry.id, entry]));
-const EXPECTED_TOTAL_RECORDS = 74;
+const EXPECTED_TOTAL_RECORDS = 89;
 
 const EXPECTED_DEFAULTS = Object.freeze({
+  "photo-look": "normal-photo",
   "camera-body": "canon-eos-r5",
   "capture-medium": "digital",
   "lens-look": "50mm-standard",
@@ -70,7 +74,7 @@ function validateConfig(groupsById, config) {
     Object.keys(controls).length !== expectedControlIds.length ||
     expectedControlIds.some((id) => !Object.prototype.hasOwnProperty.call(controls, id))
   ) {
-    throw new Error("Camera config controls do not match the nine approved Camera controls.");
+    throw new Error("Camera config controls do not match the approved Camera controls.");
   }
 
   for (const groupId of expectedControlIds) {
@@ -100,11 +104,14 @@ function validateConfig(groupsById, config) {
     }
   }
 
+  if (controls["photo-look"].defaultSelection !== "normal-photo") {
+    throw new Error("Normal Photo must remain the Photo Look default.");
+  }
   if (controls.framing.defaultSelection !== "full-body") {
     throw new Error("Full Body must remain the Framing default.");
   }
   if (controls["camera-angle"].defaultSelection !== "eye-level") {
-    throw new Error("Eye-Level must remain the Camera Angle default.");
+    throw new Error("Eye-Level must remain the legacy Camera Angle default.");
   }
 }
 

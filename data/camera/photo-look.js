@@ -1,0 +1,25 @@
+export const PHOTO_LOOK = Object.freeze({
+  id: "photo-look",
+  name: "Photo Look",
+  defaults: Object.freeze({
+    enabled: true,
+    selectionWeight: 1,
+  }),
+  items: Object.freeze([
+    Object.freeze({ id: "normal-photo", name: "Normal Photo", prompt: "clean modern photorealistic digital photography with natural photographic detail and realistic optics" }),
+    Object.freeze({ id: "professional-portrait", name: "Professional Portrait", prompt: "professional portrait photography with polished natural detail, flattering portrait optics, and controlled depth of field" }),
+    Object.freeze({ id: "glamour-photo", name: "Glamour Photo", prompt: "glamour photography with polished high-end portrait detail, flattering perspective, and shallow depth of field" }),
+    Object.freeze({ id: "candid-snapshot", name: "Candid Snapshot", prompt: "candid snapshot photography with spontaneous unposed composition and natural perspective" }),
+    Object.freeze({ id: "smartphone-photo", name: "Smartphone Photo", prompt: "modern smartphone photography with crisp handheld detail, computational-camera rendering, and broad depth of field" }),
+    Object.freeze({ id: "selfie-stick", name: "Selfie Stick", prompt: "captured in a selfie with a selfie stick, her camera-holding arm extended toward the viewer and the selfie stick continuing beyond the edge of the frame" }),
+    Object.freeze({ id: "disposable-camera-look", name: "Disposable Camera Photo", prompt: "disposable-camera snapshot with direct built-in flash, consumer color-film rendering, visible grain, and slight lens softness" }),
+    Object.freeze({ id: "polaroid-look", name: "Polaroid Photo", prompt: "Polaroid instant photograph with instant-film color rendering, soft detail, subtle vignette, and print texture" }),
+    Object.freeze({ id: "1970s-photo", name: "1970s Photo", prompt: "1970s 35mm color photograph with period Kodak color-film rendering, warm tones, visible film grain, and subtle age" }),
+    Object.freeze({ id: "1980s-photo", name: "1980s Photo", prompt: "1980s consumer 35mm color photograph with direct on-camera flash, saturated color print, and visible film grain" }),
+    Object.freeze({ id: "1990s-snapshot", name: "1990s Snapshot", prompt: "1990s consumer film snapshot with compact-camera flash, late-film-era color rendering, and fine grain" }),
+    Object.freeze({ id: "vintage-black-and-white", name: "Vintage Black & White", prompt: "vintage black-and-white film photograph with silver-gelatin tonal character, visible grain, and subtle age" }),
+    Object.freeze({ id: "vhs-camcorder-frame", name: "VHS / Camcorder Frame", prompt: "frame captured from an analog VHS camcorder recording with interlaced scan lines, chroma bleed, and analog video noise" }),
+    Object.freeze({ id: "security-camera-look", name: "Security Camera Footage", prompt: "security-camera footage frame with fixed surveillance-camera character and low-detail video texture" }),
+    Object.freeze({ id: "paparazzi-photo", name: "Paparazzi Photo", prompt: "paparazzi photograph with hurried candid framing, long-lens compression, and harsh opportunistic flash" }),
+  ]),
+});

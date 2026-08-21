@@ -1,5 +1,9 @@
 export const CAMERA_CONFIG = Object.freeze({
   controls: Object.freeze({
+    "photo-look": Object.freeze({
+      maxSelections: 1,
+      defaultSelection: "normal-photo",
+    }),
     "camera-body": Object.freeze({
       maxSelections: 1,
       defaultSelection: "canon-eos-r5",

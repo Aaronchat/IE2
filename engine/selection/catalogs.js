@@ -10,6 +10,7 @@ import {
 } from "./random/clothing.js";
 import { UNDERWEAR_LINGERIE } from "../../data/clothing/lingerie/underwear-lingerie.js";
 import { TIME_OF_DAY } from "../../data/time-of-day/time-of-day.js";
+import { PHOTO_LOOK } from "../../data/camera/photo-look.js";
 import { CAMERA_BODY } from "../../data/camera/camera-body.js";
 import { CAPTURE_MEDIUM } from "../../data/camera/capture-medium.js";
 import { LENS_LOOK } from "../../data/camera/lens-look.js";
@@ -43,6 +44,7 @@ export const CATALOGS = Object.freeze({
     ...OUTERWEAR_RANDOM_BUCKETS, ...HOSIERY_CATALOG_GROUPS, UNDERWEAR_LINGERIE,
   ]),
   camera: Object.freeze({
+    "photo-look": PHOTO_LOOK,
     "camera-body": CAMERA_BODY, "capture-medium": CAPTURE_MEDIUM, "lens-look": LENS_LOOK,
     "focus-depth": FOCUS_DEPTH, framing: FRAMING, "camera-angle": CAMERA_ANGLE,
     "subject-view": SUBJECT_VIEW, "viewer-pov": VIEWER_POV,
