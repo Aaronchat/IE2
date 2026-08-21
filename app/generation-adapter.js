@@ -151,6 +151,12 @@ function isActiveClothingState(state) {
 function adaptClothing(ui) {
   const source = ui.clothing ?? {};
   const out = {};
+  const provocativeControl = entry(source, "clothing.provocative");
+  if (provocativeControl && !["unselected", "none", "manual"].includes(provocativeControl.mode)) {
+    throw new Error(`Clothing Provocative does not support UI mode ${provocativeControl.mode}.`);
+  }
+  if (provocativeControl?.mode === "manual" && selectedValues(provocativeControl).includes("on")) out.provocative = true;
+
   const primaryRandom = entry(source, "clothing.primary-random")?.mode === "random";
   const slots = {
     top: clothingSectionState(source, "clothing.tops", "Tops"),

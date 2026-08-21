@@ -20,7 +20,7 @@ h1 { margin: 0; font-size: clamp(28px, 4vw, 46px); }
 .subtitle { margin: 8px 0 0; color: var(--muted); }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .toolbar input { width: 260px; }
-input, select, button { border: 1px solid var(--line); border-radius: 9px; background: #101522; color: #f4f6fb; min-height: 40px; }
+input, select, button { font: inherit; border: 1px solid var(--line); border-radius: 9px; background: #101522; color: #f4f6fb; min-height: 40px; }
 input, select { padding: 8px 11px; }
 button { padding: 8px 13px; cursor: pointer; }
 button:hover { border-color: #53627d; }
@@ -50,6 +50,7 @@ button:hover { border-color: #53627d; }
 .control-actions input { grid-column: 1 / -1; }
 .mode-button.active { border-color: var(--accent); background: #23345f; box-shadow: 0 0 0 1px rgba(124,156,255,.18) inset; }
 .none-button.active { background: #30333c; border-color: #747b89; }
+.toggle-button.active { border-color: var(--accent); background: #23345f; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; margin-top: 8px; }
 .chip { min-height: 30px; padding: 4px 9px; border-radius: 999px; background: #202a42; border-color: #354463; font-size: 12px; }
 .default-chip::before { content: "Default · "; color: var(--accent-2); }
@@ -87,10 +88,17 @@ pre { margin: 0; max-height: calc(100vh - 140px); overflow: auto; padding: 15px;
 .category-indicator { margin-left: 10px; }
 .subcategory > summary { display: flex; align-items: center; gap: 8px; }
 .control-actions.mode-only { grid-template-columns: repeat(2, max-content); justify-content: start; }
+.category-action-group { display: flex; align-items: end; gap: 8px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.category-action-group .category-action, .category-action-group .category-modifier { border-bottom: 0; margin-bottom: 0; }
+.category-action-group .category-action { flex: 1 1 auto; }
+.category-action-group .category-modifier { flex: 0 0 auto; padding-top: 2px; }
+.category-action-group .category-modifier .chips { display: none; }
 .section-action { padding: 2px 2px 12px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
 .section-action .control-heading { margin-bottom: 6px; }
 .section-action .control-actions.mode-only { grid-template-columns: repeat(2, minmax(110px, max-content)); }
 @media (max-width: 620px) {
+  .category-action-group { align-items: stretch; flex-direction: column; }
+  .category-action-group .category-modifier { padding-top: 0; }
   .section-action .control-actions.mode-only { grid-template-columns: 1fr 1fr; }
 }
 

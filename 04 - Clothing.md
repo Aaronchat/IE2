@@ -172,4 +172,14 @@ At the Clothing-section level:
 - Tops and Bottoms may be specified independently. Either slot may be intentionally omitted with None while the other is selected or Random. Coverage is calculated only from garments that Infinite Engine actually selected or specified; omitted clothing is not assumed for tattoo-visibility calculations.
 - Lingerie remains Manual-or-None and has no Random control.
 
+### Provocative Modifier
+
+The Clothing UI provides one optional `Provocative` modifier beside Primary Outfit Random. It is Off by default and does not choose clothing.
+
+- Manual and Random primary clothing are selected and resolved normally before the modifier affects prompt wording.
+- Packages and single-garment primary outfits receive one `provocative` prefix.
+- Top + Bottom and two-piece Swimwear are treated as one combined outfit phrase, for example `provocative blouse and skirt outfit`.
+- The modifier applies only to the primary outfit. Outerwear, Hosiery, and Lingerie keep their normal prompt wording.
+- The modifier does not add the word `costume`, define specific exposure or body rules, change Clothing coverage metadata, or alter Random eligibility or weighting.
+
 The UI also provides one reset action that clears user selections/modes and restores established defaults. Collapsed parent sections display an indicator when a specific manual choice exists below them.
