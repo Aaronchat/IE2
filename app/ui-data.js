@@ -30,9 +30,9 @@ const option = (value, label = value, groupId = null) => Object.freeze({ value, 
 const stringOptions = (values) => Object.freeze(values.map((value) => option(value)));
 const recordOptions = (groups) => Object.freeze(groups.flatMap((group) => group.items.map((item) => option(item.id, item.name, group.id))));
 const groupedRecordOptions = (groups) => Object.freeze(groups.map((group) => Object.freeze({ groupId: group.id, label: group.name, options: Object.freeze(group.items.map((item) => option(item.id, item.name, group.id))) })));
-const control = ({ id, label, options = [], groupedOptions = [], random = false, none = false, noneLabel = "None", defaultValue = null, defaultMode = "unselected", maxSelections = 1, note = "", inputType = "select", placeholder = "" }) => Object.freeze({ id, label, options, groupedOptions, random, none, noneLabel, defaultValue, defaultMode, maxSelections, note, inputType, placeholder });
+const control = ({ id, label, options = [], groupedOptions = [], random = false, none = false, noneLabel = "None", defaultValue = null, defaultMode = "unselected", maxSelections = 1, note = "", inputType = "select", placeholder = "", toggle = false }) => Object.freeze({ id, label, options, groupedOptions, random, none, noneLabel, defaultValue, defaultMode, maxSelections, note, inputType, placeholder, toggle });
 const section = (id, label, controls, action = null, advancedControls = [], visibleForCoverTypes = []) => Object.freeze({ id, label, controls: Object.freeze(controls), advancedControls: Object.freeze(advancedControls), action, visibleForCoverTypes: Object.freeze(visibleForCoverTypes) });
-const category = (id, label, sections, action = null, repeatable = null) => Object.freeze({ id, label, sections: Object.freeze(sections), action, repeatable });
+const category = (id, label, sections, action = null, repeatable = null, modifiers = []) => Object.freeze({ id, label, sections: Object.freeze(sections), action, repeatable, modifiers: Object.freeze(modifiers) });
 
 const hairColorGroups = Object.freeze(Object.entries(CHARACTER_HAIR.colors).map(([key, values]) => Object.freeze({ label: key === "natural" ? "Natural" : "Fantasy", options: stringOptions(values) })));
 const hairStyleGroups = Object.freeze(Object.entries(CHARACTER_HAIR.styles).map(([key, values]) => Object.freeze({ label: key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()), options: stringOptions(values) })));
@@ -231,7 +231,14 @@ const coverSections = [
 export const UI_CATEGORIES = Object.freeze([
   category("aspect-ratio", "Aspect Ratio", [], aspectRatioAction),
   category("character", "Character", characterSections),
-  category("clothing", "Clothing", clothingSections, control({ id: "clothing.primary-random", label: "Primary Outfit", random: true, note: "Uses the existing Built Outfit / Package Random path." })),
+  category(
+    "clothing",
+    "Clothing",
+    clothingSections,
+    control({ id: "clothing.primary-random", label: "Primary Outfit", random: true, note: "Uses the existing Built Outfit / Package Random path." }),
+    null,
+    [control({ id: "clothing.provocative", label: "Provocative", toggle: true, defaultMode: "none" })],
+  ),
   category("tattoos", "Tattoos", [], control({ id: "tattoos.selection", label: "Tattoos", random: true, note: "Random uses the exposed areas from the selected Clothing." }), "tattoos"),
   category("footwear", "Footwear", footwearSections, control({ id: "footwear.selection", label: "Footwear", random: true })),
   category("accessories", "Accessories", accessorySections, control({ id: "accessories.selection", label: "Accessories", random: true, maxSelections: 2 })),
@@ -244,5 +251,9 @@ export const UI_CATEGORIES = Object.freeze([
 ]);
 
 export function allUiControls() {
-  return UI_CATEGORIES.flatMap((entry) => [...(entry.action ? [entry.action] : []), ...entry.sections.flatMap((subsection) => [...(subsection.action ? [subsection.action] : []), ...subsection.controls, ...subsection.advancedControls])]);
+  return UI_CATEGORIES.flatMap((entry) => [
+    ...(entry.action ? [entry.action] : []),
+    ...(entry.modifiers ?? []),
+    ...entry.sections.flatMap((subsection) => [...(subsection.action ? [subsection.action] : []), ...subsection.controls, ...subsection.advancedControls]),
+  ]);
 }
