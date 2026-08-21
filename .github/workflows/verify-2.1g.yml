@@ -1,7 +1,7 @@
 name: Verify Infinite Engine 2.1G
 on:
-  push:
-    branches: [ie-2.1g-location-reorganization]
+  pull_request:
+    branches: [main]
 jobs:
   test:
     runs-on: ubuntu-latest
