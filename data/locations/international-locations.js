@@ -1,0 +1,29 @@
+const location = (id, name, prompt) => Object.freeze({ id, name, prompt, environment: "outdoor" });
+
+export const INTERNATIONAL_LOCATIONS = Object.freeze({
+  id: "international-locations",
+  name: "International Locations",
+  defaults: Object.freeze({ enabled: true, selectionWeight: 1 }),
+  items: Object.freeze([
+    location("stonehenge", "Stonehenge", "at Stonehenge"),
+    location("eiffel-tower", "Eiffel Tower", "at the Eiffel Tower"),
+    location("amsterdam-red-light-district", "Amsterdam Red Light District", "in Amsterdam's Red Light District"),
+    location("venice-canals", "Venice Canals", "along the canals of Venice"),
+    location("santorini-cliffs", "Santorini Cliffs", "on the cliffs of Santorini"),
+    location("roman-colosseum", "Roman Colosseum", "at the Roman Colosseum"),
+    location("trevi-fountain", "Trevi Fountain", "at the Trevi Fountain"),
+    location("tower-bridge", "Tower Bridge", "at Tower Bridge in London"),
+    location("scottish-highlands", "Scottish Highlands", "in the Scottish Highlands"),
+    location("tokyo-shibuya-crossing", "Tokyo Shibuya Crossing", "at Shibuya Crossing in Tokyo"),
+    location("kyoto-bamboo-forest", "Kyoto Bamboo Forest", "in Kyoto's bamboo forest"),
+    location("mount-fuji", "Mount Fuji", "at Mount Fuji"),
+    location("great-wall-of-china", "Great Wall of China", "on the Great Wall of China"),
+    location("egyptian-pyramids", "Egyptian Pyramids", "at the Egyptian pyramids"),
+    location("petra", "Petra", "at Petra"),
+    location("machu-picchu", "Machu Picchu", "at Machu Picchu"),
+    location("christ-the-redeemer", "Christ the Redeemer", "at Christ the Redeemer in Rio de Janeiro"),
+    location("chichen-itza", "Chichén Itzá", "at Chichén Itzá"),
+    location("taj-mahal", "Taj Mahal", "at the Taj Mahal"),
+    location("kremlin", "Kremlin", "at the Moscow Kremlin"),
+  ]),
+});
