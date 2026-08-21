@@ -2,39 +2,17 @@
 
 ## Purpose
 
-Effects is a separate visual-treatment domain. It describes image treatments and imperfections applied to the resulting image rather than where the scene occurs, environmental Atmosphere, temporal context, or how the source image is framed.
+Effects is a separate visual-treatment domain. It describes optional imperfections applied to the resulting image rather than where the scene occurs, environmental Atmosphere, temporal context, or how the source image is framed.
 
-Effects is separate from Camera.
+Effects remains separate from Camera even though the user-facing Effects section is displayed beneath Camera in the UI.
 
-Effects controls are displayed beneath Camera in the UI. This visual nesting does not merge the underlying Camera and Effects catalogs, Selection results, or prompt sections.
+## 2.1E User-Facing Control
 
-## Controls
-
-Effects v1 contains two controls:
+Infinite Engine 2.1E exposes one Effects control:
 
 1. Effects / Imperfections
-2. Film Age
 
-The exhaustive selectable catalogs live in `data/effects/`.
-
-## Records
-
-Effects controls use the established independent-data group shell:
-
-```text
-Group -> Effects record
-```
-
-Each group contains `id`, `name`, `defaults`, and `items`. Current group defaults are:
-
-- `enabled: true`
-- `selectionWeight: 1`
-
-Each Effects record requires:
-
-- stable `id`
-- display `name`
-- authoritative natural-language `prompt`
+The exhaustive selectable catalog lives in `data/effects/imperfections.js`.
 
 ## Effects / Imperfections
 
@@ -58,58 +36,49 @@ Zero, one, or two Effects / Imperfections may be active. Two is the maximum.
 
 None is the default control state, is exclusive with actual Effects selections, and contributes no Effects / Imperfections prompt wording. None is not catalog data.
 
-## Film Age
+Effects / Imperfections is manual-only in 2.1E. No Random weighting is approved.
 
-Film Age contains:
+## Film Age Compatibility
 
-- Brand New
-- Well Preserved
-- Slight Aging
-- Moderate Fading
-- Heavy Fading
-- Damaged Archive
-- Restored Scan
+The previous Film Age catalog remains in the engine for backward compatibility with older saved or programmatic inputs, but it is no longer user-facing in 2.1E.
 
-Film Age allows zero or one active option.
+Photo Look now owns the normal photographic age and era recipe. A user selecting a 1970s Photo, Polaroid Photo, Disposable Camera Photo, or other period/capture look does not separately assemble Film Age.
 
-None is the default control state and contributes no Film Age prompt wording. None is not catalog data.
-
-Film Age is independent from Effects / Imperfections. For example, Damaged Archive + Grain + Scratches is valid.
+The legacy Film Age default remains silent. An explicit legacy programmatic Film Age selection remains valid and may still contribute its authoritative prompt.
 
 ## Boundaries
 
 Effects does not own environmental Atmosphere such as fog, mist, haze, smoke, rain, snow, dust/sand, steam, or ash.
 
-Effects does not create a Lighting system. Natural Light Portrait, Flash Photography, and Harsh On-Camera Flash remain deferred Lighting candidates and are not Effects records.
+Effects does not create a Lighting system. Natural Light Portrait, Flash Photography, and Harsh On-Camera Flash remain outside Effects.
 
-Cinematic Color Grade, High Fashion Editorial, and Glossy Magazine Look are not approved Effects records; their future ownership remains unresolved.
+Photographic capture identities and period recipes belong to Camera Photo Look rather than Effects.
 
-Covers such as Romance Novel Cover, Album Cover, DVD Cover, Magazine Cover, and Movie Poster belong to the separate active Covers / Presentation domain and are not Effects. VHS Cover remains unapproved for the initial Covers catalog.
+Covers belong to the separate Covers / Presentation domain and are not Effects.
 
 ## Prompt Behavior
 
-Effects contribute only the selected visual-treatment wording. None states remain silent.
+Effects contributes only active visual-treatment wording. None/default-empty states remain silent.
 
-Effects prompts are authoritative natural-language fragments. No separate prompt-building engine is implemented here.
+The current user-facing Effects / Imperfections selection emits after Camera in the canonical prompt order. Explicit legacy Film Age inputs remain compatible and emit in the established Effects order.
 
 ## Validation
 
-Effects validation checks:
+Effects validation continues to cover the complete compatibility surface:
 
-- exactly two approved Effects controls
-- exact record counts of 13 Effects / Imperfections and 7 Film Age records
-- exact total of 20 Effects records
+- 13 Effects / Imperfections records
+- 7 legacy Film Age records
+- 20 Effects records total
 - approved group IDs and required group structure
 - unique IDs, names, and prompts
 - required non-empty record fields
 - effective `enabled` and `selectionWeight`
 - maximum two Effects / Imperfections selections
-- maximum one Film Age selection
-- both controls default to silent None states
+- maximum one legacy Film Age selection
+- both engine controls default to silent None states
 - None remains control state rather than catalog data
 - Atmosphere catalog entries do not leak into Effects
 - deferred Lighting candidates remain absent
-- unresolved Theme/styling candidates remain absent
 - Cover concepts remain absent from Effects
 
-The validator does not add a compatibility matrix or unrelated visual-style architecture.
+UI exposure is intentionally narrower than engine compatibility: 2.1E exposes Effects / Imperfections only.
