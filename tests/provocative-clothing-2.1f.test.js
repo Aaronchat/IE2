@@ -74,10 +74,10 @@ test("Provocative does not modify Outerwear, Hosiery, or Lingerie", () => {
         bottom: { mode: "manual", id: "skinny-jeans", groupId: "jeans" },
       },
     },
-    outerwear: { mode: "manual", id: "leather-jacket", groupId: "jackets" },
+    outerwear: { mode: "manual", id: "fitted-leather-jacket", groupId: "jackets" },
   });
   assert.equal(sections[0], "provocative fitted tank top and skinny jeans outfit");
-  assert.equal(sections[1].startsWith("provocative "), false);
+  assert.equal(sections[1], "fitted leather jacket");
 });
 
 test("UI adapter carries Provocative alongside a manual built outfit", () => {
