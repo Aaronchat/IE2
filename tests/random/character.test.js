@@ -91,6 +91,16 @@ test("Chest Adjective Random fails closed until weights are configured", () => {
 });
 
 test("Character Features have no Random control", () => {
-  assert.deepEqual(CHARACTER_FEATURES.options, ["Fox Ears", "Fox Tail"]);
+  assert.deepEqual(CHARACTER_FEATURES.options, [
+    "Fox Ears",
+    "Fox Tail",
+    "Bunny Ears",
+    "Cat Ears",
+    "Cat Tail",
+    "Vampire Fangs",
+    "Wings",
+    "Horns",
+    "Elf Ears",
+  ]);
   assert.equal(RANDOM_CHARACTER_CONTROLS.includes("character-features"), false);
 });

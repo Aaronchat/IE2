@@ -1,0 +1,30 @@
+export const HOOTERS_WAITRESS_UNIFORM = Object.freeze({
+  id: "hooters-waitress-uniform",
+  name: "Hooters Waitress Uniform",
+  prompt: "Hooters waitress uniform (white fitted Hooters logo tank top, bright orange short shorts, suntan pantyhose, white slouch socks)",
+  temperature: Object.freeze(["very-hot", "warm", "moderate"]),
+  season: Object.freeze(["spring", "summer", "autumn"]),
+  formality: "very-casual",
+  coverage: Object.freeze({
+    covered: Object.freeze([
+      Object.freeze({ region: "upper-chest", side: "both" }),
+      Object.freeze({ region: "chest", side: "both" }),
+      Object.freeze({ region: "upper-abdomen", side: "both" }),
+      Object.freeze({ region: "lower-abdomen", side: "both" }),
+      Object.freeze({ region: "side-torso-ribs", side: "both" }),
+      Object.freeze({ region: "upper-back", side: "both" }),
+      Object.freeze({ region: "lower-back", side: "both" }),
+      Object.freeze({ region: "groin" }),
+      Object.freeze({ region: "outer-hip", side: "both" }),
+      Object.freeze({ region: "buttocks", side: "both" }),
+      Object.freeze({ region: "upper-leg", side: "both" }),
+    ]),
+    partiallyCovered: Object.freeze([]),
+  }),
+  components: Object.freeze([
+    Object.freeze({ id: "white-hooters-logo-tank-top", name: "White Hooters Logo Tank Top" }),
+    Object.freeze({ id: "bright-orange-short-shorts", name: "Bright Orange Short Shorts" }),
+    Object.freeze({ id: "suntan-pantyhose", name: "Suntan Pantyhose" }),
+    Object.freeze({ id: "white-slouch-socks", name: "White Slouch Socks" }),
+  ]),
+});

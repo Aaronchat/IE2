@@ -2,16 +2,22 @@ import { SCI_FI_PACKAGES } from "../../../data/packages/sci-fi.js";
 import { HISTORICAL_PACKAGES } from "../../../data/packages/historical.js";
 import { ATHLETIC_PACKAGES } from "../../../data/packages/athletic.js";
 import { OCCUPATION_PACKAGES } from "../../../data/packages/occupations.js";
+import { HOOTERS_WAITRESS_UNIFORM } from "../../../data/packages/occupation-additions.js";
 import { COSTUME_PACKAGES } from "../../../data/packages/costumes.js";
 import { CULTURAL_PACKAGES } from "../../../data/packages/cultural.js";
 
 import { chooseItem } from "./core.js";
 
+const OCCUPATION_PACKAGES_WITH_ADDITIONS = Object.freeze({
+  ...OCCUPATION_PACKAGES,
+  items: Object.freeze([...OCCUPATION_PACKAGES.items, HOOTERS_WAITRESS_UNIFORM]),
+});
+
 export const PACKAGE_ORGANIZATIONAL_GROUPS = Object.freeze([
   SCI_FI_PACKAGES,
   HISTORICAL_PACKAGES,
   ATHLETIC_PACKAGES,
-  OCCUPATION_PACKAGES,
+  OCCUPATION_PACKAGES_WITH_ADDITIONS,
   COSTUME_PACKAGES,
   CULTURAL_PACKAGES,
 ]);

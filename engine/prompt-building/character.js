@@ -81,6 +81,8 @@ export function buildCharacterFragments(character = {}) {
   const freckles = selectionValue(character, "freckles");
   if (freckles && freckles !== "Off") push(fragments, `${lower(freckles)} freckles`);
 
+  for (const condition of selectionValue(character, "skin-condition") ?? []) push(fragments, lower(condition));
+
   const build = selectionValue(character, "build");
   if (build) push(fragments, `${lower(build)} build`);
 

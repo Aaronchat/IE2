@@ -48,6 +48,7 @@ const characterSections = [
   section("skin", "Skin", [
     control({ id: "character.skin-tone", label: "Skin Tone", options: stringOptions(CHARACTER_SKIN.skinTones), random: true }),
     control({ id: "character.freckles", label: "Freckles", options: stringOptions(CHARACTER_SKIN.freckles), random: true }),
+    control({ id: "character.skin-condition", label: "Condition", options: stringOptions(CHARACTER_SKIN.conditions), maxSelections: CHARACTER_SKIN.conditions.length, note: "Manual multi-select. Multiple conditions may be combined." }),
   ]),
   section("hair", "Hair", [
     control({ id: "character.hair-color", label: "Primary Hair Color", groupedOptions: hairColorGroups, random: true }),
@@ -68,7 +69,7 @@ const characterSections = [
     control({ id: "character.hip-width", label: "Hip Width", options: stringOptions(CHARACTER_PHYSICAL_APPEARANCE.hipWidth), random: true }),
     control({ id: "character.waist", label: "Waist", options: stringOptions(CHARACTER_PHYSICAL_APPEARANCE.waist), random: true }),
   ]),
-  section("features", "Character Features", [control({ id: "character.features", label: "Features", options: stringOptions(CHARACTER_FEATURES.options), maxSelections: 2, note: "Manual only. Maximum two." })]),
+  section("features", "Character Features", [control({ id: "character.features", label: "Features", options: stringOptions(CHARACTER_FEATURES.options), maxSelections: CHARACTER_FEATURES.options.length, note: "Manual multi-select. Multiple features may be combined." })]),
 ];
 
 function catalogSection(id, label, groups, { random = false, none = false, maxSelections = 1, note = "" } = {}) {
@@ -134,7 +135,21 @@ const accessorySections = CATALOGS.accessories.map((group) => catalogSection(`ac
 const locationSections = CATALOGS.locations.map((group) => catalogSection(`location.${group.id}`, group.name, [group]));
 const atmosphereSections = CATALOGS.atmosphere.map((group) => catalogSection(`atmosphere.${group.id}`, group.name, [group], { maxSelections: ATMOSPHERE_CONFIG.maxSelections }));
 const aspectRatioAction = control({ id: "aspect-ratio.selection", label: "Aspect Ratio", groupedOptions: groupedRecordOptions(CATALOGS.aspectRatios), note: "Optional. Emits first in the prompt when selected." });
-const timeAction = control({ id: "time-of-day.selection", label: "Time of Day", groupedOptions: groupedRecordOptions(CATALOGS.timeOfDay), random: true, none: Boolean(TIME_OF_DAY_CONFIG.none) });
+const timeAction = control({
+  id: "time-of-day.selection",
+  label: "Time of Day",
+  groupedOptions: Object.freeze([
+    Object.freeze({
+      groupId: "random-variants",
+      label: "Random Subsets",
+      options: Object.freeze(TIME_OF_DAY_CONFIG.randomVariants.map((entry) => option(entry.uiValue, entry.label, "random-variants"))),
+    }),
+    ...groupedRecordOptions(CATALOGS.timeOfDay),
+  ]),
+  random: true,
+  none: Boolean(TIME_OF_DAY_CONFIG.none),
+  note: "Bright Random and Dark Random resolve to an actual Time of Day value before prompt building.",
+});
 
 const VISIBLE_CAMERA_CONTROL_IDS = Object.freeze([
   "photo-look",

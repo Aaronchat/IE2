@@ -59,6 +59,16 @@ Time of Day does not stack with itself. Combinations such as Sunrise + Midnight,
 
 The approved selection configuration lives in `data/time-of-day/config.js`.
 
+## Random Selection
+
+Time of Day supports three Random paths:
+
+- Random uses the existing weighted Bright/Dark bucket behavior.
+- Bright Random selects only Sunrise, Early Morning, Morning, Late Morning, Midday, Afternoon, Golden Hour, or Sunset.
+- Dark Random selects only Blue Hour, Evening, Night, Late Night, or Midnight.
+
+Bright Random and Dark Random are control modes, not Time of Day catalog records. They must resolve to one actual Time of Day record before prompt building, so the words `Bright Random` and `Dark Random` never appear in generated prompts.
+
 ## Location Interaction
 
 Time of Day remains available for every approved Location Environment:
@@ -105,6 +115,7 @@ Time of Day validation checks:
 - effective `enabled` and `selectionWeight`
 - maximum one active Time of Day selection
 - None remains a control state rather than catalog data and contributes no prompt
+- Bright Random and Dark Random remain control states, resolve only within their approved subsets, and never appear as prompt text
 - Dawn, Dusk, and other unapproved Time of Day records remain absent
 - absence of Atmosphere, Location, Temperature, Season, Lighting, or other unapproved record metadata
 
