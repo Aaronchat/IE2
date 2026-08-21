@@ -206,5 +206,20 @@ function selectConfiguredControls(controls, groupsByControl, config, domain) {
   return Object.freeze(out);
 }
 
-export function selectCamera(controls = {}) { return selectConfiguredControls(controls, CATALOGS.camera, CAMERA_CONFIG, "Camera"); }
+function cleanCustomPov(value) {
+  if (typeof value !== "string") throw new Error("Custom POV text must be a string.");
+  const cleaned = value.replace(/\s+/gu, " ").trim();
+  if (!cleaned) throw new Error("Custom POV text cannot be blank.");
+  return cleaned;
+}
+
+export function selectCamera(controls = {}) {
+  const configured = selectConfiguredControls(controls, CATALOGS.camera, CAMERA_CONFIG, "Camera");
+  const custom = controls["custom-pov"];
+  if (!custom) return configured;
+  assertMode(custom, ["manual"], "Camera Custom POV");
+  if (controls["viewer-pov"]?.mode === "manual") throw new Error("Choose either a preset Viewer POV or Custom POV, not both.");
+  return Object.freeze({ ...configured, "custom-pov": result("manual", cleanCustomPov(custom.text)) });
+}
+
 export function selectEffects(controls = {}) { return selectConfiguredControls(controls, CATALOGS.effects, EFFECTS_CONFIG, "Effects"); }
