@@ -21,6 +21,7 @@ Active Skin settings are:
 
 - Skin Tone
 - Freckles
+- Condition, a manual multi-select for surface/body conditions
 
 Beauty Mark, Scars, and Birthmarks remain deferred for future design.
 
@@ -51,7 +52,7 @@ Makeup Accents remain future/optional. Eyeliner, Winged Eyeliner, Red Lipstick, 
 
 ### Character Features
 
-Character Features is active and expandable. The initial approved choices are stored in `data/character/character-features.js`; the category is not intended to be permanently closed to future approved additions.
+Character Features is active, expandable, and manual multi-select. The approved choices are stored in `data/character/character-features.js`; multiple approved features may coexist in one Character prompt.
 
 ## Physical Appearance
 
@@ -76,4 +77,4 @@ Pregnancy remains Future.
 
 ## Selection
 
-Character selection resolves Ethnicity before Name because Random Name depends on the selected Ethnicity. Caucasian remains the approved default Ethnicity. Character Features are manual-only; Fox Ears and Fox Tail may be selected together, with a current maximum of two Character Features.
+Character selection resolves Ethnicity before Name because Random Name depends on the selected Ethnicity. Caucasian remains the approved default Ethnicity. Skin Condition and Character Features are manual multi-select controls. Their selected values coexist in the generated Character prompt, subject only to the approved data lists and each control's configured maximum.

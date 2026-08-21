@@ -110,7 +110,14 @@ export function selectAtmosphere(control, context, location) {
 export function selectTimeOfDay(control, context) {
   if (!control) return undefined;
   if (TIME_OF_DAY_CONFIG.maxSelections !== 1) throw new Error("Unsupported Time of Day configuration.");
-  return selectSingleRecord(control, CATALOGS.timeOfDay, "Time of Day", selectRandomTimeOfDay, context, { none: true });
+  assertMode(control, ["manual", "none", "random"], "Time of Day");
+  if (control.mode === "none") return result("none", null);
+  if (control.mode === "random") {
+    const variantIds = new Set(TIME_OF_DAY_CONFIG.randomVariants.map((entry) => entry.id));
+    if (control.bucket != null && !variantIds.has(control.bucket)) throw new Error(`Unknown Time of Day Random variant ${control.bucket}.`);
+    return result("random", selectRandomTimeOfDay({ ...context, bucketId: control.bucket ?? null }));
+  }
+  return result("manual", findEnabledRecord(CATALOGS.timeOfDay, control.id, "Time of Day", control.groupId));
 }
 
 export function selectThemes(control, context) {

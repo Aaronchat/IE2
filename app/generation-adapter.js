@@ -1,5 +1,6 @@
 import { prepareGeneration } from "../engine/generation/index.js";
 import { SWIMWEAR_CATALOG_GROUPS } from "../engine/selection/random/clothing.js";
+import { TIME_OF_DAY_CONFIG } from "../data/time-of-day/config.js";
 
 function entry(category, id) {
   return category?.[id];
@@ -33,9 +34,9 @@ function adaptCharacter(ui) {
   for (const [fullId, control] of Object.entries(source)) {
     if (!control || control.mode === "unselected") continue;
     const id = fullId.replace(/^character\./u, "");
-    if (id === "features") {
-      if (control.mode !== "manual") throw new Error("Character Features supports manual selections only.");
-      out.features = { mode: "manual", values: selectedValues(control).map((value) => value?.value ?? value) };
+    if (id === "features" || id === "skin-condition") {
+      if (control.mode !== "manual") throw new Error(`Character ${id} supports manual selections only.`);
+      out[id] = { mode: "manual", values: selectedValues(control).map((value) => value?.value ?? value) };
       continue;
     }
     if (control.mode === "default" || control.mode === "random") {
@@ -292,7 +293,15 @@ function adaptTimeOfDay(source = {}) {
   const control = entry(source, "time-of-day.selection");
   if (!control || control.mode === "unselected") return undefined;
   if (control.mode === "random" || control.mode === "none") return { mode: control.mode };
-  if (control.mode === "manual") return { mode: "manual", ...manualRef(control, "Time of Day") };
+  if (control.mode === "manual") {
+    const selected = selectedValues(control);
+    if (selected.length === 1) {
+      const value = selected[0]?.value ?? selected[0];
+      const variant = TIME_OF_DAY_CONFIG.randomVariants.find((entry) => entry.uiValue === value);
+      if (variant) return { mode: "random", bucket: variant.id };
+    }
+    return { mode: "manual", ...manualRef(control, "Time of Day") };
+  }
   throw new Error(`Time of Day does not support UI mode ${control.mode}.`);
 }
 

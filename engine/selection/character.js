@@ -100,9 +100,16 @@ export function selectCharacter(controls = {}, context) {
   if (secondary !== treatment) throw new Error("Secondary Hair Color and Hair Color Treatment must be selected together.");
   if ((secondary || treatment) && !out["hair-color"]) throw new Error("Multicolor Hair requires a primary Hair Color.");
 
+  if (controls["skin-condition"]) {
+    assertMode(controls["skin-condition"], ["manual"], "Character skin condition");
+    enforceMax(controls["skin-condition"].values, CHARACTER_SKIN.conditions.length, "Character skin condition");
+    for (const value of controls["skin-condition"].values) if (!CHARACTER_SKIN.conditions.includes(value)) throw new Error(`Unknown Character skin condition ${value}.`);
+    out["skin-condition"] = result("manual", Object.freeze([...controls["skin-condition"].values]));
+  }
+
   if (controls.features) {
     assertMode(controls.features, ["manual"], "Character features");
-    enforceMax(controls.features.values, 2, "Character features");
+    enforceMax(controls.features.values, CHARACTER_FEATURES.options.length, "Character features");
     for (const value of controls.features.values) if (!CHARACTER_FEATURES.options.includes(value)) throw new Error(`Unknown Character feature ${value}.`);
     out.features = result("manual", Object.freeze([...controls.features.values]));
   }

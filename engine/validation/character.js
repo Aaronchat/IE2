@@ -139,6 +139,7 @@ export function validateCharacter() {
 
   validateStringArray(CHARACTER_SKIN.skinTones, "Skin tones");
   validateStringArray(CHARACTER_SKIN.freckles, "Freckles");
+  validateStringArray(CHARACTER_SKIN.conditions, "Skin conditions");
   validateHair();
   validateStringArray(CHARACTER_EYES.colors, "Eye colors");
   validateStringArray(CHARACTER_EXPRESSION.expressions, "Expressions");

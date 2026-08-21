@@ -22,7 +22,17 @@ test("Camera and Effects did not gain Random modules or config fields", () => {
 });
 
 test("manual-only Character Features and Lingerie remain present in catalogs", () => {
-  assert.deepEqual(CHARACTER_FEATURES.options, ["Fox Ears", "Fox Tail"]);
+  assert.deepEqual(CHARACTER_FEATURES.options, [
+    "Fox Ears",
+    "Fox Tail",
+    "Bunny Ears",
+    "Cat Ears",
+    "Cat Tail",
+    "Vampire Fangs",
+    "Wings",
+    "Horns",
+    "Elf Ears",
+  ]);
   assert.ok(UNDERWEAR_LINGERIE.items.length > 0);
   assert.ok(CHARACTER_NAMES.ethnicities.some((group) => group.name === "Black"));
 });

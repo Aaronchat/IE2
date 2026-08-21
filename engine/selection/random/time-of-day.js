@@ -38,8 +38,9 @@ export const TIME_OF_DAY_RANDOM_BUCKETS = Object.freeze([
   }),
 ]);
 
-export function selectRandomTimeOfDay({ rng, state }) {
-  const bucket = chooseBucket({
+export function selectRandomTimeOfDay({ rng, state, bucketId = null }) {
+  const bucket = bucketId == null
+    ? chooseBucket({
     buckets: TIME_OF_DAY_RANDOM_BUCKETS,
     rng,
     state,
@@ -47,7 +48,9 @@ export function selectRandomTimeOfDay({ rng, state }) {
     baseWeight: (entry) => entry.baseWeight,
     selectedStrength: (entry) => entry.selectedStrength,
     recovery: (entry) => entry.recovery,
-  });
+  })
+    : TIME_OF_DAY_RANDOM_BUCKETS.find((entry) => entry.id === bucketId);
+  if (!bucket) throw new Error(`Unknown Time of Day Random variant ${bucketId}.`);
 
   const wrappers = bucket.items.map((record) => effectiveRecord(TIME_OF_DAY, record));
   return chooseItem({

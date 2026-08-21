@@ -37,7 +37,22 @@ function validateConfig(config) {
     throw new Error("Time of Day None must be exclusive and contribute no prompt.");
   }
 
-  const allowedConfigKeys = new Set(["maxSelections", "none"]);
+  const expectedVariants = [
+    ["bright", "Bright Random", "bright-random"],
+    ["dark", "Dark Random", "dark-random"],
+  ];
+  if (!Array.isArray(config?.randomVariants) || config.randomVariants.length !== expectedVariants.length) {
+    throw new Error("Time of Day must define exactly Bright Random and Dark Random variants.");
+  }
+  for (let index = 0; index < expectedVariants.length; index += 1) {
+    const [id, label, uiValue] = expectedVariants[index];
+    const actual = config.randomVariants[index];
+    if (actual?.id !== id || actual?.label !== label || actual?.uiValue !== uiValue) {
+      throw new Error(`Time of Day Random variant ${index + 1} does not match the approved ${label} control.`);
+    }
+  }
+
+  const allowedConfigKeys = new Set(["maxSelections", "none", "randomVariants"]);
   for (const key of Object.keys(config ?? {})) {
     if (!allowedConfigKeys.has(key)) {
       throw new Error(`Unapproved Time of Day configuration field ${key}.`);
