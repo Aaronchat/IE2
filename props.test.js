@@ -54,9 +54,11 @@ test("Safari Guide is available under Costumes", () => {
   assert.match(safariGuide.prompt, /safari guide outfit/i);
 });
 
-test("M16 now lives in Props instead of Accessories Themed Props", () => {
+test("Themed Props moved out of Accessories and M16 lives under Props Weapons", () => {
   const weapons = CATALOGS.props.find((entry) => entry.id === "weapons");
+  const general = CATALOGS.props.find((entry) => entry.id === "general-props");
   assert.ok(weapons.items.some((entry) => entry.id === "m16-held"));
-  const themedProps = CATALOGS.accessories.find((entry) => entry.id === "themed-props");
-  assert.equal(themedProps.items.some((entry) => entry.id === "m16"), false);
+  assert.ok(general.items.some((entry) => entry.id === "microphone"));
+  assert.equal(general.items.some((entry) => entry.id === "m16"), false);
+  assert.equal(CATALOGS.accessories.some((entry) => entry.id === "themed-props"), false);
 });
