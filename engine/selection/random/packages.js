@@ -4,6 +4,7 @@ import { ATHLETIC_PACKAGES } from "../../../data/packages/athletic.js";
 import { OCCUPATION_PACKAGES } from "../../../data/packages/occupations.js";
 import { HOOTERS_WAITRESS_UNIFORM } from "../../../data/packages/occupation-additions.js";
 import { COSTUME_PACKAGES } from "../../../data/packages/costumes.js";
+import { SAFARI_GUIDE_COSTUME } from "../../../data/packages/costume-additions.js";
 import { CULTURAL_PACKAGES } from "../../../data/packages/cultural.js";
 
 import { chooseItem } from "./core.js";
@@ -13,12 +14,17 @@ const OCCUPATION_PACKAGES_WITH_ADDITIONS = Object.freeze({
   items: Object.freeze([...OCCUPATION_PACKAGES.items, HOOTERS_WAITRESS_UNIFORM]),
 });
 
+const COSTUME_PACKAGES_WITH_ADDITIONS = Object.freeze({
+  ...COSTUME_PACKAGES,
+  items: Object.freeze([...COSTUME_PACKAGES.items, SAFARI_GUIDE_COSTUME]),
+});
+
 export const PACKAGE_ORGANIZATIONAL_GROUPS = Object.freeze([
   SCI_FI_PACKAGES,
   HISTORICAL_PACKAGES,
   ATHLETIC_PACKAGES,
   OCCUPATION_PACKAGES_WITH_ADDITIONS,
-  COSTUME_PACKAGES,
+  COSTUME_PACKAGES_WITH_ADDITIONS,
   CULTURAL_PACKAGES,
 ]);
 

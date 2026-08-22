@@ -3,14 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Infinite Engine 2.1G — Prompt Builder</title>
+  <title>Infinite Engine 2.1H — Prompt Builder</title>
   <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+  {
+    "scopes": {
+      "./app.js": {
+        "./ui-data.js": "./ui-data-2.1h.js",
+        "./generation-adapter.js": "./generation-adapter-2.1h.js",
+        "./ui-guardrails.js": "./ui-guardrails-2.1h.js"
+      }
+    }
+  }
+  </script>
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Infinite Engine 2.1G</p>
+        <p class="eyebrow">Infinite Engine 2.1H</p>
         <h1>Prompt Builder</h1>
         <p class="subtitle">Choose manually, use Random where supported, or use None where the engine allows it.</p>
       </div>

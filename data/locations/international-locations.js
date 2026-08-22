@@ -25,5 +25,6 @@ export const INTERNATIONAL_LOCATIONS = Object.freeze({
     location("chichen-itza", "Chichén Itzá", "at Chichén Itzá"),
     location("taj-mahal", "Taj Mahal", "at the Taj Mahal"),
     location("kremlin", "Kremlin", "at the Moscow Kremlin"),
+    location("african-savanna", "African Savanna", "on the African savanna"),
   ]),
 });
