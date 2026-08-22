@@ -10,6 +10,7 @@ import {
 } from "./random/clothing.js";
 import { UNDERWEAR_LINGERIE } from "../../data/clothing/lingerie/underwear-lingerie.js";
 import { TIME_OF_DAY } from "../../data/time-of-day/time-of-day.js";
+import { PROP_GROUPS } from "../../data/props/props.js";
 import { PHOTO_LOOK } from "../../data/camera/photo-look.js";
 import { CAMERA_BODY } from "../../data/camera/camera-body.js";
 import { CAPTURE_MEDIUM } from "../../data/camera/capture-medium.js";
@@ -34,6 +35,7 @@ export const CATALOGS = Object.freeze({
   aspectRatios: Object.freeze([ASPECT_RATIOS]),
   footwear: FOOTWEAR_RANDOM_BUCKETS,
   accessories: ACCESSORY_RANDOM_BUCKETS,
+  props: PROP_GROUPS,
   locations: LOCATION_RANDOM_BUCKETS,
   atmosphere: ATMOSPHERE_RANDOM_BUCKETS,
   timeOfDay: Object.freeze([TIME_OF_DAY]),
