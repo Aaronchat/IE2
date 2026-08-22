@@ -283,11 +283,24 @@ function renderControl(control, { compact = false } = {}) {
   if (textInput) {
     textInput.addEventListener("input", () => {
       const current = stateFor(control);
-      current.values = textInput.value.trim() ? [textInput.value] : [];
-      current.mode = current.values.length ? "manual" : "unselected";
+      const value = textInput.value;
+      const wasManual = current.mode === "manual" && current.values.length > 0;
+      const isManual = Boolean(value.trim());
+      if (isManual && !wasManual) {
+        const permission = canAddManualSelection(state, control.id, value);
+        if (!permission.allowed) {
+          generationError.textContent = permission.message;
+          generationError.hidden = false;
+          textInput.value = "";
+          return;
+        }
+        applyManualGuardrails(state, control.id, value);
+      }
+      current.values = isManual ? [value] : [];
+      current.mode = isManual ? "manual" : "unselected";
       generationError.hidden = true;
       generationError.textContent = "";
-      updateSelectionIndicators();
+      redrawAllAffected(control.id);
       updateOutput();
     });
   }
