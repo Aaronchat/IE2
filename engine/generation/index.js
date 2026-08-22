@@ -1,6 +1,6 @@
 import { selectGeneration } from "../selection/index.js";
 import { resolveGeneration } from "../resolution/index.js";
-import { buildPrompt } from "../prompt-building/index.js";
+import { buildPromptWithProps } from "../prompt-building/with-props.js";
 
 /**
  * Runs one complete Infinite Engine prompt generation.
@@ -11,7 +11,7 @@ import { buildPrompt } from "../prompt-building/index.js";
 export function prepareGeneration({ controls = {}, random = {} } = {}) {
   const selection = selectGeneration({ controls, random });
   const resolved = resolveGeneration(selection);
-  const prompt = buildPrompt(resolved);
+  const prompt = buildPromptWithProps(resolved);
 
   selection.randomState.completeGeneration();
 
