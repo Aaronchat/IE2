@@ -284,6 +284,13 @@ function adaptAccessories(source = {}) {
   return selections.length ? { mode: "manual", selections } : undefined;
 }
 
+function adaptProps(source = {}) {
+  const manual = activeManualEntries(source);
+  const selections = manual.flatMap(([, control]) => selectedValues(control).map(refOf));
+  if (selections.length > 3) throw new Error("Props allows a maximum of 3 selections.");
+  return selections.length ? { mode: "manual", selections } : undefined;
+}
+
 function adaptAtmosphere(source = {}) {
   const action = entry(source, "atmosphere.selection");
   const manual = activeManualEntries(source, { exclude: ["atmosphere.selection"] });
@@ -421,6 +428,7 @@ export function uiStateToGenerationControls(ui = {}) {
   const clothing = adaptClothing(ui); if (Object.keys(clothing).length) controls.clothing = clothing;
   const footwear = adaptSingleSplitDomain(ui.footwear, "footwear.selection", "Footwear"); if (footwear) controls.footwear = footwear;
   const accessories = adaptAccessories(ui.accessories); if (accessories) controls.accessories = accessories;
+  const props = adaptProps(ui.props); if (props) controls.props = props;
   const location = adaptSingleSplitDomain(ui.location, "location.selection", "Location"); if (location) controls.location = location;
   const atmosphere = adaptAtmosphere(ui.atmosphere); if (atmosphere) controls.atmosphere = atmosphere;
   const timeOfDay = adaptTimeOfDay(ui["time-of-day"]); if (timeOfDay) controls.timeOfDay = timeOfDay;
