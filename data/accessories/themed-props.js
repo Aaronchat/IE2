@@ -155,14 +155,5 @@ export const THEMED_PROPS = Object.freeze({
       formality: "smart-casual",
       coverage: Object.freeze({ covered: Object.freeze([]), partiallyCovered: Object.freeze([]) }),
     }),
-    Object.freeze({
-      id: "m16",
-      name: "M16",
-      prompt: "M16 rifle",
-      temperature: Object.freeze(["very-hot", "warm", "moderate", "cool", "cold"]),
-      season: Object.freeze(["spring", "summer", "autumn", "winter"]),
-      formality: "very-casual",
-      coverage: Object.freeze({ covered: Object.freeze([]), partiallyCovered: Object.freeze([]) }),
-    }),
   ]),
 });
