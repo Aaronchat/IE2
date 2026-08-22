@@ -120,18 +120,27 @@ export function selectTimeOfDay(control, context) {
   return result("manual", findEnabledRecord(CATALOGS.timeOfDay, control.id, "Time of Day", control.groupId));
 }
 
+function cleanCustomTheme(value) {
+  if (typeof value !== "string") throw new Error("Custom Theme must be a string.");
+  const cleaned = value.replace(/\s+/gu, " ").trim();
+  if (!cleaned) throw new Error("Custom Theme cannot be blank.");
+  return cleaned;
+}
+
 export function selectThemes(control, context) {
   if (!control) return undefined;
   assertMode(control, ["manual", "none", "random"], "Themes");
   if (control.mode === "none") return result("none", Object.freeze([]));
   if (control.mode === "random") return result("random", selectRandomThemes(context));
 
-  const selections = control.selections;
-  enforceMax(selections?.map((selection) => selection.id), THEMES_CONFIG.maxSelections, "Themes");
-  if (selections.length === 0) throw new Error("Themes Manual requires at least one selection.");
-  return result("manual", Object.freeze(selections.map(({ id, groupId }) =>
-    findEnabledRecord(CATALOGS.themes, id, "Theme", groupId),
-  )));
+  const selections = control.selections ?? [];
+  const custom = control.custom == null ? null : cleanCustomTheme(control.custom);
+  const ids = selections.map((selection) => selection.id);
+  enforceMax([...ids, ...(custom ? ["__custom-theme__"] : [])], THEMES_CONFIG.maxSelections, "Themes");
+  if (selections.length === 0 && !custom) throw new Error("Themes Manual requires at least one selection.");
+  const values = selections.map(({ id, groupId }) => findEnabledRecord(CATALOGS.themes, id, "Theme", groupId));
+  if (custom) values.push(Object.freeze({ id: "__custom-theme__", name: custom, prompt: custom, custom: true }));
+  return result("manual", Object.freeze(values));
 }
 
 function cleanMetadata(metadata, typeId) {

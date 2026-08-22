@@ -346,14 +346,23 @@ function adaptCamera(source = {}) {
 
 function adaptThemes(source = {}) {
   const action = entry(source, "themes.selection");
-  const manual = activeManualEntries(source, { exclude: ["themes.selection"] });
+  const customControl = entry(source, "themes.custom");
+  const manual = activeManualEntries(source, { exclude: ["themes.selection", "themes.custom"] });
   const selections = manual.flatMap(([, control]) => selectedValues(control).map(refOf));
-  if ((action?.mode === "random" || action?.mode === "none") && selections.length) {
+  let custom = "";
+  if (customControl?.mode === "manual") {
+    const value = selectedValues(customControl)[0];
+    if (typeof value !== "string") throw new Error("Custom Theme must be text.");
+    custom = value.replace(/\s+/gu, " ").trim();
+    if (!custom) throw new Error("Custom Theme cannot be blank.");
+  }
+  const selectionCount = selections.length + Number(Boolean(custom));
+  if ((action?.mode === "random" || action?.mode === "none") && selectionCount) {
     throw new Error("Themes Random/None cannot be combined with manual Themes.");
   }
   if (action?.mode === "random" || action?.mode === "none") return { mode: action.mode };
-  if (selections.length > 3) throw new Error("Themes allows a maximum of 3 selections.");
-  return selections.length ? { mode: "manual", selections } : undefined;
+  if (selectionCount > 3) throw new Error("Themes allows a maximum of 3 selections.");
+  return selectionCount ? { mode: "manual", selections, ...(custom ? { custom } : {}) } : undefined;
 }
 
 function adaptCovers(source = {}) {

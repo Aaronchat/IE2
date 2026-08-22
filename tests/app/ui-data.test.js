@@ -139,16 +139,22 @@ test("Tattoos is a repeatable top-level UI module immediately after Clothing wit
   assert.deepEqual(allUiControls().filter((entry) => entry.id.startsWith("tattoos.")).map((entry) => entry.id), ["tattoos.selection"]);
 });
 
-test("Themes remains the final normal prompt domain and exposes its approved stack UI", () => {
+test("Themes remains the final normal prompt domain and exposes presets plus Custom Theme", () => {
   const themes = UI_CATEGORIES.at(-2);
   assert.equal(themes.id, "themes");
-  assert.deepEqual(themes.sections.map((entry) => entry.label), ["Colors", "Holidays & Events", "Genres & Aesthetics"]);
+  assert.deepEqual(themes.sections.map((entry) => entry.label), ["Colors", "Holidays & Events", "Genres & Aesthetics", "Custom Theme"]);
   assert.equal(themes.action.id, "themes.selection");
   assert.equal(themes.action.label, "Theme Stack");
   assert.equal(themes.action.random, true);
   assert.equal(themes.action.none, true);
   assert.equal(themes.action.defaultMode, "none");
-  for (const section of themes.sections) assert.equal(section.controls[0].maxSelections, 3);
+  for (const section of themes.sections.slice(0, 3)) assert.equal(section.controls[0].maxSelections, 3);
+
+  const genreLabels = byId.get("themes.genres-aesthetics.selection").groupedOptions.flatMap((group) => group.options.map((entry) => entry.label));
+  for (const label of ["Longhorns", "Beach Party", "Hippy"]) assert.ok(genreLabels.includes(label), label);
+  const custom = byId.get("themes.custom");
+  assert.equal(custom.inputType, "text");
+  assert.match(custom.placeholder, /mauve/u);
 });
 
 test("Covers / Presentation is final with contextual Styles, optional Era, and text inputs", () => {

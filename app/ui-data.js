@@ -197,7 +197,18 @@ const effectsSections = ["effects-imperfections"].map((id) => {
   })]);
 });
 
-const themeSections = CATALOGS.themes.map((group) => catalogSection(`themes.${group.id}`, group.name, [group], { maxSelections: 3 }));
+const themeSections = [
+  ...CATALOGS.themes.map((group) => catalogSection(`themes.${group.id}`, group.name, [group], { maxSelections: 3 })),
+  section("themes.custom", "Custom Theme", [
+    control({
+      id: "themes.custom",
+      label: "Custom Theme",
+      inputType: "text",
+      placeholder: "e.g. mauve",
+      note: "Optional. Counts toward the three-theme maximum.",
+    }),
+  ]),
+];
 const themeAction = control({
   id: "themes.selection",
   label: "Theme Stack",

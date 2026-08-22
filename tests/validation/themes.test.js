@@ -11,7 +11,7 @@ const groups = () => structuredClone([THEME_COLORS, THEME_HOLIDAYS_EVENTS, THEME
 const config = () => structuredClone(THEMES_CONFIG);
 
 test("initial Theme catalog and approved configuration validate", () => {
-  assert.deepEqual(validateThemes(), { categoryCount: 3, recordCount: 16 });
+  assert.deepEqual(validateThemes(), { categoryCount: 3, recordCount: 19 });
 });
 
 test("Theme validation rejects duplicate or invented catalog records", () => {
