@@ -23,12 +23,14 @@ const SPLIT_DOMAIN_ACTIONS = Object.freeze({
 
 const GLOBAL_LIMITS = Object.freeze({
   accessories: 2,
+  props: 3,
   atmosphere: 2,
   themes: 3,
 });
 
 const DOMAIN_LABELS = Object.freeze({
   accessories: "Accessories",
+  props: "Props",
   atmosphere: "Atmosphere",
   themes: "Themes",
 });
