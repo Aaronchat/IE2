@@ -12,7 +12,6 @@ import { BODY_CHAINS_HARNESSES } from "../../../data/accessories/body-chains-har
 import { BAGS } from "../../../data/accessories/bags.js";
 import { BELTS } from "../../../data/accessories/belts.js";
 import { GLOVES } from "../../../data/accessories/gloves.js";
-import { THEMED_PROPS } from "../../../data/accessories/themed-props.js";
 
 import { chooseBucket, chooseRecordFromGroup, weightedChoice } from "./core.js";
 
@@ -31,7 +30,6 @@ export const ACCESSORY_RANDOM_BUCKETS = Object.freeze([
   BAGS,
   BELTS,
   GLOVES,
-  THEMED_PROPS,
 ]);
 
 export const ACCESSORY_COUNT_WEIGHTS = Object.freeze([
