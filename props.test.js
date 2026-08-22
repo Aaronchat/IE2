@@ -39,7 +39,7 @@ test("Props rejects a fourth selection", () => {
       prop("ferrari-f80", "cars"),
       prop("tank", "war-machines"),
     ],
-  }), /maximum of 3|exceeds/i);
+  }), /at most 3/i);
 });
 
 test("African Savanna is available as an International Location", () => {
