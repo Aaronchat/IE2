@@ -132,6 +132,7 @@ const clothingSections = [
 
 const footwearSections = CATALOGS.footwear.map((group) => catalogSection(`footwear.${group.id}`, group.name, [group]));
 const accessorySections = CATALOGS.accessories.map((group) => catalogSection(`accessories.${group.id}`, group.name, [group], { maxSelections: 2 }));
+const propSections = CATALOGS.props.map((group) => catalogSection(`props.${group.id}`, group.name, [group], { maxSelections: 3, note: "Manual only. Maximum three Props total." }));
 const locationSections = CATALOGS.locations.map((group) => catalogSection(`location.${group.id}`, group.name, [group]));
 const atmosphereSections = CATALOGS.atmosphere.map((group) => catalogSection(`atmosphere.${group.id}`, group.name, [group], { maxSelections: ATMOSPHERE_CONFIG.maxSelections }));
 const aspectRatioAction = control({ id: "aspect-ratio.selection", label: "Aspect Ratio", groupedOptions: groupedRecordOptions(CATALOGS.aspectRatios), note: "Optional. Emits first in the prompt when selected." });
@@ -253,6 +254,7 @@ export const UI_CATEGORIES = Object.freeze([
   category("tattoos", "Tattoos", [], control({ id: "tattoos.selection", label: "Tattoos", random: true, note: "Random uses the exposed areas from the selected Clothing." }), "tattoos"),
   category("footwear", "Footwear", footwearSections, control({ id: "footwear.selection", label: "Footwear", random: true })),
   category("accessories", "Accessories", accessorySections, control({ id: "accessories.selection", label: "Accessories", random: true, maxSelections: 2 })),
+  category("props", "Props", propSections),
   category("location", "Location", locationSections, control({ id: "location.selection", label: "Location", random: true })),
   category("atmosphere", "Atmosphere", atmosphereSections, control({ id: "atmosphere.selection", label: "Atmosphere", random: true, none: true, maxSelections: ATMOSPHERE_CONFIG.maxSelections })),
   category("time-of-day", "Time of Day", [], timeAction),
