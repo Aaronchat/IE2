@@ -67,7 +67,7 @@ function adaptTattoos(items = []) {
       const text = typeof design.text === "string" ? design.text.replace(/\s+/gu, " ").trim() : design.text;
       return { placementId: item.placementId, patternId: item.patternId, design: { mode: "specific", text } };
     }
-    if (design.mode === "generic") return { placementId: item.placementId, patternId: item.patternId, design: { mode: "generic", styleId: design.styleId };
+    if (design.mode === "generic") return { placementId: item.placementId, patternId: item.patternId, design: { mode: "generic", styleId: design.styleId } };
     throw new Error(`Tattoo ${index + 1} Design must be Generic or Specific.`);
   });
 }
