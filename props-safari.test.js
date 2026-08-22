@@ -62,7 +62,7 @@ test("Props rejects a fourth selection", () => {
         ],
       },
     },
-  }), /maximum of 3|exceeds/i);
+  }), /at most 3|maximum of 3|exceeds/i);
 });
 
 test("African Savanna, Safari Guide, and moved M16 are registered correctly", () => {
