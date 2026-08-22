@@ -19,7 +19,8 @@ const EXPECTED_GROUPS = Object.freeze([
   Object.freeze({ id: "genres-aesthetics", name: "Genres & Aesthetics", records: Object.freeze([
     ["gothic", "Gothic", "Gothic"], ["western", "Western", "Western"],
     ["victorian", "Victorian", "Victorian"], ["noir", "Noir", "Noir"],
-    ["psychedelic", "Psychedelic", "Psychedelic"],
+    ["psychedelic", "Psychedelic", "Psychedelic"], ["longhorns", "Longhorns", "Longhorns"],
+    ["beach-party", "Beach Party", "Beach party"], ["hippy", "Hippy", "Hippy"],
   ]) }),
 ]);
 
