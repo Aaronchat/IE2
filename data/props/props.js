@@ -1,3 +1,5 @@
+import { THEMED_PROPS } from "../accessories/themed-props.js";
+
 const group = (id, name, items) => Object.freeze({
   id,
   name,
@@ -43,6 +45,8 @@ export const PROP_INSTRUMENTS = group("instruments", "Instruments", [
   { id: "fiddle-on-back", name: "Fiddle — On Back", prompt: "a fiddle strapped across her back" },
 ]);
 
+export const PROP_GENERAL = group("general-props", "General Props", THEMED_PROPS.items);
+
 export const PROP_GROUPS = Object.freeze([
   PROP_WEAPONS,
   PROP_OFF_ROAD,
@@ -50,4 +54,5 @@ export const PROP_GROUPS = Object.freeze([
   PROP_MOTORCYCLES,
   PROP_WAR_MACHINES,
   PROP_INSTRUMENTS,
+  PROP_GENERAL,
 ]);
