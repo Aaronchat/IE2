@@ -10,6 +10,7 @@ export const PROMPT_SECTION_ORDER = Object.freeze([
   "tattoos",
   "footwear",
   "accessories",
+  "props",
   "location",
   "atmosphere",
   "timeOfDay",
@@ -145,6 +146,12 @@ function accessoryFragments(selection) {
   if (!selection?.value?.length) return Object.freeze([]);
   const records = selection.value.map((entry) => entry.record);
   return Object.freeze(sortRecords(records, CATALOGS.accessories).map((record) => promptOf(record, "Accessory")));
+}
+
+function propFragments(selection) {
+  if (!selection?.value?.length) return Object.freeze([]);
+  const records = selection.value.map((entry) => entry.record);
+  return Object.freeze(sortRecords(records, CATALOGS.props).map((record) => promptOf(record, "Prop")));
 }
 
 function atmosphereFragments(selection) {
@@ -314,6 +321,7 @@ export function buildPrompt(resolvedState) {
     tattoos: tattooFragments(selections.tattoos),
     footwear: Object.freeze(selections.footwear?.value ? [promptOf(selections.footwear.value, "Footwear")] : []),
     accessories: accessoryFragments(selections.accessories),
+    props: propFragments(selections.props),
     location: Object.freeze(selections.location?.value ? [promptOf(selections.location.value, "Location")] : []),
     atmosphere: atmosphereFragments(selections.atmosphere),
     timeOfDay: Object.freeze(selections.timeOfDay?.value ? [promptOf(selections.timeOfDay.value, "Time of Day")] : []),
