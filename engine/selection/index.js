@@ -3,6 +3,7 @@ import { createSeededRng } from "./random/rng.js";
 import { RandomRuntimeState } from "./random/state.js";
 import { selectCharacter } from "./character.js";
 import { selectClothing } from "./clothing.js";
+import { selectProps } from "./props.js";
 import { selectAspectRatio, selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects, selectThemes, selectCovers, selectTattoos } from "./domains.js";
 
 function randomContext(random = {}) {
@@ -25,6 +26,7 @@ export function selectGeneration({ controls = {}, random = {} } = {}) {
   const tattoos = selectTattoos(controls.tattoos, context, result.clothing); if (tattoos) result.tattoos = tattoos;
   const footwear = selectFootwear(controls.footwear, context); if (footwear) result.footwear = footwear;
   const accessories = selectAccessories(controls.accessories, context); if (accessories) result.accessories = accessories;
+  const props = selectProps(controls.props); if (props) result.props = props;
   const location = selectLocation(controls.location, context); if (location) result.location = location;
   const atmosphere = selectAtmosphere(controls.atmosphere, context, location?.value ?? null); if (atmosphere) result.atmosphere = atmosphere;
   const timeOfDay = selectTimeOfDay(controls.timeOfDay, context); if (timeOfDay) result.timeOfDay = timeOfDay;
