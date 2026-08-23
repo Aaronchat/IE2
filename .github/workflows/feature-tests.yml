@@ -18,5 +18,5 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run Props and safari tests
-        run: node --test props-safari.test.js
+      - name: Run feature regression tests
+        run: node --test props-safari.test.js tests/catalog-pruning-cowgirl.test.js
