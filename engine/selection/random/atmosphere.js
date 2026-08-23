@@ -5,10 +5,24 @@ import { ATMOSPHERE_CONFIG } from "../../../data/weather/config.js";
 
 import { chooseBucket, chooseRecordFromGroup } from "./core.js";
 
+const RETIRED_NON_CLEAR_IDS = new Set([
+  "neon-rain",
+  "neon-fog",
+  "neon-mist",
+  "neon-snow",
+]);
+
+const ACTIVE_NON_CLEAR_ATMOSPHERE = Object.freeze({
+  ...NON_CLEAR_ATMOSPHERE,
+  items: Object.freeze(
+    NON_CLEAR_ATMOSPHERE.items.filter((record) => !RETIRED_NON_CLEAR_IDS.has(record.id)),
+  ),
+});
+
 export const ATMOSPHERE_RANDOM_BUCKETS = Object.freeze([
   CLEAR_ATMOSPHERE,
   WIND_ATMOSPHERE,
-  NON_CLEAR_ATMOSPHERE,
+  ACTIVE_NON_CLEAR_ATMOSPHERE,
 ]);
 
 const PROHIBITED_PAIRS = new Set(
