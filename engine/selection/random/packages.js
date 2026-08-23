@@ -14,9 +14,18 @@ const OCCUPATION_PACKAGES_WITH_ADDITIONS = Object.freeze({
   items: Object.freeze([...OCCUPATION_PACKAGES.items, HOOTERS_WAITRESS_UNIFORM]),
 });
 
+const COWGIRL_PROMPT = "cowgirl outfit (cowboy boots, denim shorts, plaid tied-up shirt, cowboy hat)";
+
 const COSTUME_PACKAGES_WITH_ADDITIONS = Object.freeze({
   ...COSTUME_PACKAGES,
-  items: Object.freeze([...COSTUME_PACKAGES.items, SAFARI_GUIDE_COSTUME]),
+  items: Object.freeze([
+    ...COSTUME_PACKAGES.items.map((record) =>
+      record.id === "cowgirl"
+        ? Object.freeze({ ...record, prompt: COWGIRL_PROMPT })
+        : record,
+    ),
+    SAFARI_GUIDE_COSTUME,
+  ]),
 });
 
 export const PACKAGE_ORGANIZATIONAL_GROUPS = Object.freeze([
