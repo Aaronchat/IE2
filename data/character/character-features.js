@@ -9,5 +9,6 @@ export const CHARACTER_FEATURES = Object.freeze({
     "Wings",
     "Horns",
     "Elf Ears",
+    "Very Pregnant",
   ]),
 });
