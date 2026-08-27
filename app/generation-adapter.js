@@ -116,20 +116,38 @@ function swimwearSectionState(source) {
 
 const CLOTHING_DETAIL_IDS = Object.freeze({
   tops: ["color", "fabric", "condition", "graphic"],
-  bottoms: ["condition"],
-  dresses: ["condition"],
-  "one-piece": ["condition"],
-  swimwear: ["condition"],
-  sleepwear: ["condition"],
-  outerwear: ["condition"],
+  bottoms: ["color", "fabric", "condition", "graphic"],
+  dresses: ["color", "fabric", "condition", "graphic"],
+  "one-piece": ["color", "fabric", "condition", "graphic"],
+  swimwear: ["color", "fabric", "condition", "graphic"],
+  sleepwear: ["color", "fabric", "condition", "graphic"],
+  outerwear: ["color", "fabric", "condition", "graphic"],
   hosiery: ["condition"],
-  lingerie: ["condition"],
+  lingerie: ["color", "fabric", "condition"],
 });
+
+function cleanedCustomDetail(control, section, id) {
+  if (!control || control.mode === "unselected") return "";
+  if (control.mode !== "manual") throw new Error(`${section} Custom ${id} supports text only.`);
+  const value = selectedValues(control)[0];
+  if (typeof value !== "string") throw new Error(`${section} Custom ${id} must be text.`);
+  return value.replace(/\s+/gu, " ").trim();
+}
 
 function clothingDetailStates(source, section, ids) {
   const details = {};
   for (const id of ids) {
     const control = entry(source, `clothing.${section}.advanced.${id}`);
+    const customControl = ["color", "graphic"].includes(id)
+      ? entry(source, `clothing.${section}.advanced.custom-${id}`)
+      : null;
+    const custom = cleanedCustomDetail(customControl, section, id);
+    const presetActive = control && !["unselected", "none"].includes(control.mode);
+    if (custom && presetActive) throw new Error(`Choose either preset ${id} or Custom ${id} for ${section}, not both.`);
+    if (custom) {
+      details[id] = { mode: "manual", text: custom };
+      continue;
+    }
     if (!control || control.mode === "unselected" || control.mode === "none") continue;
     if (control.mode === "random") {
       details[id] = { mode: "random" };
