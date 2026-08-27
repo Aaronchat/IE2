@@ -27,17 +27,36 @@ function effectiveGarmentSlot(ref, record) {
   return record?.slot ?? group?.defaults?.slot ?? null;
 }
 
-const DETAIL_CONFIG = Object.freeze({
-  tops: TOP_DETAIL_CONFIG,
-  bottoms: Object.freeze({ condition: CLOTHING_CONDITION }),
-  dresses: Object.freeze({ condition: CLOTHING_CONDITION }),
-  "one-piece": Object.freeze({ condition: CLOTHING_CONDITION }),
-  swimwear: Object.freeze({ condition: CLOTHING_CONDITION }),
-  sleepwear: Object.freeze({ condition: CLOTHING_CONDITION }),
-  outerwear: Object.freeze({ condition: CLOTHING_CONDITION }),
-  hosiery: Object.freeze({ condition: CLOTHING_CONDITION }),
-  lingerie: Object.freeze({ condition: CLOTHING_CONDITION }),
+const FULL_GARMENT_DETAILS = Object.freeze({
+  color: TOP_DETAIL_CONFIG.color,
+  fabric: TOP_DETAIL_CONFIG.fabric,
+  condition: CLOTHING_CONDITION,
+  graphic: TOP_DETAIL_CONFIG.graphic,
 });
+
+const DETAIL_CONFIG = Object.freeze({
+  tops: FULL_GARMENT_DETAILS,
+  bottoms: FULL_GARMENT_DETAILS,
+  dresses: FULL_GARMENT_DETAILS,
+  "one-piece": FULL_GARMENT_DETAILS,
+  swimwear: FULL_GARMENT_DETAILS,
+  sleepwear: FULL_GARMENT_DETAILS,
+  outerwear: FULL_GARMENT_DETAILS,
+  hosiery: Object.freeze({ condition: CLOTHING_CONDITION }),
+  lingerie: Object.freeze({
+    color: TOP_DETAIL_CONFIG.color,
+    fabric: TOP_DETAIL_CONFIG.fabric,
+    condition: CLOTHING_CONDITION,
+  }),
+});
+
+function customDetailRecord(id, text, section) {
+  if (typeof text !== "string") throw new Error(`${section} Custom ${id} must be text.`);
+  const cleaned = text.replace(/\s+/gu, " ").trim();
+  if (!cleaned) throw new Error(`${section} Custom ${id} cannot be blank.`);
+  const prompt = id === "graphic" ? `with ${cleaned}` : cleaned;
+  return Object.freeze({ id: `custom-${id}`, name: cleaned, prompt });
+}
 
 function garmentDetails(controls = {}, context) {
   const selectedSections = {};
@@ -57,6 +76,11 @@ function garmentDetails(controls = {}, context) {
           state: context.state,
           namespace: `clothing:${section}:advanced:${id}`,
         });
+        continue;
+      }
+      if (control.text != null) {
+        if (!["color", "graphic"].includes(id)) throw new Error(`${section} ${config.label} does not support custom text.`);
+        out[id] = customDetailRecord(id, control.text, section);
         continue;
       }
       const selected = config.options.find((entry) => entry.id === control.id);
