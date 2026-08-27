@@ -1,6 +1,6 @@
 export const SANDALS_CASUAL_SHOES = Object.freeze({
   id: "sandals-casual-shoes",
-  name: "Sandals & Casual Shoes",
+  name: "Sandals, Slippers & Casual Shoes",
   defaults: Object.freeze({
     enabled: true,
     selectionWeight: 1,
@@ -155,6 +155,51 @@ export const SANDALS_CASUAL_SHOES = Object.freeze({
           Object.freeze({ region: "foot", side: "both" }),
         ]),
         partiallyCovered: Object.freeze([
+        ]),
+      }),
+    }),
+    Object.freeze({
+      id: "slippers",
+      name: "Slippers",
+      prompt: "cozy house slippers",
+      temperature: Object.freeze(["warm", "moderate", "cold", "very-cold"]),
+      season: Object.freeze(["spring", "summer", "fall", "winter"]),
+      formality: "very-casual",
+      coverage: Object.freeze({
+        covered: Object.freeze([
+          Object.freeze({ region: "foot", side: "both" }),
+        ]),
+        partiallyCovered: Object.freeze([]),
+      }),
+    }),
+    Object.freeze({
+      id: "pink-bunny-slippers",
+      name: "Pink Bunny Slippers",
+      prompt: "funny pink bunny slippers",
+      temperature: Object.freeze(["warm", "moderate", "cold", "very-cold"]),
+      season: Object.freeze(["spring", "summer", "fall", "winter"]),
+      formality: "very-casual",
+      coverage: Object.freeze({
+        covered: Object.freeze([
+          Object.freeze({ region: "foot", side: "both" }),
+        ]),
+        partiallyCovered: Object.freeze([]),
+      }),
+    }),
+    Object.freeze({
+      id: "ugg-boots",
+      name: "Ugg Boots",
+      prompt: "cozy shearling Ugg boots",
+      temperature: Object.freeze(["moderate", "cold", "very-cold"]),
+      season: Object.freeze(["fall", "winter"]),
+      formality: "very-casual",
+      coverage: Object.freeze({
+        covered: Object.freeze([
+          Object.freeze({ region: "foot", side: "both" }),
+          Object.freeze({ region: "ankle", side: "both" }),
+        ]),
+        partiallyCovered: Object.freeze([
+          Object.freeze({ region: "lower-leg", side: "both" }),
         ]),
       }),
     }),
