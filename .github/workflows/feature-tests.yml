@@ -19,4 +19,4 @@ jobs:
         with:
           node-version: 20
       - name: Run feature regression tests
-        run: node --test props-safari.test.js tests/catalog-pruning-cowgirl.test.js
+        run: node --test props-safari.test.js tests/catalog-pruning-cowgirl.test.js tests/clothing-customization.test.js
