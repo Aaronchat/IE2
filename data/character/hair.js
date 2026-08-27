@@ -18,7 +18,7 @@ export const CHARACTER_HAIR = Object.freeze({
       "Medium Straight Hair", "Medium Wavy Hair", "Medium Curly Hair",
       "Short Straight Hair", "Short Wavy Hair", "Short Curly Hair",
     ]),
-    cuts: Object.freeze(["Bob Cut", "Pixie Cut", "French Bob", "Wolf Cut", "Shag Cut", "Lob", "Mohawk", "Undercut", "Buzz Cut", "Bald"]),
+    cuts: Object.freeze(["Bob Cut", "Pixie Cut", "French Bob", "Mohawk", "Undercut", "Buzz Cut", "Bald"]),
     ponytails: Object.freeze(["Ponytail", "High Ponytail", "Low Ponytail", "Side Ponytail", "Twin Tails"]),
     buns: Object.freeze(["Bun", "Messy Bun", "High Bun", "Low Bun", "Space Buns"]),
     braids: Object.freeze(["Single Braid", "French Braid", "Dutch Braid", "Fishtail Braid", "Side Braid", "Twin Braids", "Crown Braid"]),
