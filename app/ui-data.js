@@ -12,7 +12,7 @@ import { CAMERA_CONFIG } from "../data/camera/config.js";
 import { EFFECTS_CONFIG } from "../data/effects/config.js";
 import { ATMOSPHERE_CONFIG } from "../data/weather/config.js";
 import { TIME_OF_DAY_CONFIG } from "../data/time-of-day/config.js";
-import { CLOTHING_CONDITION, TOP_DETAIL_CONFIG } from "../data/clothing/top-details.js";
+import { TOP_DETAIL_CONFIG } from "../data/clothing/top-details.js";
 import { COVERS_CONFIG } from "../data/covers/config.js";
 import { TATTOO_GENERIC_STYLES, TATTOO_PLACEMENTS } from "../data/tattoos/config.js";
 import {
@@ -86,27 +86,47 @@ function clothingSection(id, label, groups, { random = true, none = true, note =
   return section(id, label, controls, action, advancedControls);
 }
 
-const topAdvancedControls = Object.freeze(Object.entries(TOP_DETAIL_CONFIG).map(([id, config]) => control({
-  id: `clothing.tops.advanced.${id}`,
-  label: config.label,
-  options: Object.freeze(config.options.map((entry) => option(entry.id, entry.name))),
-  random: true,
-  none: true,
-  defaultMode: "none",
-})));
-
-const conditionAdvancedControls = Object.freeze([control({
-  id: "placeholder",
-  label: CLOTHING_CONDITION.label,
-  options: Object.freeze(CLOTHING_CONDITION.options.map((entry) => option(entry.id, entry.name))),
-  random: true,
-  none: true,
-  defaultMode: "none",
-})]);
-
-function conditionControls(sectionId) {
-  return Object.freeze(conditionAdvancedControls.map((entry) => Object.freeze({ ...entry, id: `${sectionId}.advanced.condition` })));
+function clothingAdvancedControls(sectionId, detailIds, { customColor = false, customGraphic = false } = {}) {
+  const controls = detailIds.map((id) => {
+    const config = TOP_DETAIL_CONFIG[id];
+    return control({
+      id: `${sectionId}.advanced.${id}`,
+      label: config.label,
+      options: Object.freeze(config.options.map((entry) => option(entry.id, entry.name))),
+      random: true,
+      none: true,
+      defaultMode: "none",
+    });
+  });
+  if (customColor) controls.push(control({
+    id: `${sectionId}.advanced.custom-color`,
+    label: "Custom Color",
+    inputType: "text",
+    placeholder: "e.g. mauve, hot pink, burnt gold",
+    note: "Optional. Use this instead of the preset Color when you want your own color.",
+  }));
+  if (customGraphic) controls.push(control({
+    id: `${sectionId}.advanced.custom-graphic`,
+    label: "Custom Graphic / Design",
+    inputType: "text",
+    placeholder: "e.g. skull and crossbones, tie-dye skulls",
+    note: "Optional. Use this instead of the preset Graphic when you want your own design.",
+  }));
+  return Object.freeze(controls);
 }
+
+const clothingSections = [
+  clothingSection("clothing.tops", "Tops", TOP_RANDOM_BUCKETS, { advancedControls: clothingAdvancedControls("clothing.tops", ["color", "fabric", "condition", "graphic"], { customColor: true, customGraphic: true }) }),
+  clothingSection("clothing.bottoms", "Bottoms", BOTTOM_RANDOM_BUCKETS, { advancedControls: clothingAdvancedControls("clothing.bottoms", ["color", "fabric", "condition", "graphic"], { customColor: true, customGraphic: true }) }),
+  clothingSection("clothing.dresses", "Dresses", DRESS_RANDOM_BUCKETS, { advancedControls: clothingAdvancedControls("clothing.dresses", ["color", "fabric", "condition", "graphic"], { customColor: true, customGraphic: true }) }),
+  clothingSection("clothing.one-piece", "One-Piece", ONE_PIECE_RANDOM_BUCKETS, { advancedControls: clothingAdvancedControls("clothing.one-piece", ["color", "fabric", "condition", "graphic"], { customColor: true, customGraphic: true }) }),
+  clothingSection("clothing.swimwear", "Swimwear", SWIMWEAR_CATALOG_GROUPS, { note: "Swimwear assembly remains owned by the existing resolver.", advancedControls: clothingAdvancedControls("clothing.swimwear", ["color", "fabric", "condition", "graphic"], { customColor: true, customGraphic: true }) }),
+  clothingSection("clothing.sleepwear", "Sleepwear", SLEEPWEAR_RANDOM_BUCKETS, { advancedControls: clothingAdvancedControls("clothing.sleepwear", ["color", "fabric", "condition", "graphic"], { customColor: true, customGraphic: true }) }),
+  clothingSection("clothing.outerwear", "Outerwear", OUTERWEAR_RANDOM_BUCKETS, { advancedControls: clothingAdvancedControls("clothing.outerwear", ["color", "fabric", "condition", "graphic"], { customColor: true, customGraphic: true }) }),
+  clothingSection("clothing.hosiery", "Hosiery", HOSIERY_CATALOG_GROUPS, { note: "Random eligibility depends on the resolved outfit.", advancedControls: clothingAdvancedControls("clothing.hosiery", ["condition"]) }),
+  clothingSection("clothing.lingerie", "Lingerie", CATALOGS.clothing.filter((group) => group.id === "underwear-lingerie"), { random: false, note: "Manual only.", advancedControls: clothingAdvancedControls("clothing.lingerie", ["color", "fabric", "condition"], { customColor: true }) }),
+  clothingSection("clothing.packages", "Packages", CATALOGS.packages),
+];
 
 export const TATTOO_UI_CONFIG = Object.freeze({
   placements: Object.freeze(TATTOO_PLACEMENTS.map((placement) => Object.freeze({
@@ -116,19 +136,6 @@ export const TATTOO_UI_CONFIG = Object.freeze({
   }))),
   genericStyles: Object.freeze(TATTOO_GENERIC_STYLES.map((style) => option(style.id, style.name))),
 });
-
-const clothingSections = [
-  clothingSection("clothing.tops", "Tops", TOP_RANDOM_BUCKETS, { advancedControls: topAdvancedControls }),
-  clothingSection("clothing.bottoms", "Bottoms", BOTTOM_RANDOM_BUCKETS, { advancedControls: conditionControls("clothing.bottoms") }),
-  clothingSection("clothing.dresses", "Dresses", DRESS_RANDOM_BUCKETS, { advancedControls: conditionControls("clothing.dresses") }),
-  clothingSection("clothing.one-piece", "One-Piece", ONE_PIECE_RANDOM_BUCKETS, { advancedControls: conditionControls("clothing.one-piece") }),
-  clothingSection("clothing.swimwear", "Swimwear", SWIMWEAR_CATALOG_GROUPS, { note: "Swimwear assembly remains owned by the existing resolver.", advancedControls: conditionControls("clothing.swimwear") }),
-  clothingSection("clothing.sleepwear", "Sleepwear", SLEEPWEAR_RANDOM_BUCKETS, { advancedControls: conditionControls("clothing.sleepwear") }),
-  clothingSection("clothing.outerwear", "Outerwear", OUTERWEAR_RANDOM_BUCKETS, { advancedControls: conditionControls("clothing.outerwear") }),
-  clothingSection("clothing.hosiery", "Hosiery", HOSIERY_CATALOG_GROUPS, { note: "Random eligibility depends on the resolved outfit.", advancedControls: conditionControls("clothing.hosiery") }),
-  clothingSection("clothing.lingerie", "Lingerie", CATALOGS.clothing.filter((group) => group.id === "underwear-lingerie"), { random: false, note: "Manual only.", advancedControls: conditionControls("clothing.lingerie") }),
-  clothingSection("clothing.packages", "Packages", CATALOGS.packages),
-];
 
 const footwearSections = CATALOGS.footwear.map((group) => catalogSection(`footwear.${group.id}`, group.name, [group]));
 const accessorySections = CATALOGS.accessories.map((group) => catalogSection(`accessories.${group.id}`, group.name, [group], { maxSelections: 2 }));
