@@ -1,10 +1,10 @@
 import { resolveRandomSwimwear, resolveRandomHosieryEligibility } from "../resolution/clothing-compatibility.js";
 import { createSeededRng } from "./random/rng.js";
 import { RandomRuntimeState } from "./random/state.js";
-import { selectCharacter } from "./character.js";
+import { selectCharacter } from "./character-2.1i.js";
 import { selectClothing } from "./clothing.js";
-import { selectProps } from "./props.js";
-import { selectAspectRatio, selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects, selectThemes, selectCovers, selectTattoos } from "./domains.js";
+import { selectProps } from "./props-2.1i.js";
+import { selectAspectRatio, selectFootwear, selectAccessories, selectLocation, selectAtmosphere, selectTimeOfDay, selectCamera, selectEffects, selectThemes, selectCovers, selectTattoos } from "./domains-2.1i.js";
 
 function randomContext(random = {}) {
   const rng = random.rng ?? (Object.hasOwn(random, "seed") ? createSeededRng(random.seed) : null);
@@ -26,7 +26,7 @@ export function selectGeneration({ controls = {}, random = {} } = {}) {
   const tattoos = selectTattoos(controls.tattoos, context, result.clothing); if (tattoos) result.tattoos = tattoos;
   const footwear = selectFootwear(controls.footwear, context); if (footwear) result.footwear = footwear;
   const accessories = selectAccessories(controls.accessories, context); if (accessories) result.accessories = accessories;
-  const props = selectProps(controls.props); if (props) result.props = props;
+  const props = selectProps(controls.props, context); if (props) result.props = props;
   const location = selectLocation(controls.location, context); if (location) result.location = location;
   const atmosphere = selectAtmosphere(controls.atmosphere, context, location?.value ?? null); if (atmosphere) result.atmosphere = atmosphere;
   const timeOfDay = selectTimeOfDay(controls.timeOfDay, context); if (timeOfDay) result.timeOfDay = timeOfDay;
