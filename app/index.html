@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Infinite Engine 2.1H — Prompt Builder</title>
+  <title>Infinite Engine 2.1I — Prompt Builder</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./configuration-code.css">
   <script type="importmap">
   {
     "scopes": {
       "./app.js": {
-        "./ui-data.js": "./ui-data-2.1h.js",
-        "./generation-adapter.js": "./generation-adapter-2.1h.js",
+        "./ui-data.js": "./ui-data-2.1i.js",
+        "./generation-adapter.js": "./generation-adapter-2.1i.js",
         "./ui-guardrails.js": "./ui-guardrails-2.1h.js"
       }
     }
@@ -21,7 +22,7 @@
   <main class="shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Infinite Engine 2.1H</p>
+        <p class="eyebrow">Infinite Engine 2.1I</p>
         <h1>Prompt Builder</h1>
         <p class="subtitle">Choose manually, use Random where supported, or use None where the engine allows it.</p>
       </div>
@@ -36,6 +37,14 @@
     <div class="layout">
       <section class="panel" id="engine-controls" aria-label="Infinite Engine controls"></section>
       <aside class="panel result-panel">
+        <div class="configuration-code-entry">
+          <label for="configuration-code-input">Configuration Code</label>
+          <div class="configuration-code-row">
+            <input id="configuration-code-input" type="text" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="Enter 10-digit code">
+            <button id="configuration-code-clear" type="button">Clear code</button>
+          </div>
+          <p class="configuration-code-note">Enter a saved code before Generate to replay that exact generated prompt. Codes are saved on this browser.</p>
+        </div>
         <div class="result-actions">
           <button id="generate-prompt" class="generate-button" type="button">Generate</button>
           <button id="copy-prompt" type="button" disabled>Copy Prompt</button>
@@ -58,5 +67,6 @@
     </div>
   </main>
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./configuration-code.js"></script>
 </body>
 </html>
