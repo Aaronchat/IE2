@@ -1,0 +1,38 @@
+.configuration-code-entry {
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border, #30384d);
+  border-radius: 14px;
+}
+
+.configuration-code-entry label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.configuration-code-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.configuration-code-row input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  font: inherit;
+  letter-spacing: 0.08em;
+}
+
+.configuration-code-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.86rem;
+  opacity: 0.72;
+}
+
+@media (max-width: 620px) {
+  .configuration-code-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

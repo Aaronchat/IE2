@@ -6,4 +6,5 @@ export const CHARACTER_PHYSICAL_APPEARANCE = Object.freeze({
   }),
   hipWidth: Object.freeze(["Standard", "Wide", "Very Wide"]),
   waist: Object.freeze(["Straight", "Well Defined"]),
+  pregnancy: Object.freeze(["Very Pregnant"]),
 });

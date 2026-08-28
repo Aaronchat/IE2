@@ -98,6 +98,9 @@ export function buildCharacterFragments(character = {}) {
   const waist = selectionValue(character, "waist");
   if (waist) push(fragments, `${lower(waist)} waist`);
 
+  const pregnancy = selectionValue(character, "pregnancy");
+  if (pregnancy) push(fragments, lower(pregnancy));
+
   for (const feature of selectionValue(character, "features") ?? []) push(fragments, lower(feature));
 
   return Object.freeze(fragments);
